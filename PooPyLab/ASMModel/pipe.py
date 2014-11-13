@@ -22,11 +22,13 @@
 #This is the definition of the Pipe() object, which is basically the Base()
 #
 #Update Log:
-#    Sep 26, 2014 KZ: removed test code
-#    June 29, 2014 KZ: Added GetXXX() definitions for solids and COD summary. 
-#    March 15, 2014 KZ: AddUpstreamUnit(), RemoveUpstreamUnit(), and SetDownstreamMainUnit() begin here
-#    March 08, 2014 KZ: Rewrite according to the new class structure
-#    December 07, 2013 Kai Zhang
+#   Nov 12, 2014 KZ: added: _UpstreamConnected and _MainOutletConnected flags; UpstreamConnected() and
+#                           MainOutletConnected() functions
+#   Sep 26, 2014 KZ: removed test code
+#   June 29, 2014 KZ: Added GetXXX() definitions for solids and COD summary. 
+#   March 15, 2014 KZ: AddUpstreamUnit(), RemoveUpstreamUnit(), and SetDownstreamMainUnit() begin here
+#   March 08, 2014 KZ: Rewrite according to the new class structure
+#   December 07, 2013 Kai Zhang
 
 
 import base, constants
@@ -44,6 +46,14 @@ class Pipe(base.Base):
         # _MainOutlet is a SINGLE unit that receives all the flows from the
         # current unit
         self._MainOutlet = None #By default this is the MAIN OUTLET.
+        
+        # _UpstreamConnected is a Boolean flag to indicate whether there are upstream units
+        self._UpstreamConnected = False
+
+        # _MainOutletConnected is a Boolean flag to indicate whether there are units 
+        #   in MAIN downstream
+        self._MainOutletConnected = False
+
         self._TotalFlow = 0.0 #This is the Total Inflow, which is the same as the outflow for Pipe
         # _TotalFlowUpdated is a Boolean flag to indicate whether _TotalFlow has been updated
         self._FlowTotalized = False
@@ -67,7 +77,8 @@ class Pipe(base.Base):
         # _EffComp[11]: X_NS,
         # _EffComp[12]: S_ALK
         print self.__name__,' initialized successfully.'
- 
+    # End of __init__()
+
     def AddUpstreamUnit(self, SingleDischarger):
         '''Add a single upstream unit to the current unit'''
         if not self._Inlet.has_key(SingleDischarger): 
@@ -79,6 +90,7 @@ class Pipe(base.Base):
             # and blend the components before passing them into the current unit.
             self._FlowTotalized= False
             self._ComponentsBlended = False
+            self._UpstreamConnected = True
             SingleDischarger.SetDownstreamMainUnit(self)
 
     def RemoveUpstreamUnit(self, SingleDischarger):
@@ -86,14 +98,14 @@ class Pipe(base.Base):
         self._Inlet.pop(SingleDischarger)
         self._FlowTotalized = False
         self._ComponentsBlended = False
+        self._UpstreamConnected = False
         SingleDischarger.SetDownstreamMainUnit(None)
 
     def SetDownstreamMainUnit(self, SingleReceiver):
         ''' Set the downstream unit that will receive effluent from the current unit'''
         if self._MainOutlet != SingleReceiver: #if the specified SingleReceiver has not been added
-            self._MainOutlet = SingleReceiver 
-            #self._FlowTotalized = False
-            #self._ComponentsBlended = False
+            self._MainOutlet = SingleReceiver
+            self._MainOutletConnected = True
             if SingleReceiver != None:
                 SingleReceiver.AddUpstreamUnit(self)
 
@@ -160,6 +172,14 @@ class Pipe(base.Base):
         if self._MainOutlet != None:
             #TODO: need to make sure the downstream unit Get the current unit's info 
             self.GetDownstreamMainUnit().UpdateCombinedInput()
+    
+    def UpstreamConnected(self):
+        ''' Get the status of upstream connection'''
+        return self._UpstreamConnected
+
+    def MainOutletConnected(self):
+        ''' Get the status of downstream main connection'''
+        return self._MainOutletConnected
 
     def _sumHelper(self, ListOfIndex=[]):
         ''' sum up the model components indicated by the ListOfIndex '''
