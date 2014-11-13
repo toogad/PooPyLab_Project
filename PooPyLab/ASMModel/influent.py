@@ -19,11 +19,14 @@
 #    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
 #
 # 
-#    Definition of the plant Influent unit
+#    Definition of the plant Influent unit.
+#
 # Change Log:
-#    October 19, 2014 KZ: removed test code
-#    March 15, 2014: KZ: redefined for the new class structure.
-#    December 07, 2013 Kai Zhang: first draft
+#   November 12, 2014 KZ: added _MainOutletConnected flag 
+#                           and MainOutletConnected() function
+#   October 19, 2014 KZ: removed test code
+#   March 15, 2014: KZ: redefined for the new class structure.
+#   December 07, 2013 Kai Zhang: first draft
 
 
 import base, constants
@@ -34,7 +37,6 @@ class Influent(base.Base):
     def __init__(self):
         self.__class__.__id += 1
         self.__name__ = "Influent_" + str(self.__id)
-        print self.__name__,' initialized successfully.'
 
         # Store the influent characteristics in a list()
         # For ASM #1:
@@ -74,6 +76,11 @@ class Influent(base.Base):
 
         # Store the unit that receives the plant influent
         self._Outlet = None
+        
+        # _MainOutletConnected is to store the status about whether there is a
+        #   downstream unit.
+        self._MainOutletConnected = False
+
         print self.__name__,' initialized successfully.'
 
     def GetUpstreamUnits(self):
@@ -86,11 +93,14 @@ class Influent(base.Base):
         ''' Set the downstream unit that will receive effluent from the current unit'''
         if self._Outlet != SingleReceiver: #if the specified SingleReceiver has not been added
             self._Outlet = SingleReceiver 
-            #self._FlowTotalized = False
-            #self._ComponentsBlended = False
+            self._MainOutletConnected = True
             if SingleReceiver != None:
                 SingleReceiver.AddUpstreamUnit(self)
     
+    def MainOutletConnected(self):
+        ''' Return the status of outlet connection'''
+        return self._MainOutletConnected
+
     def GetDownstreamMainUnit(self):
         ''' Get the single unit downstream of the current one
             Return Type: base.Base
