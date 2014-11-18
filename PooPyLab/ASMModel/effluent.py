@@ -41,6 +41,8 @@ class Effluent(pipe.Pipe):
         pipe.Pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Effluent_" + str(self.__id)
-        print self.__name__
+        self._MainOutletConnected = True
+        print self.__name__, "initialized successfully."
 
+        
 
