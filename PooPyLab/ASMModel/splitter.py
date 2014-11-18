@@ -23,11 +23,13 @@
 #This file provides the definition of Splitter.
 #
 #Update Log:
-#    Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
-#    April 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
-#    April 18, 2014 KZ: Rewrite definition based on the new class system structure
-#    December 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
-#    December 07, 2013
+#   November 18, 2014 KZ: renamed "SideStream" into "Sidestream";
+#                           Added _SidestreamConnected and SideOutletConnected()
+#   Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
+#   April 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
+#   April 18, 2014 KZ: Rewrite definition based on the new class system structure
+#   December 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
+#   December 07, 2013
 #
 
 import pipe, branch 
@@ -41,8 +43,8 @@ class Splitter(pipe.Pipe):
         self.__class__.__id += 1
         self.__name__ = "Splitter_" + str(self.__id)
         
-        self.SideStream = branch.Branch()
-        self.SideStream.SetFlow(0.0)
+        self.Sidestream = branch.Branch()
+        self.Sidestream.SetFlow(0.0)
 
         #the main outlet is defined in pipe.Pipe as self._MainOutlet
         # therefore add the _SideOutlet only here.
@@ -51,8 +53,10 @@ class Splitter(pipe.Pipe):
         # self._TotalFlow has been defined in pipe.Pipe() as the total INFLOW
         # to the Splitter
         self._MainOutletFlow = 0.0
-        self._SideOutletFlow = self.SideStream.GetOutletFlow()
-
+        self._SideOutletFlow = self.Sidestream.GetOutletFlow()
+        
+        self._SidestreamConnected = False
+        
         self._SRTController = False
         print self.__name__, "initialized successfully."
     
@@ -74,19 +78,20 @@ class Splitter(pipe.Pipe):
         for unit in self._Inlet:
             self._TotalFlow += self._Inlet[unit]
         #TODO: Need to pay close attention to the flow balance below during runtime
-        self.SideStream.TotalizeFlow()
-        self._SideOutletFlow = self.SideStream.GetOutletFlow()
+        self.Sidestream.TotalizeFlow()
+        self._SideOutletFlow = self.Sidestream.GetOutletFlow()
         self._MainOutletFlow = self._TotalFlow - self._SideOutletFlow
         self._FlowTotalized = True
 
-    def SetupSideStream(self, Receiver, Flow):
-        self.SideStream.SetFlow(Flow)
-        self.SideStream.SetDownstreamMainUnit(Receiver)
-        self._SideOutletFlow = self.SideStream.GetOutletFlow()
+    def SetupSidestream(self, Receiver, Flow):
+        self.Sidestream.SetFlow(Flow)
+        self.Sidestream.SetDownstreamMainUnit(Receiver)
+        self._SidestreamConnected = self.Sidestream.MainOutletConnected()
+        self._SideOutletFlow = self.Sidestream.GetOutletFlow()
         self._FlowTotalized = False
 
     def GetDownstreamSideUnit(self):
-        return self.SideStream.GetDownstreamMainUnit()
+        return self.Sidestream.GetDownstreamMainUnit()
 
     def Discharge(self):
         ''' Pass the total flow and blended components to the next unit.
@@ -94,9 +99,9 @@ class Splitter(pipe.Pipe):
             concentratons.
         '''
         self.UpdateCombinedInput()
-        if self._MainOutlet != None and self.SideStream.GetDownstreamMainUnit() != None:
+        if self._MainOutlet != None and self.Sidestream.GetDownstreamMainUnit() != None:
             self.GetDownstreamMainUnit().UpdateCombinedInput()
-            self.SideStream.Discharge() 
+            self.Sidestream.Discharge() 
         else:
             print "ERROR: ", self.__name__, " downstream unit setup not complete"
 
@@ -106,6 +111,9 @@ class Splitter(pipe.Pipe):
             Return type: boolean
         '''
         return True 
+    
+    def SideOutletConnected(self):
+        return self._SidestreamConnected
 
     #def GetWAS(self, WWTP, TargetSRT): 
     #    '''Get the mass of DRY solids to be wasted (WAS) in KiloGram'''
