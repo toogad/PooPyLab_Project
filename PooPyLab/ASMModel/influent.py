@@ -22,6 +22,7 @@
 #    Definition of the plant Influent unit.
 #
 # Change Log:
+#   November 18, 2014 KZ: Added UpstreamConnected() and set to True
 #   November 12, 2014 KZ: added _MainOutletConnected flag 
 #                           and MainOutletConnected() function
 #   October 19, 2014 KZ: removed test code
@@ -96,6 +97,10 @@ class Influent(base.Base):
             self._MainOutletConnected = True
             if SingleReceiver != None:
                 SingleReceiver.AddUpstreamUnit(self)
+    
+    def UpstreamConnected(self):
+        '''Placeholder, always return True for Influent as it doesn't need an upstream unit'''
+        return True
     
     def MainOutletConnected(self):
         ''' Return the status of outlet connection'''
