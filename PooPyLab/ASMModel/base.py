@@ -23,13 +23,14 @@
 #   reactors.
 #
 #   Update Log:
-#    June 29, 2014 KZ: Replace Interpret() with GetXXXX() functions
-#    June 28, 2014 KZ: Added GetTSS(), getTotalCOD(), and getSoluableCOD()
-#    March 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and SetDownstreamUnit() to Pipe()
-#    March 06, 2014 KZ: Re-wrote the common interface and change Base into an abstract class
-#    December 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
-#    December 17, 2013 KZ: added _PrevComp[0:12] to store state variables from previous iteration
-#    December 07, 2013 Kai Zhang (KZ)
+#   November 20, 2014 KZ: Added UpstreamConnected() and MainOutletConnected() 
+#   June 29, 2014 KZ: Replace Interpret() with GetXXXX() functions
+#   June 28, 2014 KZ: Added GetTSS(), getTotalCOD(), and getSoluableCOD()
+#   March 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and SetDownstreamMainUnit() to Pipe()
+#   March 06, 2014 KZ: Re-wrote the common interface and change Base into an abstract class
+#   December 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
+#   December 17, 2013 KZ: added _PrevComp[0:12] to store state variables from previous iteration
+#   December 07, 2013 Kai Zhang (KZ)
 
 
 
@@ -165,4 +166,14 @@ class Base(object):
         ''' Return inorganic nitrogen of the unit '''
         pass
 
+    @abstractmethod
+    def UpstreamConnected(self):
+        ''' Return True if upstream is connected, False if not'''
+        pass
 
+    @abstractmethod
+    def MainOutletConnected(self):
+        ''' Return True if the downstream main outlet is connected,
+            False if not.
+        '''
+        pass
