@@ -22,6 +22,7 @@
 #This is the definition of the Pipe() object, which is basically the Base()
 #
 #Update Log:
+#   Nov 23, 2014 KZ: revised RemoveUpstreamUnit() to check availability to the upstream unit specified
 #   Nov 12, 2014 KZ: added: _UpstreamConnected and _MainOutletConnected flags; UpstreamConnected() and
 #                           MainOutletConnected() functions
 #   Sep 26, 2014 KZ: removed test code
@@ -95,11 +96,13 @@ class Pipe(base.Base):
 
     def RemoveUpstreamUnit(self, SingleDischarger):
         ''' Remove a single upstream unit from feeding into the current unit'''
-        self._Inlet.pop(SingleDischarger)
-        self._FlowTotalized = False
-        self._ComponentsBlended = False
-        self._UpstreamConnected = False
-        SingleDischarger.SetDownstreamMainUnit(None)
+        if self._Inlet.has_key(SingleDischarger):
+            self._Inlet.pop(SingleDischarger)
+            self._FlowTotalized = False
+            self._ComponentsBlended = False
+            self._UpstreamConnected = False
+            SingleDischarger.SetDownstreamMainUnit(None)
+
 
     def SetDownstreamMainUnit(self, SingleReceiver):
         ''' Set the downstream unit that will receive effluent from the current unit'''
