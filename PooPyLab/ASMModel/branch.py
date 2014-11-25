@@ -24,15 +24,16 @@
 # It is just a wrapper of the Influent class.
 
 # Change Log:
-#   2014.04.27 KZ: Initial committ
+#   2014.11.24 KZ: corrected initialization and naming of the branch 
+#   2014.04.27 KZ: Initial commit
 
 import influent
 
 class Branch(influent.Influent):
     __id = 0
     def __init__(self):
+        influent.Influent.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'Branch_' + str(self.__id)
-        influent.Influent.__init__(self)
         print self.__name__,' initialized successfully.'
 
