@@ -7,6 +7,10 @@
 
 import influent, effluent, was, splitter, reactor, clarifier, pipe
 #import constants
+import os
+
+os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def CheckPlantConnection(WWTP = []):
     LooseEnd = 0
@@ -36,11 +40,12 @@ def CheckUpstream(WWTP = []):
         print unit.__name__, "'s upstream has ",
         if unit.GetUpstreamUnits():
             upstr = unit.GetUpstreamUnits().keys()
+            for element in upstr:
+                print element.__name__, "; ",
+            print
         else:
             print None
-        for element in upstr:
-            print element.__name__, "; ",
-        print
+        
 # End of CheckUpstream()
 
 def CheckDownstream(WWTP = []):
@@ -149,7 +154,7 @@ Reactor1.RemoveUpstreamUnit(Pipe1)
 Pipe5.RemoveUpstreamUnit(Splt1)
 WAS1.RemoveUpstreamUnit(Pipe6)
 Splt1.RemoveUpstreamUnit(Pipe4)
-Pipe6.RemoveUpstreamUnit(Splt1.Sidestream) # TODO: HOW ARE WE GOING TO HANDLE THIS WHEN WORKING WITH GUI???
+Pipe6.RemoveUpstreamUnit(Splt1) 
 Clar1.RemoveUpstreamUnit(Pipe2)
 Pipe2.RemoveUpstreamUnit(Reactor1)
 Eff.RemoveUpstreamUnit(Pipe3)
@@ -160,4 +165,11 @@ CheckPlantConnection(WWTP)
 CheckUpstream(WWTP)
 print
 CheckDownstream(WWTP)
+
+print "Reconnecting..."
+ConnectWWTPUnits()
+CheckPlantConnection(WWTP)
+CheckUpstream(WWTP)
+CheckDownstream(WWTP)
+
 print "End Disconnection Test."
