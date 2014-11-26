@@ -83,7 +83,7 @@ class Pipe(base.Base):
 
     def AddUpstreamUnit(self, SingleDischarger):
         '''Add a single upstream unit to the current unit'''
-        if not self._Inlet.has_key(SingleDischarger): 
+        if SingleDischarger not in self._Inlet:
             self._Inlet[SingleDischarger] = 0.0
             # Line above: Setting the flow to 0.0 is a place-holder when 
             # setting up the Process Flow Diagram, because the actual total flow from
@@ -97,13 +97,7 @@ class Pipe(base.Base):
 
     def RemoveUpstreamUnit(self, SingleDischarger):
         ''' Remove a single upstream unit from feeding into the current unit'''
-#        if self._Inlet.has_key(SingleDischarger):
-#            self._Inlet.pop(SingleDischarger)
-#            self._FlowTotalized = False
-#            self._ComponentsBlended = False
-#            self._UpstreamConnected = False
-#            SingleDischarger.SetDownstreamMainUnit(None)
-        if self._Inlet.has_key(SingleDischarger):
+        if SingleDischarger in self._Inlet:
             if SingleDischarger.HasSidestream() and \
                     SingleDischarger.Sidestream.GetDownstreamMainUnit() == self:
                 self._Inlet.pop(SingleDischarger.Sidestream)
