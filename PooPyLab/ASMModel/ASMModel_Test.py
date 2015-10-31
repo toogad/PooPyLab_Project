@@ -1,70 +1,20 @@
+#!/usr/bin/env python
 
 # This is a test program for the PooPyLab biological wastewater treatment
 # software package.
 # The main objective of this test program is to connect units and find out
 # if they can communicate with each other appropriately. The main 
 # indicators will be the flow balance among all units.
+#   Last Update:
+#   June 24, 2015 KZ: rewrote a lines influenced by the updated Splitter
+#       and Pipe classes
 
 import influent, effluent, was, splitter, reactor, clarifier, pipe
+from Test_Functions3 import *
 #import constants
 import os
 
 os.system('cls' if os.name == 'nt' else 'clear')
-
-
-def CheckPlantConnection(WWTP = []):
-    LooseEnd = 0
-    for unit in WWTP:
-        if not unit.UpstreamConnected():
-            print unit.__name__,"'s upstream is not connected"
-            LooseEnd += 1
-        if unit.HasSidestream():
-            if not unit.SideOutletConnected():
-                print unit.__name__ ,"'s sidestream is not connected"
-                LooseEnd += 1
-        elif not unit.MainOutletConnected():
-            print unit.__name__,"'s main downstream is not connected"
-            LooseEnd += 1 
-    if not LooseEnd:
-        print "WWTP is ready for simulation"
-    else:
-        print LooseEnd, " connecton(s) to be fixed."
-# End of CheckPlantConnection()
-
-
-def CheckUpstream(WWTP = []):
-    ''' Check the upstream connection of units in WWTP'''
-    print "Checking units' upstream processes..."
-    for unit in WWTP:
-        upstr = []
-        print unit.__name__, "'s upstream has ",
-        if unit.GetUpstreamUnits():
-            upstr = unit.GetUpstreamUnits().keys()
-            for element in upstr:
-                print element.__name__, "; ",
-            print
-        else:
-            print None
-        
-# End of CheckUpstream()
-
-def CheckDownstream(WWTP = []):
-    ''' Check the downstream connection of units in WWTP'''
-    print "Checking units' downstream processes..."
-    for unit in WWTP:
-        print unit.__name__, "'s Main downstream has ", 
-        if unit.GetDownstreamMainUnit():
-            print unit.GetDownstreamMainUnit().__name__
-        else:
-            print None
-        if unit.HasSidestream():
-            print unit.__name__, "'s Side downstream has ", 
-            if unit.GetDownstreamSideUnit():
-                print unit.GetDownstreamSideUnit().__name__
-            else:
-                print None
-    print
-# End of CheckDownstream()
 
 WWTP = []
 
@@ -93,7 +43,6 @@ Inf.SetFlow(10)#TODO: Units to be noted in ''' ''' if a function asks for params
 
 #------------Connection Test------------
 def ConnectWWTPUnits():
-    print "Begin Connection Test..."
 
     WWTP.append(Inf)
 
@@ -115,7 +64,9 @@ def ConnectWWTPUnits():
     Pipe3.SetDownstreamMainUnit(Eff)
     WWTP.append(Eff)
 
-    Clar1.SetupSidestream(Pipe4, 5)
+    #Clar1.SetupSidestream(Pipe4, 5)
+    Clar1.SetDownstreamSideUnit(Pipe4)
+    Clar1.SetSidestreamFlow(5)
     WWTP.append(Pipe4)
 
     Pipe4.SetDownstreamMainUnit(Splt1)
@@ -126,7 +77,9 @@ def ConnectWWTPUnits():
 
     Pipe5.SetDownstreamMainUnit(Reactor1)
 
-    Splt1.SetupSidestream(Pipe6, 1)
+    #Splt1.SetupSidestream(Pipe6, 1)
+    Splt1.SetDownstreamSideUnit(Pipe6)
+    Splt1.SetSidestreamFlow(1)
     WWTP.append(Pipe6)
 
     Splt1.SetAsSRTController(True)
@@ -136,6 +89,9 @@ def ConnectWWTPUnits():
 #End of ConnectWWTPUnits()
 
 
+response = raw_input("continue?")
+
+print "Begin Connection Test..."
 
 ConnectWWTPUnits()
 CheckPlantConnection(WWTP)
@@ -143,6 +99,7 @@ CheckUpstream(WWTP)
 CheckDownstream(WWTP)
 print "End Connection Test"
 # Connection Test Summary: SO FAR SO GOOD!!
+response = raw_input("continue?")
 
 #------------Disconnection Test---------
 # PooPyLab is NOT Microsoft Visio. If the user is to re-direct the connected pipe to another 
@@ -165,11 +122,22 @@ CheckPlantConnection(WWTP)
 CheckUpstream(WWTP)
 print
 CheckDownstream(WWTP)
+response = raw_input("continue?")
 
 print "Reconnecting..."
+WWTP = []
 ConnectWWTPUnits()
 CheckPlantConnection(WWTP)
 CheckUpstream(WWTP)
 CheckDownstream(WWTP)
 
 print "End Disconnection Test."
+response = raw_input("continue?")
+print len(WWTP) 
+#The connection test, disconnection test, and reconnection of the WWTP show that the 
+# PooPyLab classes were capable of communicate to one another in terms of upstream
+# and downstream relations.
+
+print "=====Begin Receive and Discharge Tests==========="
+
+
