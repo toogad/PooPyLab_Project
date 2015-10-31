@@ -23,6 +23,15 @@
 #This file provides the definition of Splitter.
 #
 #Update Log:
+#   June 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
+#   June 23, 2015 KZ: Rewrote sidestream to eliminate Branch class
+#   June 18, 2015 KZ: Removed _PreFix and _Group status and 
+#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus;
+#                       Renamed _Done to _Visited and SetAs(Is)Done() to
+#                       SetAs(Is)Visited()
+#   March 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
+#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
+#                       SetAs(Is)Done().
 #   November 18, 2014 KZ: renamed "SideStream" into "Sidestream";
 #                           Added _SidestreamConnected and SideOutletConnected()
 #   Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
@@ -32,7 +41,7 @@
 #   December 07, 2013
 #
 
-import pipe, branch 
+import pipe 
 
 
 class Splitter(pipe.Pipe):
@@ -42,21 +51,23 @@ class Splitter(pipe.Pipe):
         pipe.Pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Splitter_" + str(self.__id)
-        
-        self.Sidestream = branch.Branch()
-        self.Sidestream.SetFlow(0.0)
+
+        #self._Sidestream = None
+        #self.Sidestream.SetFlow(0.0)
 
         #the main outlet is defined in pipe.Pipe as self._MainOutlet
         # therefore add the _SideOutlet only here.
         self._SideOutlet = None
         
-        # self._TotalFlow has been defined in pipe.Pipe() as the total INFLOW
-        # to the Splitter
         self._MainOutletFlow = 0.0
-        self._SideOutletFlow = self.Sidestream.GetOutletFlow()
+        self._SideOutletFlow = 0.0
         
-        self._SidestreamConnected = False
-        
+        self._SideOutletConnected = False
+
+        # _Visited is True/False on whether the loop finding process has finished
+        #   analyzing the unit
+        self._Visited = False
+       
         self._SRTController = False
         print self.__name__, "initialized successfully."
     
@@ -71,6 +82,10 @@ class Splitter(pipe.Pipe):
         self._SRTController = setting
         #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
 
+    def SetSidestreamFlow(self, Flow):
+        self._SideOutletFlow = Flow
+        #TODO: Need to be able to dynamically update the sidestream flow
+    
     def TotalizeFlow(self):
         ''' totalize the flow for the Splitter unit,
         '''
@@ -78,20 +93,22 @@ class Splitter(pipe.Pipe):
         for unit in self._Inlet:
             self._TotalFlow += self._Inlet[unit]
         #TODO: Need to pay close attention to the flow balance below during runtime
-        self.Sidestream.TotalizeFlow()
-        self._SideOutletFlow = self.Sidestream.GetOutletFlow()
+        #self.Sidestream.TotalizeFlow()
+        #self._SideOutletFlow = self.Sidestream.GetOutletFlow()
         self._MainOutletFlow = self._TotalFlow - self._SideOutletFlow
         self._FlowTotalized = True
 
-    def SetupSidestream(self, Receiver, Flow):
-        self.Sidestream.SetFlow(Flow)
-        self.Sidestream.SetDownstreamMainUnit(Receiver)
-        self._SidestreamConnected = self.Sidestream.MainOutletConnected()
-        self._SideOutletFlow = self.Sidestream.GetOutletFlow()
-        self._FlowTotalized = False
 
+    def SetDownstreamSideUnit(self, SingleReceiver):
+        ''' Set the sidestream unit that will receive effluent from the current unit'''
+        if self._SideOutlet != SingleReceiver:
+            self._SideOutlet = SingleReceiver
+            self._SideOutletConnected = True
+            if SingleReceiver != None:
+                SingleReceiver.AddUpstreamUnit(self, "Side")#TODO: OKAY??
+                
     def GetDownstreamSideUnit(self):
-        return self.Sidestream.GetDownstreamMainUnit()
+        return self._SideOutlet
 
     def Discharge(self):
         ''' Pass the total flow and blended components to the next unit.
@@ -99,9 +116,9 @@ class Splitter(pipe.Pipe):
             concentratons.
         '''
         self.UpdateCombinedInput()
-        if self._MainOutlet != None and self.Sidestream.GetDownstreamMainUnit() != None:
+        if self._MainOutlet != None and self._Sidestream != None:
             self.GetDownstreamMainUnit().UpdateCombinedInput()
-            self.Sidestream.Discharge() 
+            self.GetDownstreamSideUnit().UpdateCombinedInput() 
         else:
             print "ERROR: ", self.__name__, " downstream unit setup not complete"
 
@@ -113,8 +130,14 @@ class Splitter(pipe.Pipe):
         return True 
     
     def SideOutletConnected(self):
-        return self._SidestreamConnected
+        return self._SideOutletConnected
 
+    def SetAsVisited(self, Status = False):
+        self._Visited = Status
+
+    def IsVisited(self):
+        return self._Visited
+ 
     #def GetWAS(self, WWTP, TargetSRT): 
     #    '''Get the mass of DRY solids to be wasted (WAS) in KiloGram'''
     #    #WWTP is a list that stores all the process units
