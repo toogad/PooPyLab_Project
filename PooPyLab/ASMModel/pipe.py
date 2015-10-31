@@ -22,6 +22,14 @@
 #This is the definition of the Pipe() object, which is basically the Base()
 #
 #Update Log:
+#   June 24, 2015 KZ: Updated AddUpstreamUnit() to differential main/side 
+#   June 16, 2015 KZ: Removed _PreFix, _Group status and 
+#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus.
+#                       Renamed _Done to _Visited, SetAs(Is)Visited() to
+#                       SetAs(Is)Visited()
+#   March 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
+#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
+#                       SetAs(Is)Done().
 #   Nov 24, 2014 KZ: revised RemoveUpstreamUnit() to be able to remove units with sidestream
 #   Nov 23, 2014 KZ: revised RemoveUpstreamUnit() to check availability to the upstream unit specified
 #   Nov 12, 2014 KZ: added: _UpstreamConnected and _MainOutletConnected flags; UpstreamConnected() and
@@ -63,6 +71,10 @@ class Pipe(base.Base):
         # _ComponentsBlended is a Boolean flag to indicate whether _EffComp[] have been blended
         self._ComponentsBlended = False
 
+        # _Visited is True/False on whether the loop finding process has finished
+        #   analyzing the unit
+        self._Visited = False
+
         #  THIS IS WHERE THE CURRENT STATE OF THE REACTOR IS STORED:
         self._EffComp = [0.0] * constants._NUM_ASM1_COMPONENTS
         # _EffComp[0]: X_I,
@@ -81,7 +93,7 @@ class Pipe(base.Base):
         print self.__name__,' initialized successfully.'
     # End of __init__()
 
-    def AddUpstreamUnit(self, SingleDischarger):
+    def AddUpstreamUnit(self, SingleDischarger, Branch = 'Main'): 
         '''Add a single upstream unit to the current unit'''
         if SingleDischarger not in self._Inlet:
             self._Inlet[SingleDischarger] = 0.0
@@ -93,15 +105,18 @@ class Pipe(base.Base):
             self._FlowTotalized= False
             self._ComponentsBlended = False
             self._UpstreamConnected = True
-            SingleDischarger.SetDownstreamMainUnit(self)
+            if Branch == 'Main':
+                SingleDischarger.SetDownstreamMainUnit(self)
+            elif Branch == 'Side':
+                SingleDischarger.SetDownstreamSideUnit(self)
 
     def RemoveUpstreamUnit(self, SingleDischarger):
         ''' Remove a single upstream unit from feeding into the current unit'''
         if SingleDischarger in self._Inlet:
             if SingleDischarger.HasSidestream() and \
-                    SingleDischarger.Sidestream.GetDownstreamMainUnit() == self:
-                self._Inlet.pop(SingleDischarger.Sidestream)
-                SingleDischarger.Sidestream.SetDownstreamMainUnit(None)
+                    SingleDischarger.GetDownstreamSideUnit() == self:
+                self._Inlet.pop(SingleDischarger)
+                SingleDischarger.SetDownstreamSideUnit(None)
             else:
                 self._Inlet.pop(SingleDischarger)
                 SingleDischarger.SetDownstreamMainUnit(None)
@@ -111,7 +126,7 @@ class Pipe(base.Base):
 
 
     def SetDownstreamMainUnit(self, SingleReceiver):
-        ''' Set the downstream unit that will receive effluent from the current unit'''
+        ''' Set the mainstream unit that will receive effluent from the current unit'''
         if self._MainOutlet != SingleReceiver: #if the specified SingleReceiver has not been added
             self._MainOutlet = SingleReceiver
             self._MainOutletConnected = True
@@ -189,6 +204,12 @@ class Pipe(base.Base):
     def MainOutletConnected(self):
         ''' Get the status of downstream main connection'''
         return self._MainOutletConnected
+
+    def SetAsVisited(self, Status = False):
+        self._Visited = Status
+
+    def IsVisited(self):
+        return self._Visited
 
     def _sumHelper(self, ListOfIndex=[]):
         ''' sum up the model components indicated by the ListOfIndex '''
