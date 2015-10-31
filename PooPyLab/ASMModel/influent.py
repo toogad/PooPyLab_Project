@@ -22,6 +22,13 @@
 #    Definition of the plant Influent unit.
 #
 # Change Log:
+#   June 16, 2015 KZ: Removed _PreFix, _Group status and 
+#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus;
+#                       Renamed _Done to _Visited, SetAs(Is)Done() to
+#                       SetAs(Is)Visited().
+#   March 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
+#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
+#                       SetAs(Is)Done().
 #   November 18, 2014 KZ: Added UpstreamConnected() and set to True
 #   November 12, 2014 KZ: added _MainOutletConnected flag 
 #                           and MainOutletConnected() function
@@ -82,6 +89,19 @@ class Influent(base.Base):
         #   downstream unit.
         self._MainOutletConnected = False
 
+        # _PreFix is True/False on whether the unit is already visited by the loop
+        #   finding process
+        self._PreFix = False
+
+        # _Group is '' (empty string) if the unit has not been assigned to any 
+        #   specific group by the loop finding process.
+        # If the unit has been assigned to a group, _Group will record the group ID.
+        self._Group = ''
+
+        # _Visited is True/False on whether the loop finding process has finished
+        #   analyzing the unit
+        self._Visited = False
+        
         print self.__name__,' initialized successfully.'
 
     def GetUpstreamUnits(self):
@@ -112,6 +132,12 @@ class Influent(base.Base):
         '''
         return self._Outlet
 
+    def SetAsVisited(self, Status = False):
+        self._Visited = Status
+
+    def IsVisited(self):
+        return self._Visited
+    
     def TotalizeFlow(self):
         ''' Totalize all the flows entering the current unit.
             Return type: NO Return
@@ -270,5 +296,4 @@ class Influent(base.Base):
     def GetInorganicN(self):
         ''' Return inorganic nitrogen of the unit '''
         return self._InfComp[8] + self._InfComp[9] 
-
 
