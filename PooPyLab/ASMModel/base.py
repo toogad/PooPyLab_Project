@@ -23,13 +23,21 @@
 #   reactors.
 #
 #   Update Log:
+#   June 16, 2015 KZ: Removed Set(Get)PreFix(), Set(Get)Group();
+#                       Renamed SetAs(Is)Done() to SetAs(Is)Visited()
+#   March 20, 2015 KZ: Added Set(Get)PreFix(), Set(Get)Group(), 
+#                       SetAs(Is)Done() for tracking status in loop finding
 #   November 20, 2014 KZ: Added UpstreamConnected() and MainOutletConnected() 
 #   June 29, 2014 KZ: Replace Interpret() with GetXXXX() functions
 #   June 28, 2014 KZ: Added GetTSS(), getTotalCOD(), and getSoluableCOD()
-#   March 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and SetDownstreamMainUnit() to Pipe()
-#   March 06, 2014 KZ: Re-wrote the common interface and change Base into an abstract class
-#   December 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
-#   December 17, 2013 KZ: added _PrevComp[0:12] to store state variables from previous iteration
+#   March 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and 
+#                       SetDownstreamMainUnit() to Pipe()
+#   March 06, 2014 KZ: Re-wrote the common interface and change Base into an 
+#                       abstract class
+#   December 25, 2013 KZ: commented out the BlendComponent() function in 
+#                       ReceiveFrom()
+#   December 17, 2013 KZ: added _PrevComp[0:12] to store state variables from 
+#                       previous iteration
 #   December 07, 2013 Kai Zhang (KZ)
 
 
@@ -177,3 +185,17 @@ class Base(object):
             False if not.
         '''
         pass
+
+    @abstractmethod
+    def SetAsVisited(self, Status):
+        ''' Set the unit as True when done visiting it in the loop finding
+            process. Status = False by default.
+        '''
+        pass
+
+    @abstractmethod
+    def IsVisited(self):
+        ''' Return True if the unit is labelled as visited, False otherwise '''
+        pass
+
+
