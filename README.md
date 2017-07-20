@@ -35,7 +35,7 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
 
 1.2 RUNNING ENVIRONMENT:
 
-    1)  Python 2.7
+    1)  Python 3
     
     2)  SciPy & NumPy
     
