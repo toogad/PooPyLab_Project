@@ -1,9 +1,10 @@
 #   This file is part of PooPyLab.
 #
 #    PooPyLab is a simulation software for biological wastewater treatment
-#    processes using the International Water Association Activated Sludge Models.
+#    processes using the International Water Association Activated Sludge md
+#    Models.
 #   
-#    Copyright (C) 2014  Kai Zhang
+#    Copyright (C) 2014, 2015, 2016, 2017  Kai Zhang
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,6 +24,8 @@
 #   reactors.
 #
 #   Update Log:
+#   July 201, 2017 KZ: made it more pythonic
+#   March 21, 2017 KZ: Migrated to Python3
 #   June 16, 2015 KZ: Removed Set(Get)PreFix(), Set(Get)Group();
 #                       Renamed SetAs(Is)Done() to SetAs(Is)Visited()
 #   March 20, 2015 KZ: Added Set(Get)PreFix(), Set(Get)Group(), 
@@ -44,39 +47,40 @@
 
 from abc import ABCMeta, abstractmethod 
 
-class Base(object):
+class base(object):
     ''' 
-    Base() Object defines the common interfaces for all PooPyLab objects.
+    base() Object defines the common interfaces for all PooPyLab objects.
     '''
 
     
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def GetUpstreamUnits(self):
-        ''' Get the dict that stores all the upstream units that feed into current one
+    def get_upstream_units(self):
+        ''' Get the dict that stores all the upstream units that feed into
+            current one
             Return Type: dict
         '''
         pass
     
     @abstractmethod
-    def GetDownstreamMainUnit(self):
+    def get_downstream_main_unit(self):
         ''' Get the single unit downstream of the current one
             Return Type: base.Base
         '''
         pass
 
     @abstractmethod
-    def TotalizeFlow(self):
+    def totalize_flow(self):
         ''' Totalize all the flows entering the current unit.
             Return type: NO Return
         '''
         pass
 
     @abstractmethod
-    def BlendComponents(self):
+    def blend_components(self):
         '''
-            BlendComponents() for Base mixes the contents in all inlet
+            blend_components() for Base mixes the contents in all inlet
             components and send to the OUTLET, assuming no reaction
             takes palce.
             The definition is changed in ASMReactor where the mixture
@@ -85,26 +89,26 @@ class Base(object):
         pass
     
     @abstractmethod
-    def UpdateCombinedInput(self):
+    def update_combined_input(self):
         ''' Combined the flows and loads into the current unit'''
         pass
 
     @abstractmethod
-    def GetOutletFlow(self):
+    def get_outlet_flow(self):
         ''' Return the total out flow of the current unit (mainstream)
             Return value type: float/double
         '''
         pass
 
     @abstractmethod
-    def GetOutletConcentrations(self):
+    def get_outlet_concs(self):
         ''' Return the effluent concentrations of the current unit (mainstream)
             Return type: list
         '''
         pass
     
     @abstractmethod
-    def Discharge(self):
+    def discharge(self):
         ''' Pass the total flow and blended components to the next unit.
         '''
         pass
@@ -117,7 +121,7 @@ class Base(object):
     #    pass
     
     @abstractmethod
-    def HasSidestream(self):
+    def has_sidestream(self):
         ''' Check if the current unit has a sidestream discharge.
             Default = False, i.e. no sidestream
             Return type: boolean
@@ -125,76 +129,76 @@ class Base(object):
         pass
     
     @abstractmethod
-    def GetTSS(self):
+    def get_TSS(self):
         ''' Return the Total Suspsended Solids (TSS) in the unit '''
         pass
 
     @abstractmethod
-    def GetVSS(self):
+    def get_VSS(self):
         ''' Return the Volatile Suspended Solids (VSS) in the unit '''
         pass
 
     @abstractmethod
-    def GetTotalCOD(self):
-        ''' Return the Total COD (both soluable and particulate) in the unit '''
+    def get_total_COD(self):
+        ''' Return the Total COD (soluable and particulate) in the unit '''
         pass
 
     @abstractmethod
-    def GetSoluableCOD(self):
+    def get_soluble_COD(self):
         ''' Return the SOLUABLE COD in the unit '''
         pass
 
     @abstractmethod
-    def GetParticulateCOD(self):
+    def get_particulate_COD(self):
         ''' Return the PARTICULATE COD in the unit '''
         pass
     
     @abstractmethod
-    def GetTN(self):
+    def get_TN(self):
         ''' Return the Total Nitrogen of the unit '''
         pass
 
     @abstractmethod
-    def GetParticulateN(self):
+    def get_particulate_N(self):
         ''' Return organic nitrogen of the unit '''
         pass
 
     @abstractmethod
-    def GetSoluableN(self):
+    def get_soluble_N(self):
         ''' Return soluable nitrogen of the unit '''
         pass
 
     @abstractmethod
-    def GetOrganicN(self):
+    def get_organic_N(self):
         ''' Return organic nitrogen of the unit '''
         pass
 
     @abstractmethod
-    def GetInorganicN(self):
+    def get_inorganic_N(self):
         ''' Return inorganic nitrogen of the unit '''
         pass
 
     @abstractmethod
-    def UpstreamConnected(self):
+    def upstream_connected(self):
         ''' Return True if upstream is connected, False if not'''
         pass
 
     @abstractmethod
-    def MainOutletConnected(self):
+    def main_outlet_connected(self):
         ''' Return True if the downstream main outlet is connected,
             False if not.
         '''
         pass
 
     @abstractmethod
-    def SetAsVisited(self, Status):
+    def set_as_visited(self, Status):
         ''' Set the unit as True when done visiting it in the loop finding
             process. Status = False by default.
         '''
         pass
 
     @abstractmethod
-    def IsVisited(self):
+    def is_visited(self):
         ''' Return True if the unit is labelled as visited, False otherwise '''
         pass
 
