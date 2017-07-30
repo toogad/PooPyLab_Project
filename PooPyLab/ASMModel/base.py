@@ -4,7 +4,7 @@
 #    processes using the International Water Association Activated Sludge md
 #    Models.
 #   
-#    Copyright (C) 2014, 2015, 2016, 2017  Kai Zhang
+#    Copyright (C) Kai Zhang
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #   reactors.
 #
 #   Update Log:
-#   July 201, 2017 KZ: made it more pythonic
+#   July 21, 2017 KZ: made it more pythonic
 #   March 21, 2017 KZ: Migrated to Python3
 #   June 16, 2015 KZ: Removed Set(Get)PreFix(), Set(Get)Group();
 #                       Renamed SetAs(Is)Done() to SetAs(Is)Visited()
