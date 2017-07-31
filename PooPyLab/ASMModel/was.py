@@ -18,14 +18,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # 
-
-#    This is the definition of the WAS unit. WAS = Waste Activated Sludge
+#    This is the definition of the WAS class. WAS = Waste Activated Sludge
 #    The control of Solids Retention Time (SRT) is through the WAS object.
 #
 #    Author: Kai Zhang
 #
-
 # Update Log:
+# Jul 30, 2017 KZ: made code more pythonic
+# Mar 21, 2017 KZ: Migrated to Python3
 # Sep 26, 2014 KZ: Change inheritance back from Splitter to Effluent
 # Aug 25, 2014 KZ: Added InformSRTController function.
 # Aug 23, 2014 KZ: Changed its inheritance to Effluent;
@@ -35,53 +35,55 @@
     
 import effluent
 
-class WAS(effluent.Effluent): 
+class WAS(effluent.effluent): 
     __id = 0
     def __init__(self):
         
-        effluent.Effluent.__init__(self)
+        effluent.effluent.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'WAS_' + str(self.__id)
-        self._WASFlow = 0.0 #Unit: m3/d 
-        print self.__name__,' initialized successfully.'
+        self._WAS_flow = 0.0  # Unit: m3/d 
+        print(self.__name__,' initialized successfully.')
 
-    def GetSolidsInventory(self, ReactorList = []):
+    def get_solids_inventory(self, reactor_list=[]):
         ''' Calculate the total solids mass in active reactors '''
-        # ReactorList stores the ASMReactor units that contribute
+        # reactor_list stores the asm_reactor units that contribute
         # active biomass growth to the WWTP.
         # The result of this function will be used to determine the WAS
         # flow for the entire WWTP.
         #TODO: In the MAIN program, we will need to maintain a list of 
         # reactors that contribute active solids to the WWTP.
-        Inventory = 0.0
-        for unit in ReactorList:
-            #TODO: IMPORTANT TO CHECK ALL THE UNITS IN THE ReactorList
+        inventory = 0.0
+        for unit in reactor_list:
+            #TODO: IMPORTANT TO CHECK ALL THE UNITS IN THE reactor_list
             # HAD UPDATED TSS!!! THIS SHOULD BE THE CASE BECAUSE THE 
             # WAS UNIT IS THE LAST ELEMENT IN THE ITERATION LOOP. BUT
             # WILL NEED DOUBLE CHECK.
-            Inventory += unit.GetTSS() * unit.GetActiveVol()
-        Inventory = Inventory / 1000.0 # Convert unit to KiloGram
-        return Inventory
+            inventory += unit.get_TSS() * unit.get_active_vol()
+        inventory = inventory / 1000.0  # Convert unit to Kg
+        return inventory
 
-    def GetWASFlow(self, ReactorList = [], SRT = 1.0):
+    def get_WAS_flow(self, reactor_list=[], SRT=1):
         #SRT is the plant's SRT from user input
-        self.UpdateCombinedInput()
-        self._WASFlow = self.GetSolidsInventory(ReactorList) * 1000.0 \
-                        / SRT / self.GetTSS()
+        self.update_combined_input()
+        self._WAS_flow = self.get_solids_inventory(reactor_list) * 1000\
+                        / SRT / self.get_TSS()
         #TODO: in MAIN function, we need to check whether the WAS flow
         # is higher than the influent flow
-        return self._WASFlow
+        return self._WAS_flow
 
-    def InformSRTController(self):
+    def inform_SRT_controller(self):
         ''' Pass the WAS Flow to the upstream SRT Controlling Splitter '''
-        UpstreamUnit = self.GetUpstreamUnits().keys()
-        if len(UpstreamUnit) == 1 and isinstance(UpstreamUnit[0], splitter.Splitter):
-            if UpstreamUnit[0].IsSRTController():
-                UpstreamUnit[0].SetUpSidestream(self, self.GetWASFlow())
-                UpstreamUnit[0].TotalizeFlow()
-                UpstreamUnit[0].Discharge() #TODO: IS THIS LINE NEEDED??
+        upstream_unit = self.get_upstream_units().keys()
+        if len(upstream_unit) == 1 \
+                and isinstance(upstream_unit[0], splitter.splitter):
+            if upstream_unit[0].is_SRT_controller():
+                upstream_unit[0].setup_sidestream(self, self.get_WAS_flow())
+                upstream_unit[0].totalize_flow()
+                upstream_unit[0].discharge()  #TODO: IS THIS NEEDED??
             else:
-                print "The unit upstream of WAS is not SRT controlling"
+                print("The unit upstream of WAS is not SRT controlling")
         else:
-            print "Check the unit upstream of WAS. There shall be a splitter only"
+            print("Check the unit upstream of WAS.\
+                    There shall be a splitter only")
 
