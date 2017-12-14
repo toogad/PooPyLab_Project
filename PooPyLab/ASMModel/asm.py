@@ -3,7 +3,7 @@
 # PooPyLab is a simulation software for biological wastewater treatment
 # processes using International Water Association Activated Sludge Models.
 #
-#    Copyright (C) 2014, 2015, 2016, 2017  Kai Zhang
+#    Copyright (C) 2017  Kai Zhang
 #
 #    PooPyLab is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #    as part of the Reactor object
 #
 # Change Log:
+#    Dec 13, 2017 KZ: Fixed a few mismatched parentheses 
 #    Jul 20, 2017 KZ: Changed to pythonic style
 #    Mar 21, 2017 KZ: Changed to Python3
 #    Jun 07, 2014 KZ: Spelling Fix
@@ -58,7 +59,7 @@
 import constants
 from scipy.optimize import fsolve
 
-class ASM1(object):
+class ASM1():
 
     def __init__(self, Temp=20, DO=2):
 
@@ -67,15 +68,15 @@ class ASM1(object):
         
         # define the model parameters and stochoimetrics as dict() so that it
         # is easier to keep track of names and values
-        self._param = {}
-        self._stoich = {}
+        self._params = {}
+        self._stoichs = {}
         self._delta_t = 20 - self._temperature
         
         # define a Python Dictionary to store Parameters
-        self._param = self._set_params()
+        self._set_params()
         
         # define a Python Dictionary to store Stochoimetrics
-        self._stoich = self._set_stoichs()()
+        self._set_stoichs()
         
         # define a Python List to store ASM components
         # The Components the ASM components IN THE REACTOR. JULY 10, 2013
@@ -159,11 +160,11 @@ class ASM1(object):
         # Ratio of N in Debris Biomass (i_N_XD, mgN/mgDebrisBiomassCOD)
         self._params['i_N_XD'] = 0.06
 
-        return self._param
+        return None
     #=============================== End of Parameter Definition ==============
 
     # STOCHIOMETRIC MATRIX (Use the Table 6.1, p193, Grady Jr. et al 1999)
-    def _set_stoichs()(self):
+    def _set_stoichs(self):
 
         self._stoichs['0_2'] = 1
 
@@ -235,7 +236,7 @@ class ASM1(object):
 
         self._stoichs['7_11'] = -1
 
-        return self._stoich
+        return None
     ##=========================== End of Stoichiometrics =====================
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
@@ -347,7 +348,7 @@ class ASM1(object):
         return self._stoichs['0_9'] * self._r0_AerGH()\
                 + self._stoichs['1_9'] * self._r1_AxGH()\
                 + self._stoichs['2_9'] * self._r2_AerGA()\
-                + self._stoichs['5_9'] * self._r5_AmmSN())
+                + self._stoichs['5_9'] * self._r5_AmmSN()
 
     def _rate10_S_NS(self):
         return self._stoichs['5_10'] * self._r5_AmmSN()\
@@ -382,7 +383,7 @@ class ASM1(object):
         ASM1._bulk_DO in mgO2/L
 
         ExtCompList is a representation of self._Components in the
-        definition of self._Steady() in order to use scipy.optimize.fsolve(). 
+        definition of self._steady() in order to use scipy.optimize.fsolve(). 
         '''
         # TODO: The resulting ExtCompList values will need to be passed to
         #        self._Components
@@ -476,7 +477,7 @@ class ASM1(object):
         self._bulk_DO = DO
         self._delta_t = 20 - self._temperature
         self._param = self._set_params()
-        self._stoich = self._set_stoichs()()
+        self._stoich = self._set_stoichs()
         return None
 
     def get_params(self):
