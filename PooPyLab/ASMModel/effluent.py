@@ -48,5 +48,3 @@ class effluent(pipe.pipe):
         self._main_outlet_connected = True  # dummy
         print(self.__name__, "initialized successfully.")
 
-        
-
