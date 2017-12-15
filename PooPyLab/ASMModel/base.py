@@ -51,7 +51,6 @@ class base(object):
     ''' 
     base() Object defines the common interfaces for all PooPyLab objects.
     '''
-
     
     __metaclass__ = ABCMeta
 
@@ -201,5 +200,4 @@ class base(object):
     def is_visited(self):
         ''' Return True if the unit is labelled as visited, False otherwise '''
         pass
-
 
