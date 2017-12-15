@@ -23,24 +23,24 @@
 # This file provides the definition of Splitter.
 #
 # Update Log:
-# July 30, 2017 KZ: pythonic style
-# March 21, 2017 KZ: Migrated to Python3
-# June 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
-# June 23, 2015 KZ: Rewrote sidestream to eliminate Branch class
-# June 18, 2015 KZ: Removed _PreFix and _Group status and 
+# Jul 30, 2017 KZ: pythonic style
+# Mar 21, 2017 KZ: Migrated to Python3
+# Jun 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
+# Jun 23, 2015 KZ: Rewrote sidestream to eliminate Branch class
+# Jun 18, 2015 KZ: Removed _PreFix and _Group status and 
 #                     Set(Get)PreFixStatus(), Set(Get)GroupStatus;
 #                     Renamed _Done to _Visited and SetAs(Is)Done() to
 #                     SetAs(Is)Visited()
-# March 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
+# Mar 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
 #                     Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
 #                     SetAs(Is)Done().
-# November 18, 2014 KZ: renamed "SideStream" into "Sidestream";
+# Nov 18, 2014 KZ: renamed "SideStream" into "Sidestream";
 #                         Added _SidestreamConnected and SideOutletConnected()
 # Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
-# April 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
-# April 18, 2014 KZ: Rewrite definition based on the new class system structure
-# December 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
-# December 07, 2013
+# Apr 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
+# Apr 18, 2014 KZ: Rewrite definition based on the new class system structure
+# Dec 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
+# Dec 07, 2013
 #
 
 import pipe 
@@ -71,13 +71,16 @@ class splitter(pipe.pipe):
         print(self.__name__, "initialized successfully.")
     
     def is_SRT_controller(self):
-        ''' Mark the splitter whether it controls the plant's Solids Retention Time.
+        ''' Mark the splitter whether it controls the plant's Solids Retention
+            Time.
             Default value: False
         '''
         return self._SRT_controller
 
     def set_as_SRT_controller(self, setting=False):
-        ''' Take user-input to set whether the current Splitter control plant's SRT'''
+        ''' Take user-input to set whether the current Splitter control 
+            plant's SRT
+        '''
         self._SRT_controller = setting
         #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
 
@@ -90,13 +93,15 @@ class splitter(pipe.pipe):
         self._total_flow = self._main_outlet_flow = 0.0
         for unit in self._inlet:
             self._total_flow += self._inlet[unit]
-        #TODO: Need to pay close attention to the flow balance below during runtime
+        #TODO: Need to pay attention to the flow balance below during runtime
         self._main_outlet_flow = self._total_flow - self._side_outlet_flow
         self._flow_totalized = True
 
 
     def set_downstream_side_unit(self, rcvr):
-        ''' Set the sidestream unit that will receive effluent from the current unit'''
+        ''' Set the sidestream unit that will receive effluent from the
+            current unit
+        '''
         if self._side_outlet != rcvr:
             self._side_outlet = rcvr
             self._side_outlet_connected = True
@@ -108,15 +113,15 @@ class splitter(pipe.pipe):
 
     def discharge(self):
         ''' Pass the total flow and blended components to the next unit.
-            Both mainstream and sidestream units shall receive their flows and component
-            concentratons.
+            Both mainstream and sidestream units shall receive their flows 
+            and component concentratons.
         '''
         self.update_combined_input()
         if self._main_outlet != None and self.set_sidestream_flow != None:
             self.get_downstream_main_unit().update_combined_input()
             self.get_downstream_main_unit().update_combined_input() 
         else:
-            print("ERROR: ", self.__name__, " downstream unit setup not complete")
+            print("ERROR: ", self.__name__, "downstream unit setup incomplete")
 
     def has_sidestream(self):
         return True 
@@ -136,11 +141,12 @@ class splitter(pipe.pipe):
     #    TotalSolids = 0.0 #as TSS in KiloGram
     #    if self._SRTController:
     #        for unit in WWTP:
-    #            if isinstance(unit, .ASMReactor):
-    #                TotalSolids += unit.GetTSS() * unit.GetActiveVolume() / 1000.0
+    #            if isinstance(unit, ASMReactor):
+    #                TotalSolids += unit.GetTSS() \
+    #                               * unit.GetActiveVolume() / 1000.0
     #    if TargetSRT > 0:
     #        return TotalSolids / TargetSRT
     #    else:
-    #        print("Error in Target SRT (equal to or less than 0 day; GetWAS() returns 0.")
+    #        print("Error in Target SRT <=  0 day; GetWAS() returns 0.")
     #        return 0;
 
