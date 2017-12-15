@@ -24,24 +24,24 @@
 #   reactors.
 #
 #   Update Log:
-#   July 21, 2017 KZ: made it more pythonic
-#   March 21, 2017 KZ: Migrated to Python3
-#   June 16, 2015 KZ: Removed Set(Get)PreFix(), Set(Get)Group();
+#   Jul 21, 2017 KZ: made it more pythonic
+#   Mar 21, 2017 KZ: Migrated to Python3
+#   Jun 16, 2015 KZ: Removed Set(Get)PreFix(), Set(Get)Group();
 #                       Renamed SetAs(Is)Done() to SetAs(Is)Visited()
-#   March 20, 2015 KZ: Added Set(Get)PreFix(), Set(Get)Group(), 
+#   Mar 20, 2015 KZ: Added Set(Get)PreFix(), Set(Get)Group(), 
 #                       SetAs(Is)Done() for tracking status in loop finding
-#   November 20, 2014 KZ: Added UpstreamConnected() and MainOutletConnected() 
-#   June 29, 2014 KZ: Replace Interpret() with GetXXXX() functions
-#   June 28, 2014 KZ: Added GetTSS(), getTotalCOD(), and getSoluableCOD()
-#   March 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and 
+#   Nov 20, 2014 KZ: Added UpstreamConnected() and MainOutletConnected() 
+#   Jun 29, 2014 KZ: Replace Interpret() with GetXXXX() functions
+#   Jun 28, 2014 KZ: Added GetTSS(), getTotalCOD(), and getSoluableCOD()
+#   Mar 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and 
 #                       SetDownstreamMainUnit() to Pipe()
-#   March 06, 2014 KZ: Re-wrote the common interface and change Base into an 
+#   Mar 06, 2014 KZ: Re-wrote the common interface and change Base into an 
 #                       abstract class
-#   December 25, 2013 KZ: commented out the BlendComponent() function in 
+#   Dec 25, 2013 KZ: commented out the BlendComponent() function in 
 #                       ReceiveFrom()
-#   December 17, 2013 KZ: added _PrevComp[0:12] to store state variables from 
+#   Dec 17, 2013 KZ: added _PrevComp[0:12] to store state variables from 
 #                       previous iteration
-#   December 07, 2013 Kai Zhang (KZ)
+#   Dec 07, 2013 Kai Zhang (KZ)
 
 
 
