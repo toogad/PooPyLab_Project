@@ -279,4 +279,3 @@ class pipe(base.base):
         '''
         return False
 
-
