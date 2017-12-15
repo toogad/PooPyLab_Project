@@ -66,7 +66,7 @@ class WAS(effluent.effluent):
     def get_WAS_flow(self, reactor_list=[], SRT=1):
         #SRT is the plant's SRT from user input
         self.update_combined_input()
-        self._WAS_flow = self.get_solids_inventory(reactor_list) * 1000\
+        self._WAS_flow = self.get_solids_inventory(reactor_list) * 1000 \
                         / SRT / self.get_TSS()
         #TODO: in MAIN function, we need to check whether the WAS flow
         # is higher than the influent flow
@@ -84,6 +84,6 @@ class WAS(effluent.effluent):
             else:
                 print("The unit upstream of WAS is not SRT controlling")
         else:
-            print("Check the unit upstream of WAS.\
+            print("Check the unit upstream of WAS. \
                     There shall be a splitter only")
 
