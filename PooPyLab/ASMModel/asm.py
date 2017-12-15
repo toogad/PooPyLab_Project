@@ -181,27 +181,27 @@ class ASM1():
 
         self._stoichs['1_6'] = -1 / self._params['Y_H']
 
-        self._stoichs['1_8'] = -(1 - self._params['Y_H'])\
+        self._stoichs['1_8'] = -(1 - self._params['Y_H']) \
                                 / (2.86 * self._params['Y_H'])
 
         self._stoichs['1_9'] = -self._params['i_N_XB']
 
-        self._stoichs['1_12'] = (1 - self._params['Y_H'])\
-                                / (14 * 2.86 * self._params['Y_H'])\
+        self._stoichs['1_12'] = (1 - self._params['Y_H']) \
+                                / (14 * 2.86 * self._params['Y_H']) \
                                 - self._params['i_N_XB'] / 14
 
         self._stoichs['2_3'] = 1
 
-        self._stoichs['2_7'] = -(4.57 - self._params['Y_A'])\
+        self._stoichs['2_7'] = -(4.57 - self._params['Y_A']) \
                                 / self._params['Y_A']
         # multiply -1 to express as oxygen
 
         self._stoichs['2_8'] = 1 / self._params['Y_A']
 
-        self._stoichs['2_9'] = -self._params['i_N_XB']\
+        self._stoichs['2_9'] = -self._params['i_N_XB'] \
                                 - 1 / self._params['Y_A']
 
-        self._stoichs['2_12'] = -self._params['i_N_XB'] / 14\
+        self._stoichs['2_12'] = -self._params['i_N_XB'] / 14 \
                                 - 1 / (7 * self._params['Y_A'])
 
         self._stoichs['3_1'] = 1 - self._params['f_D_']
@@ -210,7 +210,7 @@ class ASM1():
 
         self._stoichs['3_4'] = self._params['f_D_']
 
-        self._stoichs['3_11'] = self._params['i_N_XB'] - self._params['f_D_']\
+        self._stoichs['3_11'] = self._params['i_N_XB'] - self._params['f_D_'] \
                                 * self._params['i_N_XD']
 
         self._stoichs['4_1'] = 1 - self._params['f_D_']
@@ -219,7 +219,7 @@ class ASM1():
 
         self._stoichs['4_4'] = self._params['f_D_']
 
-        self._stoichs['4_11'] = self._params['i_N_XB'] - self._params['f_D_']\
+        self._stoichs['4_11'] = self._params['i_N_XB'] - self._params['f_D_'] \
                                 * self._params['i_N_XD']
 
         self._stoichs['5_9'] = 1
@@ -253,25 +253,25 @@ class ASM1():
 
     # Aerobic Growth Rate of Heterotrophs (_r0_AerGH, mgCOD/L/day)
     def _r0_AerGH (self):
-        return  self._params['u_H']\
-                * self._monod(self._comps[6], self._params['K_S'])\
-                * self._monod(self._bulk_DO, self._params['K_OH'])\
+        return  self._params['u_H'] \
+                * self._monod(self._comps[6], self._params['K_S']) \
+                * self._monod(self._bulk_DO, self._params['K_OH']) \
                 * self._comps[2]
 
     # Anoxic Growth Rate of Heterotrophs (_r1_AxGH, mgCOD/L/day)
     def _r1_AxGH (self):
-        return  self._params['u_H']\
-                * self._monod(self._comps[6], self._params['K_S'])\
-                * self._monod(self._params['K_OH'], self._bulk_DO)\
-                * self._monod(self._comps[8], self._params['K_NO'])\
-                * self._params['cf_g']\
+        return  self._params['u_H'] \
+                * self._monod(self._comps[6], self._params['K_S']) \
+                * self._monod(self._params['K_OH'], self._bulk_DO) \
+                * self._monod(self._comps[8], self._params['K_NO']) \
+                * self._params['cf_g'] \
                 * self._comps[2]
 
     # Aerobic Growth Rate of Autotrophs (_r2_AerGA, mgCOD/L/day)
     def _r2_AerGA(self):
-        return  self._params['u_A']\
-                * self._monod(self._comps[9], self._params['K_NH'])\
-                * self._monod(self._bulk_DO, self._params['K_OA'])\
+        return  self._params['u_A'] \
+                * self._monod(self._comps[9], self._params['K_NH']) \
+                * self._monod(self._bulk_DO, self._params['K_OA']) \
                 * self._comps[3]
 
     # Death and Lysis Rate of Heterotrophs (_r3_DLH, mgCOD/L/day)
@@ -284,21 +284,21 @@ class ASM1():
 
     # Ammonification Rate of Soluable Organic N (_r5_AmmSN, mgN/L/day)
     def _r5_AmmSN(self):
-        return  self._params['k_a']\
-                * self._comps[10]\
+        return  self._params['k_a'] \
+                * self._comps[10] \
                 * self._comps[2]
 
     # Hydrolysis Rate of Particulate Organics (_r6_HydX, mgCOD/L/day)
     def _r6_HydX(self):
-        return  self._params['k_h']\
-                * self._monod(self._comps[1] / self._comps[2],\
-                                self._params['K_X'])\
-                * (self._monod(self._bulk_DO,\
-                                self._params['K_OH'])\
-                    + self._params['cf_h']\
-                    * self._monod(self._params['K_OH'], self._bulk_DO)\
-                    * self._monod(self._comps[8],\
-                                    self._params['K_NO']))\
+        return  self._params['k_h'] \
+                * self._monod(self._comps[1] / self._comps[2], \
+                                self._params['K_X']) \
+                * (self._monod(self._bulk_DO, \
+                                self._params['K_OH']) \
+                    + self._params['cf_h'] \
+                    * self._monod(self._params['K_OH'], self._bulk_DO) \
+                    * self._monod(self._comps[8], \
+                                    self._params['K_NO'])) \
                 * self._comps[2]
 
     # Hydrolysis Rate of Part. Organic N (_r7_HydXN, mgN/L/day)
@@ -311,58 +311,58 @@ class ASM1():
         return 0
 
     def _rate1_X_S(self):
-        return self._stoichs['3_1'] * self._r3_DLH()\
-                + self._stoichs['4_1'] * self._r4_DLA()\
+        return self._stoichs['3_1'] * self._r3_DLH() \
+                + self._stoichs['4_1'] * self._r4_DLA() \
                 + self._stoichs['6_1'] * self._r6_HydX()
 
     def _rate2_X_BH(self):
-        return self._stoichs['0_2'] * self._r0_AerGH()\
-                + self._stoichs['1_2'] * self._r1_AxGH()\
+        return self._stoichs['0_2'] * self._r0_AerGH() \
+                + self._stoichs['1_2'] * self._r1_AxGH() \
                 + self._stoichs['3_2'] * self._r3_DLH()
 
     def _rate3_X_BA(self):
-        return self._stoichs['2_3'] * self._r2_AerGA()\
+        return self._stoichs['2_3'] * self._r2_AerGA() \
                 + self._stoichs['4_3'] * self._r4_DLA()
 
     def _rate4_X_D(self):
-        return self._stoichs['3_4'] * self._r3_DLH()\
+        return self._stoichs['3_4'] * self._r3_DLH() \
                 + self._stoichs['4_4'] * self._r4_DLA()
 
     def _rate5_S_I(self):
         return 0
 
     def _rate6_S_S(self):
-        return self._stoichs['0_6'] * self._r0_AerGH()\
-                + self._stoichs['1_6'] * self._r1_AxGH()\
+        return self._stoichs['0_6'] * self._r0_AerGH() \
+                + self._stoichs['1_6'] * self._r1_AxGH() \
                 + self._stoichs['6_6'] * self._r6_HydX()
 
     def _rate7_S_DO(self):
-        return self._stoichs['0_7'] * self._r0_AerGH()\
+        return self._stoichs['0_7'] * self._r0_AerGH() \
                 + self._stoichs['2_7'] * self._r2_AerGA()
 
     def _rate8_S_NO(self):
-        return self._stoichs['1_8'] * self._r1_AxGH()\
+        return self._stoichs['1_8'] * self._r1_AxGH() \
                 + self._stoichs['2_8'] * self._r2_AerGA()
 
     def _rate9_S_NH(self):
-        return self._stoichs['0_9'] * self._r0_AerGH()\
-                + self._stoichs['1_9'] * self._r1_AxGH()\
-                + self._stoichs['2_9'] * self._r2_AerGA()\
+        return self._stoichs['0_9'] * self._r0_AerGH() \
+                + self._stoichs['1_9'] * self._r1_AxGH() \
+                + self._stoichs['2_9'] * self._r2_AerGA() \
                 + self._stoichs['5_9'] * self._r5_AmmSN()
 
     def _rate10_S_NS(self):
-        return self._stoichs['5_10'] * self._r5_AmmSN()\
+        return self._stoichs['5_10'] * self._r5_AmmSN() \
                 + self._stoichs['7_10'] * self._r7_HydXN()
 
     def _rate11_X_NS(self):
-        return self._stoichs['3_11'] * self._r3_DLH()\
-                + self._stoichs['4_11'] * self._r4_DLA()\
+        return self._stoichs['3_11'] * self._r3_DLH() \
+                + self._stoichs['4_11'] * self._r4_DLA() \
                 + self._stoichs['7_11'] * self._r7_HydXN()
 
     def _rate12_S_Alk(self):
-        return self._stoichs['0_12'] * self._r0_AerGH()\
-                + self._stoichs['1_12'] * self._r1_AxGH()\
-                + self._stoichs['2_12'] * self._r2_AerGA()\
+        return self._stoichs['0_12'] * self._r0_AerGH() \
+                + self._stoichs['1_12'] * self._r1_AxGH() \
+                + self._stoichs['2_12'] * self._r2_AerGA() \
                 + self._stoichs['5_123'] * self._r5_AmmSN()
 
 
@@ -395,74 +395,75 @@ class ASM1():
 
         # for C0_X_I, assume perfect solid-liquid separation 
         # (i.e. X_I = 0 mg/L in effluent)
-        result = [InFlow * (InfComp[0] - ExtCompList[0])\
+        result = [InFlow * (InfComp[0] - ExtCompList[0]) \
                     + self._rate0_X_I() * Vol]
 
         # for C1_X_S, assume perfect solid-liquid separation 
         # (i.e. X_S = 0 mg/L in effluent)
-        result.append(InFlow * (InfComp[1] - ExtCompList[1])\
+        result.append(InFlow * (InfComp[1] - ExtCompList[1]) \
                         + self._rate1_X_S() * Vol)
 
         # for C2_X_BH, assume perfect solid-liquid separation 
         # (i.e. X_BH = 0 mg/L in effluent)
-        result.append(InFlow * (InfComp[2] - ExtCompList[2])\
+        result.append(InFlow * (InfComp[2] - ExtCompList[2]) \
                         + self._rate2_X_BH() * Vol)
 
         # for C3_X_BA, assume perfect solid-liquid separation 
         # (i.e. X_BA = 0 mg/L in effluent)
-        result.append(InFlow * (InfComp[3] - ExtCompList[3])\
+        result.append(InFlow * (InfComp[3] - ExtCompList[3]) \
                         + self._rate3_X_BA() * Vol)
 
         # for C4_X_D, assume perfect solid-liquid separation 
         # (i.e. X_D = 0.0 mg/L in effluent)
-        result.append(InFlow * (InfComp[4] - ExtCompList[4])\
+        result.append(InFlow * (InfComp[4] - ExtCompList[4]) \
                         + self._rate4_X_D() * Vol)
 
         #    for C5_S_I
-        result.append(InFlow * (InfComp[5] - ExtCompList[5])\
+        result.append(InFlow * (InfComp[5] - ExtCompList[5]) \
                         + self._rate5_S_I() * Vol)
 
         #    for C6_S_S
-        result.append(InFlow * (InfComp[6] - ExtCompList[6])\
+        result.append(InFlow * (InfComp[6] - ExtCompList[6]) \
                         + self._rate6_S_S() * Vol)
 
         #    for C7_S_DO
-        result.append(InFlow * (InfComp[7] - ExtCompList[7])\
+        result.append(InFlow * (InfComp[7] - ExtCompList[7]) \
                         + self._rate7_S_DO() * Vol)
         # result.append(CompList[8] - Bulk_DO)
 
         #    for C8_S_NO
-        result.append(InFlow * (InfComp[8] - ExtCompList[8])\
+        result.append(InFlow * (InfComp[8] - ExtCompList[8]) \
                         + self._rate8_S_NO() * Vol)
 
         #    for C9_S_NH
-        result.append(InFlow * (InfComp[9] - ExtCompList[9])\
+        result.append(InFlow * (InfComp[9] - ExtCompList[9]) \
                         + self._rate9_S_NH() * Vol)
 
         #    for C10_S_NS
-        result.append(InFlow * (InfComp[10] - ExtCompList[10])\
+        result.append(InFlow * (InfComp[10] - ExtCompList[10]) \
                         + self._rate10_S_NS() * Vol)
 
         #    for C11_X_NS
-        result.append(InFlow * (InfComp[11] - ExtCompList[11])\
+        result.append(InFlow * (InfComp[11] - ExtCompList[11]) \
                         + self._rate11_X_NS() * Vol)
 
         #    for C12_S_ALK
-        result.append(InFlow * (InfComp[12] - ExtCompList[12])\
+        result.append(InFlow * (InfComp[12] - ExtCompList[12]) \
                         + self._rate12_S_Alk() * Vol)
 
         return result
-    #====================End of Private Fuction Definitions ====================
+    #====================End of Private Fuction Definitions ===================
 
 
-    #====================== Public Interface ===================================
+    #====================== Public Interface ==================================
 
     def steady_step(self, guess, inflow, infcomp, vol):
         '''
             Calculate the state of this round of iteration.
             Pass the results to the storing List() in the ASMReactor.
-            The results of this calculation should be compared with those of the last round,
-            and determine whether the reactor has reached a steady state.
+            The results of this calculation should be compared with those of
+            the last round, and determine whether the reactor has reached a
+            steady state.
         '''
         current_state = fsolve(self._steady, guess, (inflow, infcomp, vol))
         return current_state
@@ -470,7 +471,8 @@ class ASM1():
     def update(self, Temp, DO):
         ''' update the ASM model with new Temperature and Bulk_DO'''
         if Temp <= 4 or DO < 0:
-            print ("Error: New temperature or Bulk_DO too low. USING PREVIOUS VALUES FOR BOTH")
+            print ("Error: New temperature or Bulk_DO too low.", \
+                    "USING PREVIOUS VALUES FOR BOTH")
             return -1
 
         self._temperature = Temp
@@ -487,7 +489,8 @@ class ASM1():
         return self._stoichs
 
     def get_all_comps(self):
-        #TODO: Need to determine where to provide GetAllComponents(), in ASMReactor or here?
+        #TODO: Need to determine where to provide GetAllComponents(), in
+        # ASMReactor or here?
         return self._comps.copy()
 
     def get_bulk_DO(self):
