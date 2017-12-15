@@ -36,7 +36,7 @@ import constants
 
 class asm_reactor(pipe.pipe):
     __id = 0
-    def __init__(self, ActiveVol=380, swd=3.5,\
+    def __init__(self, ActiveVol=380, swd=3.5, \
                     Temperature=20, DO=2, *args, **kw):
         pipe.pipe.__init__(self) 
         self.__class__.__id += 1
@@ -124,7 +124,6 @@ class asm_reactor(pipe.pipe):
         # get the components from the next iteration.
         self._eff_comps = self._sludge.steady_step(self._pre_eff_comps, \
                                                     self._total_flow, \
-                                                    self._reactor_inf_comp,\
+                                                    self._reactor_inf_comp, \
                                                     self._active_vol)
-
 
