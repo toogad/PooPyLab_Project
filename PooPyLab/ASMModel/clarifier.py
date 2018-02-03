@@ -45,4 +45,4 @@ class final_clarifier(splitter.splitter):
 
         self._active_vol = ActiveVol
         self._SWD = SWD
-        self._area = self._ActiveVol / self._SWD
+        self._area = self._active_vol / self._SWD
