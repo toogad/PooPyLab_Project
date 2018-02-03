@@ -471,7 +471,7 @@ class ASM1():
     def update(self, Temp, DO):
         ''' update the ASM model with new Temperature and Bulk_DO'''
         if Temp <= 4 or DO < 0:
-            print ("Error: New temperature or Bulk_DO too low.", \
+            print("Error: New temperature or Bulk_DO too low.", \
                     "USING PREVIOUS VALUES FOR BOTH")
             return -1
 
