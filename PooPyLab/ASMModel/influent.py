@@ -103,7 +103,7 @@ class influent(base.base):
         #   analyzing the unit
         self._visited = False
         
-        print self.__name__,' initialized successfully.'
+        print(self.__name__,' initialized successfully.')
 
     def get_upstream_units(self):
         ''' Get the {} that stores all the upstream units that feed into
