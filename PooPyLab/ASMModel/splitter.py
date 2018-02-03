@@ -126,7 +126,7 @@ class splitter(pipe.pipe):
     def has_sidestream(self):
         return True 
     
-    def _side_outlet_connected(self):
+    def side_outlet_connected(self):
         return self._side_outlet_connected
 
     def set_as_visited(self, status=False):
