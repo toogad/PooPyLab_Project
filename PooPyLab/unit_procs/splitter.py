@@ -3,7 +3,7 @@
 # PooPyLab is a simulation software for biological wastewater treatment
 # processes using International Water Association Activated Sludge Models.
 #    
-#    Copyright (C) 2014  Kai Zhang
+#    Copyright (C) Kai Zhang
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -20,9 +20,11 @@
 #
 #
 #
-# This file provides the definition of Splitter.
+# This file provides the definition of the "splitter" class.
 #
 # Update Log:
+# 20190209 KZ: standardized import
+# Feb 09, 2019 KZ: revised set_downstream_side()
 # Jul 30, 2017 KZ: pythonic style
 # Mar 21, 2017 KZ: Migrated to Python3
 # Jun 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
@@ -43,14 +45,17 @@
 # Dec 07, 2013
 #
 
-import pipe 
+
+from unit_procs.pipe import pipe
+from unit_procs.influent import influent
 
 
-class splitter(pipe.pipe):
+class splitter(pipe):
+
     __id = 0
 
     def __init__(self):
-        pipe.pipe.__init__(self)
+        pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Splitter_" + str(self.__id)
 
@@ -58,18 +63,18 @@ class splitter(pipe.pipe):
         # therefore add the _side_outlet only here.
         self._side_outlet= None
         
-        self._main_outlet_flow = 0.0
-        self._side_outlet_flow = 0.0
+        self._main_outlet_flow = 0
+        self._side_outlet_flow = 0
         
         self._side_outlet_connected = False
 
-        # boolean on whether the loop finding process has finished
-        #   analyzing the unit
-        self._visited = False
-       
         self._SRT_controller = False
+
         print(self.__name__, "initialized successfully.")
+
+        return None
     
+
     def is_SRT_controller(self):
         ''' Mark the splitter whether it controls the plant's Solids Retention
             Time.
@@ -77,38 +82,40 @@ class splitter(pipe.pipe):
         '''
         return self._SRT_controller
 
+
     def set_as_SRT_controller(self, setting=False):
-        ''' Take user-input to set whether the current Splitter control 
-            plant's SRT
-        '''
         self._SRT_controller = setting
         #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
+        return None
+
 
     def set_sidestream_flow(self, flow):
         self._side_outlet_flow = flow
         #TODO: Need to be able to dynamically update the sidestream flow
+        return None
     
+
     def totalize_flow(self):
-        ''' totalize the flow for the Splitter unit '''
-        self._total_flow = self._main_outlet_flow = 0.0
-        for unit in self._inlet:
-            self._total_flow += self._inlet[unit]
+        self._total_flow = sum(self._inlet.values())
         #TODO: Need to pay attention to the flow balance below during runtime
+        #TODO: Need to check: _main_outlet_flow > 0?
         self._main_outlet_flow = self._total_flow - self._side_outlet_flow
         self._flow_totalized = True
+        return None
 
 
-    def set_downstream_side_unit(self, rcvr):
-        ''' Set the sidestream unit that will receive effluent from the
-            current unit
-        '''
+    def set_downstream_side(self, rcvr):
+        if isinstance(rcvr, influent):
+            print("ERROR: WRONG RECEIVER GIVEN TO SIDESTREAM")
+            return None
         if self._side_outlet != rcvr:
             self._side_outlet = rcvr
-            self._side_outlet_connected = True
+            self._side_outlet_connected = rcvr != None
             if rcvr != None:
-                rcvr.add_upstream_unit(self, "Side")  #TODO: OKAY??
+                rcvr.add_upstream(self, "Side")
+        return None
                 
-    def get_downstream_side_unit(self):
+    def get_downstream_side(self):
         return self._side_outlet
 
     def discharge(self):
@@ -118,13 +125,14 @@ class splitter(pipe.pipe):
         '''
         self.update_combined_input()
         if self._main_outlet != None and self.set_sidestream_flow != None:
-            self.get_downstream_main_unit().update_combined_input()
-            self.get_downstream_main_unit().update_combined_input() 
+            self.get_downstream_main().update_combined_input()
+            self.get_downstream_side().update_combined_input() 
         else:
             print("ERROR: ", self.__name__, "downstream unit setup incomplete")
+        return None
 
     def has_sidestream(self):
-        return True 
+        return True  # always True for a splitter
     
     def side_outlet_connected(self):
         return self._side_outlet_connected

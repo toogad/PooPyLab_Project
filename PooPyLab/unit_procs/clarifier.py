@@ -24,25 +24,27 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
+# 20190209 KZ: standardized import
 #   July 30, 2017 KZ: made it more pythonic.
 #   March 21, 2017 KZ: Migrated to Python3
 #   May 26, 2014 KZ: Changed base class from Base to Splitter
 #   July 11, 2013 KZ: Initial commit
 #
 
-import splitter
+from unit_procs.splitter import splitter
 
-class final_clarifier(splitter.splitter):
+class final_clarifier(splitter):
     __id = 0
-    def __init__(self, ActiveVol=380.0, SWD=3.5, Temperature=20.0, DO=2.0):
-        splitter.splitter.__init__(self)
+    def __init__(self, ActiveVol=380, SWD=3.5):
+        splitter.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "FinalClarifier_" + str(self.__id)
+
         # SWD = side water depth in meters, default = ~12 ft
         # ActiveVol in m^3, default value equals to 100,000 gallons
-        # Temperature = 20 C by default
-        # DO = dissolved oxygen, default = 2.0 mg/L
-
         self._active_vol = ActiveVol
         self._SWD = SWD
         self._area = self._active_vol / self._SWD
+
+        print(self.__name__, " initiated successfully.")
+        return None

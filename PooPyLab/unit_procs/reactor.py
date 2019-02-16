@@ -3,7 +3,7 @@
 # PooPyLab is a simulation software for biological wastewater treatment
 # processes using International Water Association Activated Sludge Models.
 #    
-#    Copyright (C) 2014  Kai Zhang
+#    Copyright (C) Kai Zhang
 #
 #    PooPyLab is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 # and mass balance will be defined for the public interface
 # 
 # Update Log: 
+# 20190209 KZ: standardized import
 # July 30, 2017 KZ: more pythonic style
 # March 21, 2017 KZ: Migrated to Python3
 # May 26, 2014 KZ: Updated Definition
@@ -31,14 +32,15 @@
 # December 07, 2013 Kai Zhang
 
 
-import asm, pipe
-import constants
+from unit_procs.pipe import pipe
+from ASMModel.asm_1 import ASM_1
+from ASMModel import constants
 
-class asm_reactor(pipe.pipe):
+class asm_reactor(pipe):
     __id = 0
     def __init__(self, ActiveVol=380, swd=3.5, \
                     Temperature=20, DO=2, *args, **kw):
-        pipe.pipe.__init__(self) 
+        pipe.__init__(self) 
         self.__class__.__id += 1
         self.__name__ = "Reactor_" + str(self.__id)
         # swd = side water depth in meters, default = ~12 ft
@@ -64,21 +66,22 @@ class asm_reactor(pipe.pipe):
         # _reactor_inf_comps[11]: Inf_X_NS,
         # _reactor_inf_comps[12]: Inf_S_ALK
         #
-        self._reactor_inf_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._reactor_inf_comps = [0] * constants._NUM_ASM1_COMPONENTS
 
         # the core material the ASMReactor stores
-        self._sludge = asm.ASM1(Temperature, DO)
+        self._sludge = ASM_1(Temperature, DO)
         
         # the max acceptable error for determining whether the simulation has converged.
-        self._error_tolerance = 10E-4 # temporary number just to hold the place
+        self._error_tolerance = 1E-4 # temporary number just to hold the place
         # a boolean flag to show convergence status
         self._converged = False
 
         # model components from the previous round
-        self._pre_eff_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._pre_eff_comps = []
 
         print(self.__name__, " Initialized Successfully.")
         return None
+
 
     def blend_components(self):
         '''
@@ -89,36 +92,46 @@ class asm_reactor(pipe.pipe):
             like Pipe, Splitter, etc.
         '''
         for index in range(constants._NUM_ASM1_COMPONENTS):
-            temp = 0.0
+            temp = 0
             for unit in self._inlet:
-                temp += unit.get_eff_comps()[index] * unit.read_flow()
+                temp += unit.get_eff_comps()[index] * unit.get_outlet_flow()
             self._reactor_inf_comps[index] = temp / self._total_flow
+            #TODO: how do we handle the _components_blended flag here?
+        return None
+
 
     def get_active_vol(self):
         return self._active_vol
 
+
     def get_eff_comps(self):
         return self._eff_comps
+
 
     def get_inf_comps(self):
         return self._reactor_inf_comp
 
+
     def get_ASM_params(self):
         return self._sludge.get_params()
+
 
     def get_ASM_stoichs(self):
         return self._sludge.get_stoichs()
 
     def update_condition(self, Temperature, DO):
         self._sludge.update(Temperature, DO)
+        return None
+
    
     def initial_guess(self):
         #TODO: NEED TO PUT IN FIRST GUESS OF MODEL COMPONENTS HERE
 
         # store the initial guess as the current state of the reactor
         self._eff_comps = self._pre_eff_comps[:]
+
     
-    def EstimateCurrentState(self):
+    def estimate_current_state(self):
         # store the current componets received in the most recent iteration.
         self._pre_eff_comps = self._eff_comps[:]
         # get the components from the next iteration.

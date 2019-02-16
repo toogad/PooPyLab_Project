@@ -22,6 +22,7 @@
 # Definition of the plant Effluent unit
 # 
 # Update Log: 
+# 20190209 KZ: standardized import
 # Jul 30, 2017 KZ: Made it more pythonic.
 # Mar 21, 2017 KZ: Migrated to Python3
 # Sep 26, 2014 KZ: removed test code   
@@ -36,15 +37,16 @@
 # December 07, 2013 Kai Zhang
     
 
-import pipe
+from unit_procs.pipe import pipe
 
-class effluent(pipe.pipe):
+class effluent(pipe):
     __id = 0
 
     def __init__(self):
-        pipe.pipe.__init__(self)
+        pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Effluent_" + str(self.__id)
         self._main_outlet_connected = True  # dummy
         print(self.__name__, "initialized successfully.")
+        return None
 

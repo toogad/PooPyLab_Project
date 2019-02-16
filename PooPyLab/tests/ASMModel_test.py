@@ -91,13 +91,13 @@ def ConnectWWTPUnits():
 
 response = raw_input("continue?")
 
-print "Begin Connection Test..."
+print("Begin Connection Test...")
 
 ConnectWWTPUnits()
 CheckPlantConnection(WWTP)
 CheckUpstream(WWTP)
 CheckDownstream(WWTP)
-print "End Connection Test"
+print("End Connection Test")
 # Connection Test Summary: SO FAR SO GOOD!!
 response = raw_input("continue?")
 
@@ -105,7 +105,7 @@ response = raw_input("continue?")
 # PooPyLab is NOT Microsoft Visio. If the user is to re-direct the connected pipe to another 
 # object, he/she would need to remove that pipe first, and then redraw a new pipe to the 
 # desired object.
-print "Begin Disconnection Test..."
+print("Begin Disconnection Test...")
 
 Reactor1.RemoveUpstreamUnit(Pipe1)
 Pipe5.RemoveUpstreamUnit(Splt1)
@@ -120,24 +120,24 @@ Pipe3.RemoveUpstreamUnit(Clar1)
 CheckPlantConnection(WWTP)
 
 CheckUpstream(WWTP)
-print
+print()
 CheckDownstream(WWTP)
 response = raw_input("continue?")
 
-print "Reconnecting..."
+print("Reconnecting...")
 WWTP = []
 ConnectWWTPUnits()
 CheckPlantConnection(WWTP)
 CheckUpstream(WWTP)
 CheckDownstream(WWTP)
 
-print "End Disconnection Test."
+print("End Disconnection Test.")
 response = raw_input("continue?")
-print len(WWTP) 
+print(len(WWTP) )
 #The connection test, disconnection test, and reconnection of the WWTP show that the 
 # PooPyLab classes were capable of communicate to one another in terms of upstream
 # and downstream relations.
 
-print "=====Begin Receive and Discharge Tests==========="
+print("=====Begin Receive and Discharge Tests===========")
 
 

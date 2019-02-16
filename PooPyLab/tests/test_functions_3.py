@@ -3,9 +3,13 @@
 #
 # This file contains the functions used in the test programs
 # Last update:
+# 2019-02-10, KZ: updated connection check functions
 #   2015-6-26, KZ: elimiated duplicates by revising FindSCC()
 #   2015-6-24, KZ: added note about the Splitter update
 #   2015-4-14, Kai Zhang
+
+from ASMModel.influent import influent
+from ASMModel.effluent import effluent
 
 '''
 def print_elem(container):
@@ -15,71 +19,45 @@ def print_elem(container):
     print("]")
 '''
 
-def CheckPlantConnection(WWTP = []):
-    LooseEnd = 0
-    for unit in WWTP:
-        if not unit.upstream_connected():
-            print(unit.__name__, "'s upstream is not connected")
-            LooseEnd += 1
-        if unit.has_sidestream():
-            if not unit.side_outlet_connected():
-                print(unit.__name__, "'s sidestream is not connected")
-                LooseEnd += 1
-        elif not unit.main_outlet_connected():
-            print(unit.__name__,"'s main downstream is not connected")
-            LooseEnd +=1 
-    if not LooseEnd:
-        print("WWTP is ready for simulation")
-    else:
-        print(LooseEnd, " connecton(s) to be fixed.")
-# End of CheckPlantConnection()
 
+#def check_upstream(WWTP = []):
+#    print("Checking units' upstream processes...")
+#    for unit in WWTP:
+#        upstr = []
+#        print(unit.__name__, "'s upstream has ",)
+#        if unit.get_upstream():
+#            upstr = unit.get_upstream().keys()
+#            for element in upstr:
+#                print(element.__name__, "; ",)
+#            print()
+#        else:
+#            print(None)
+#    return None
+#
+#def check_downstream(WWTP = []):
+#    print("Checking units' downstream processes...")
+#    for unit in WWTP:
+#        print(unit.__name__, "'s Main downstream has ", )
+#        if unit.get_downstream_main():
+#            print(unit.get_downstream_main().__name__)
+#        else:
+#            print(None)
+#        if unit.has_sidestream():
+#            print(unit.__name__, "'s Side downstream has ", )
+#            if unit.get_downstream_side():
+#                print(unit.get_downstream_side().__name__)
+#            else:
+#                print(None)
+#    print()
+#    return None
 
-def CheckUpstream(WWTP = []):
-    ''' Check the upstream connection of units in WWTP'''
-    print("Checking units' upstream processes...")
-    for unit in WWTP:
-        upstr = []
-        print(unit.__name__, "'s upstream has ",)
-        if unit.get_upstream_units():
-            upstr = unit.get_upstream_units().keys()
-            for element in upstr:
-                print(element.__name__, "; ",)
-            print()
-        else:
-            print(None)
-# End of CheckUpstream()
-
-def CheckDownstream(WWTP = []):
-    ''' Check the downstream connection of units in WWTP'''
-    print("Checking units' downstream processes...")
-    for unit in WWTP:
-        print(unit.__name__, "'s Main downstream has ", )
-        if unit.get_downstream_main_unit():
-            print(unit.get_downstream_main_unit().__name__)
-        else:
-            print(None)
-        if unit.has_sidestream():
-            print(unit.__name__, "'s Side downstream has ", )
-            if unit.get_downstream_side_unit():
-                print(unit.get_downstream_side_unit().__name__)
-            else:
-                print(None)
-    print()
-# End of CheckDownstream()
-
-
-# The purpose of partitioning a PFD is to find the groups 
-# of units which must be solved together, with as fewest
-# number of units as possible.
-# The algorithm was developed by Sargent and Westerberg
-# (1964):
-#   It traces from one unit to the next through the unit
-#   output streams, forming a "string" of units.
-#   This tracing continues until:
+# The purpose of partitioning a PFD is to find the groups of units which must
+# be solved together, with as fewest number of units as possible. The algorithm
+# was developed by Sargent and Westerberg (1964):
+#   It traces from one unit to the next through the unit output streams,
+#   forming a "string" of units. This tracing continues until:
 #       a) A unit in the string re-appears; or
-#       b) A unit or group of units with no more output
-#           is encountered.
+#       b) A unit or group of units with no more output is encountered.
 #
 #   1. Select a unit/group
 #   2. Trace outputs downstream until
@@ -88,52 +66,45 @@ def CheckDownstream(WWTP = []):
 #       2b. a unit or a group reached with no external
 #           outputs --> Go to Step 4.
 #   3. Label all units into a group. --> Go to Step 2.
-#   4. Delete the unit or group. Record it in a list.
-#       --> Go to Step 2
-#   5. Calculation Sequence is from the bottom to top
-#       of list.
+#   4. Delete the unit or group. Record it in a list. --> Go to Step 2
+#   5. Calculation Sequence is from the bottom to top of list.
 #
-#   Later I abandoned the SW1964 algorithm above because
-#   it is complicated in implementation and not the best
-#   in terms of speed. Instead, the graph algorithm for
-#   finding Strongly Connected Components (SCC) 
-#   was adopted.
+#   Later I abandoned the SW1964 algorithm above because it is complicated
+#   in implementation and not the best in terms of speed. Instead, the graph
+#   algorithm for finding Strongly Connected Components (SCC) was adopted.
 #
-#   Preliminary results showed that the SCC algorithm
-#   produced results that included the loops identified
-#   by the S&W algoritm. However, there was an unwanted
-#   SCC included in the result. I am thinking it might
-#   have to do with how the Splitter was implemented.
+#   Preliminary results showed that the SCC algorithm produced results that
+#   included the loops identified by the S&W algoritm. However, there was an
+#   unwanted SCC included in the result. I am thinking it might have to do with
+#   how the Splitter was implemented.
 #
-#   As of June 24,2015, the Splitter class was updated
-#   so that there is no Branch class in the sidestream.
-#   The main- and sidestream are now implemented in the
-#   same way.
+#   As of June 24,2015, the Splitter class was updated so that there is
+#   no Branch class in the sidestream. The main- and sidestream are now
+#   implemented in the same way.
 #
-#   June 26, 2015, duplicates were eliminated from the
-#   results. No matter how the WWTP list was constructed,
-#   the SCC algorithm always finds a unique answer for
-#   the same process flow diagram (i.e. flowsheet).
+#   June 26, 2015, duplicates were eliminated from the results. No matter how
+#   the WWTP list was constructed, the SCC algorithm always finds a unique
+#   answer for the same process flow diagram (i.e. flowsheet).
 #
-#   The functions needed are _GetFinishTime(), _SCC_(),
-#   _FindSCC_(), and FindGroups()
+#   The functions needed are _GetFinishTime(), _SCC_(), _FindSCC_(), and
+#   FindGroups()
 
 
 def _GetFinishTime_(PFD, Start, FinishTime):
     if Start == None or Start.is_visited(): #order around "or" is important
-        return
+        return None
     Start.set_as_visited(True)
     if Start.has_sidestream():
-        _GetFinishTime_(PFD, Start.get_downstream_side_unit(), FinishTime)
-    _GetFinishTime_(PFD, Start.get_downstream_main_unit(), FinishTime)
+        _GetFinishTime_(PFD, Start.get_downstream_side(), FinishTime)
+    _GetFinishTime_(PFD, Start.get_downstream_main(), FinishTime)
     FinishTime.append(Start)
-    return 
+    return None
             
 def _SCC_(Start, SCC):
     if Start == None or Start.is_visited(): #the order around "or" is important
         return SCC
     Start.set_as_visited(True)
-    UpstreamUnits = Start.get_upstream_units()
+    UpstreamUnits = Start.get_upstream()
     if UpstreamUnits != None:
         for key in UpstreamUnits:    
             if not (key.is_visited()):
@@ -204,8 +175,8 @@ def _Circuit_(Obj, SCC, Start, Blocked, StepStack, PreFix, Unblock_Ready, FoundC
 
     next = [] # next was not in Johnson 1975 algorithm. It was specific for PooPyLab objects.
     if Obj.has_sidestream():
-        next = [Obj.get_downstream_side_unit()]
-    next.append(Obj.get_downstream_main_unit())
+        next = [Obj.get_downstream_side()]
+    next.append(Obj.get_downstream_main())
     for k in next:
         if k in SCC:
             if k == Start:

@@ -3,7 +3,7 @@
 # PooPyLab is a simulation software for biological wastewater treatment
 # processes using International Water Association Activated Sludge Models.
 #
-#    Copyright (C) 2017  Kai Zhang
+#    Copyright (C) Kai Zhang
 #
 #    PooPyLab is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #    as part of the Reactor object
 #
 # Change Log:
+# 2019-02-09 KZ: standardized import
 #    Dec 13, 2017 KZ: Fixed a few mismatched parentheses 
 #    Jul 20, 2017 KZ: Changed to pythonic style
 #    Mar 21, 2017 KZ: Changed to Python3
@@ -56,10 +57,10 @@
 # TBD:  To Be Determined by user
 
 
-import constants
+from ASMModel import constants
 from scipy.optimize import fsolve
 
-class ASM1():
+class ASM_1():
 
     def __init__(self, Temp=20, DO=2):
 
@@ -480,18 +481,18 @@ class ASM1():
         self._delta_t = 20 - self._temperature
         self._param = self._set_params()
         self._stoich = self._set_stoichs()
-        return None
+        return 0
 
     def get_params(self):
-        return self._params
+        return self._params.copy()
 
     def get_stoichs(self):
-        return self._stoichs
+        return self._stoichs.copy()
 
     def get_all_comps(self):
         #TODO: Need to determine where to provide GetAllComponents(), in
         # ASMReactor or here?
-        return self._comps.copy()
+        return self._comps[:]
 
     def get_bulk_DO(self):
         return self._bulk_DO

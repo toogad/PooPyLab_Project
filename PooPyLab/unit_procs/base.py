@@ -20,10 +20,11 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#   Definition of the Base object for WWTP components such as
+#   Definition of the Base class for WWTP components such as
 #   reactors.
 #
 #   Update Log:
+#   Jan 12, 2019 KZ: resumed and cleaned up
 #   Feb 03, 2018 KZ: reviewed
 #   Jul 21, 2017 KZ: made it more pythonic
 #   Mar 21, 2017 KZ: Migrated to Python3
@@ -56,7 +57,7 @@ class base(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get_upstream_units(self):
+    def get_upstream(self):
         ''' Get the dict that stores all the upstream units that feed into
             current one
             Return Type: dict
@@ -64,7 +65,7 @@ class base(object):
         pass
     
     @abstractmethod
-    def get_downstream_main_unit(self):
+    def get_downstream_main(self):
         ''' Get the single unit downstream of the current one
             Return Type: base.Base
         '''
@@ -113,13 +114,6 @@ class base(object):
         '''
         pass
 
-    #@abstractmethod
-    #def Interpret(self):
-    #    ''' Convert user input to model components'''
-        #for example, user may input BOD, TSS, VSS, TKN etc. this function
-        #coverts those into influent model components for the solver
-    #    pass
-    
     @abstractmethod
     def has_sidestream(self):
         ''' Check if the current unit has a sidestream discharge.
@@ -130,56 +124,46 @@ class base(object):
     
     @abstractmethod
     def get_TSS(self):
-        ''' Return the Total Suspsended Solids (TSS) in the unit '''
         pass
 
     @abstractmethod
     def get_VSS(self):
-        ''' Return the Volatile Suspended Solids (VSS) in the unit '''
         pass
 
     @abstractmethod
     def get_total_COD(self):
-        ''' Return the Total COD (soluable and particulate) in the unit '''
         pass
 
     @abstractmethod
     def get_soluble_COD(self):
-        ''' Return the SOLUABLE COD in the unit '''
         pass
 
     @abstractmethod
     def get_particulate_COD(self):
-        ''' Return the PARTICULATE COD in the unit '''
         pass
     
     @abstractmethod
     def get_TN(self):
-        ''' Return the Total Nitrogen of the unit '''
         pass
 
     @abstractmethod
     def get_particulate_N(self):
-        ''' Return organic nitrogen of the unit '''
         pass
 
     @abstractmethod
     def get_soluble_N(self):
-        ''' Return soluable nitrogen of the unit '''
         pass
 
     @abstractmethod
     def get_organic_N(self):
-        ''' Return organic nitrogen of the unit '''
         pass
 
     @abstractmethod
     def get_inorganic_N(self):
-        ''' Return inorganic nitrogen of the unit '''
         pass
 
     @abstractmethod
-    def upstream_connected(self):
+    def has_discharger(self):
         ''' Return True if upstream is connected, False if not'''
         pass
 

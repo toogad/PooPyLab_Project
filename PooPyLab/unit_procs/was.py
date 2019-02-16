@@ -24,6 +24,7 @@
 #    Author: Kai Zhang
 #
 # Update Log:
+# 20190209 KZ: standardized import
 # Jul 30, 2017 KZ: made code more pythonic
 # Mar 21, 2017 KZ: Migrated to Python3
 # Sep 26, 2014 KZ: Change inheritance back from Splitter to Effluent
@@ -33,13 +34,13 @@
 # December 06, 2013 Kai Zhang: Initial design
 
     
-import effluent
+from unit_procs.effluent import effluent
 
-class WAS(effluent.effluent): 
+class WAS(effluent): 
     __id = 0
     def __init__(self):
         
-        effluent.effluent.__init__(self)
+        effluent.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'WAS_' + str(self.__id)
         self._WAS_flow = 0.0  # Unit: m3/d 
@@ -74,13 +75,13 @@ class WAS(effluent.effluent):
 
     def inform_SRT_controller(self):
         ''' Pass the WAS Flow to the upstream SRT Controlling Splitter '''
-        upstream_unit = self.get_upstream_units().keys()
-        if len(upstream_unit) == 1 \
-                and isinstance(upstream_unit[0], splitter.splitter):
-            if upstream_unit[0].is_SRT_controller():
-                upstream_unit[0].setup_sidestream(self, self.get_WAS_flow())
-                upstream_unit[0].totalize_flow()
-                upstream_unit[0].discharge()  #TODO: IS THIS NEEDED??
+        upstream = self.get_upstream().keys()
+        if len(upstream) == 1 \
+                and isinstance(upstream[0], splitter):
+            if upstream[0].is_SRT_controller():
+                upstream[0].setup_sidestream(self, self.get_WAS_flow())
+                upstream[0].totalize_flow()
+                upstream[0].discharge()  #TODO: IS THIS NEEDED??
             else:
                 print("The unit upstream of WAS is not SRT controlling")
         else:

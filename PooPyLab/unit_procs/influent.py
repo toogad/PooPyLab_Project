@@ -22,6 +22,7 @@
 #    Definition of the plant Influent unit.
 #
 # Change Log:
+# 20190209 KZ: standardized import
 #   July 31, 2017 KZ: Made it more pythonic and changed to python3.
 #   June 16, 2015 KZ: Removed _prefix, _group status and 
 #                       Set(Get)PreFixStatus(), Set(Get)GroupStatus;
@@ -38,9 +39,10 @@
 #   December 07, 2013 Kai Zhang: first draft
 
 
-import base, constants
+from unit_procs.base import base
+from ASMModel import constants
 
-class influent(base.base):
+class influent(base):
     __id = 0
 
     def __init__(self):
@@ -89,7 +91,7 @@ class influent(base.base):
         # the status about whether there is a downstream unit
         self._main_outlet_connected = False
 
-        # boolean on whether the unit is already visited by the loop
+        # prefix that leads to current unit, used by the loop
         # finding process
         self._prefix = False
 
@@ -99,30 +101,35 @@ class influent(base.base):
         #TODO: IS THIS STILL USED AT ALL?
         self._group = ''
 
-        # boolean on whether the loop finding process has finished
-        #   analyzing the unit
         self._visited = False
         
         print(self.__name__,' initialized successfully.')
+        return None
 
-    def get_upstream_units(self):
+    def get_upstream(self):
         ''' Get the {} that stores all the upstream units that feed into
             the current one
             Return Type: None (for Influent) or dict (for others)
         '''
         return None
 
-    def set_downstream_main_unit(self, rcvr):
+    def set_downstream_main(self, rcvr):
         ''' Set the downstream unit that will receive effluent from 
             the current unit
         '''
-        if self._outlet != rcvr: #if the specified rcvr has not been added
+        if isinstance(rcvr, influent):  # None is allowed as a place holder
+            print("ERROR: WRONG RECEIVER GIVEN TO INFLUENT")
+            return None
+        if rcvr == None:
+            self._outlet = None
+            self._main_outlet_connected = False
+        elif self._outlet != rcvr:
             self._outlet = rcvr 
             self._main_outlet_connected = True
-            if rcvr != None:
-                rcvr.add_upstream_unit(self)
+            rcvr.add_upstream(self)
+        return None
     
-    def upstream_connected(self):
+    def has_discharger(self):
         '''Placeholder, always return True for Influent as it 
             doesn't need an upstream unit
         '''
@@ -132,7 +139,7 @@ class influent(base.base):
         ''' Return the status of outlet connection'''
         return self._main_outlet_connected
 
-    def get_downstream_main_unit(self):
+    def get_downstream_main(self):
         ''' Get the single unit downstream of the current one
             Return Type: base.Base
         '''
@@ -184,7 +191,8 @@ class influent(base.base):
         ''' Pass the total flow and blended components to the next unit.
         '''
         if self._outlet != None:
-            self.get_downstream_main_unit().update_combined_input()
+            self.get_downstream_main().update_combined_input()
+        return None
     
     def receive_from(self, dschgr=None):
         ''' Influent doesn't need to receive anything'''
