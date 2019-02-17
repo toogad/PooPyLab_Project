@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 # This is a test program for the PooPyLab biological wastewater treatment
 # software package.
@@ -9,8 +8,11 @@
 # Systematic Methods of Chemical Process Design (1997)
 # Lorenz T. Biegler, Ignacio E. Grossmann, Arthur W. Westerberg
 
-import influent, effluent, was, splitter, reactor, clarifier, pipe
-from Test_Functions3 import *
+from unit_procs.streams import influent, effluent, WAS, pipe, splitter
+from unit_procs.bio import asm_reactor
+from unit_procs.physchem import final_clarifier
+from utils.pfd import check_connection
+from test_functions_3 import *
 #import constants
 import os
 
@@ -23,18 +25,18 @@ Inf, Pipe, React, Splt, Eff = [], [], [], [], []
 
 
 for i in range(4):
-    Inf.append(influent.influent())
+    Inf.append(influent())
     Inf[i].set_flow(10)#TODO: Units to be noted in ''' ''' if a function asks for params
-    Eff.append(effluent.effluent())
+    Eff.append(effluent())
 
 for i in range(35):
-    Pipe.append(pipe.pipe())
+    Pipe.append(pipe())
     
 for i in range(11):
-    Splt.append(splitter.splitter())
+    Splt.append(splitter())
 
 for i in range(7):
-    React.append(reactor.asm_reactor())
+    React.append(asm_reactor())
 
 Splt[0].__name__ = 'C'
 Splt[1].__name__ = 'F'
@@ -48,10 +50,10 @@ Splt[8].__name__ = 'K'
 Splt[9].__name__ = 'I'
 Splt[10].__name__ = 'N'
 
-Clarifier = clarifier.final_clarifier()
+Clarifier = final_clarifier()
 Clarifier.__name__ = "D"
 
-WAS1 = was.WAS()
+WAS1 = WAS()
 
 React[0].__name__ = 'A'
 React[1].__name__ = 'B'
@@ -189,9 +191,7 @@ response = input("continue?")
 
 print("Begin Connection Test...")
 
-CheckPlantConnection(WWTP)
-CheckUpstream(WWTP)
-CheckDownstream(WWTP)
+check_connection(WWTP)
 
 Groups = FindGroups(WWTP)
 

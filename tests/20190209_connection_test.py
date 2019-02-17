@@ -3,17 +3,14 @@
 # Author: Kai Zhang
 #
 # Change Log:
+# 2019-02-16: finding out flow discharge
 # 2019-02-10: passed connection/disconnection tests
 # 2019-02-09: initial
 #
 
-from unit_procs.influent import influent
-from unit_procs.effluent import effluent
-from unit_procs.reactor import asm_reactor
-from unit_procs.splitter import splitter
-from unit_procs.pipe import pipe
-from unit_procs.clarifier import final_clarifier
-from unit_procs.was import WAS
+from unit_procs.streams import influent, effluent, WAS, splitter, pipe
+from unit_procs.bio import asm_reactor
+from unit_procs.physchem import final_clarifier
 from utils.pfd import check_connection, show_pfd
 import pdb
 
@@ -93,6 +90,21 @@ if __name__ == "__main__":
 
 
     inlet.set_flow(0.1)  # mgd
+    fc.set_sidestream_flow(0.16)
+    splt.set_sidestream_flow(0.01)
+
+
+    for unit in wwtp:
+        print(unit.__name__, ":total_inflow=", unit.get_outlet_flow(), end="")
+        if unit.has_sidestream():
+            print(": main_outflow=", unit._main_outlet_flow,
+                    " side_outflow=", unit._side_outlet_flow)
+        else:
+            print(": total_outflow=", unit.get_outlet_flow())
+
+
+
+
     
     
 

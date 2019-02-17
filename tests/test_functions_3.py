@@ -8,8 +8,7 @@
 #   2015-6-24, KZ: added note about the Splitter update
 #   2015-4-14, Kai Zhang
 
-from ASMModel.influent import influent
-from ASMModel.effluent import effluent
+from unit_procs.streams import influent, effluent
 
 '''
 def print_elem(container):
