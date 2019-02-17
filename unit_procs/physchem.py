@@ -19,19 +19,23 @@
 #    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    Definition of Primary and Final Clarifier units.
-#    It is assumed that clarifiers are circular.
+#    Definition of physical-chemical process units.
 #    Author: Kai Zhang
 #
-# Change Log: 
+# ----------------------------------------------------------------------------
+
+
+from unit_procs.streams import splitter
+
+
+# ----------------------------------------------------------------------------
+
+# final_clarifier class - Change Log: 
 # 20190209 KZ: standardized import
 #   July 30, 2017 KZ: made it more pythonic.
 #   March 21, 2017 KZ: Migrated to Python3
 #   May 26, 2014 KZ: Changed base class from Base to Splitter
 #   July 11, 2013 KZ: Initial commit
-#
-
-from unit_procs.splitter import splitter
 
 class final_clarifier(splitter):
     __id = 0

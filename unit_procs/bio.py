@@ -18,11 +18,17 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
 #
-# This is the definition of asm_reactor class. 
+# This is the definition of class related to biological processes. 
 # 
-# Reactor dimensions, inlet_list, outlet_list, dissolved oxygen,
-# and mass balance will be defined for the public interface
-# 
+# ----------------------------------------------------------------------------
+
+
+from unit_procs.streams import pipe
+from ASMModel.asm_1 import ASM_1
+from ASMModel import constants
+
+
+# ----------------------------------------------------------------------------
 # Update Log: 
 # 20190209 KZ: standardized import
 # July 30, 2017 KZ: more pythonic style
@@ -30,11 +36,6 @@
 # May 26, 2014 KZ: Updated Definition
 # December 17, 2013 KZ: Added/revised blend_components() definition.
 # December 07, 2013 Kai Zhang
-
-
-from unit_procs.pipe import pipe
-from ASMModel.asm_1 import ASM_1
-from ASMModel import constants
 
 class asm_reactor(pipe):
     __id = 0
@@ -94,7 +95,7 @@ class asm_reactor(pipe):
         for index in range(constants._NUM_ASM1_COMPONENTS):
             temp = 0
             for unit in self._inlet:
-                temp += unit.get_eff_comps()[index] * unit.get_outlet_flow()
+                temp += unit.get_outlet_concs()[index] * unit.get_outlet_flow()
             self._reactor_inf_comps[index] = temp / self._total_flow
             #TODO: how do we handle the _components_blended flag here?
         return None
@@ -104,7 +105,7 @@ class asm_reactor(pipe):
         return self._active_vol
 
 
-    def get_eff_comps(self):
+    def get_outlet_concs(self):
         return self._eff_comps
 
 

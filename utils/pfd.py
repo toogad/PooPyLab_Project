@@ -29,13 +29,9 @@
 #
 
 
-from unit_procs.influent import influent
-from unit_procs.effluent import effluent
-from unit_procs.pipe import pipe
-from unit_procs.reactor import asm_reactor
-from unit_procs.clarifier import final_clarifier
-from unit_procs.splitter import splitter
-from unit_procs.was import WAS
+from unit_procs.streams import influent, effluent, WAS, pipe, splitter
+from unit_procs.bio import asm_reactor
+from unit_procs.physchem import final_clarifier
 
 
 def check_connection(pfd=[]):

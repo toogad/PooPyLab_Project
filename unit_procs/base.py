@@ -20,8 +20,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#   Definition of the Base class for WWTP components such as
-#   reactors.
+#   Definition of the base class for WWTP components.
 #
 #   Update Log:
 #   Jan 12, 2019 KZ: resumed and cleaned up
