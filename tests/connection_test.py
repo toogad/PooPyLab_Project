@@ -20,7 +20,9 @@ def _id_upstream_type(me, upds):
     # me: a process unit
     # upds: an upstream discharger of "me"
 
-    if isinstance(upds, influent):
+    if isinstance(me, influent):
+        return "VOID"
+    elif isinstance(upds, influent):
         return "INFLUENT"
     elif isinstance(upds, splitter):  # splitter & its derived types
         if me == upds.get_downstream_main():
@@ -31,11 +33,38 @@ def _id_upstream_type(me, upds):
         return "PIPE"
     
 
-def _flow_balance(cur, prefix, visited):
-    if cur not in visited:
-        visited.append(cur)
-        if not cur.flow_balanced():  #TODO: add this func.
-            ups = cur.get_upstream()
+def _flow_balance(cur, balanced):
+    # cur: current unit
+    # balance []: collection of balanced units
+
+    if cur.flow_balanced():  #TODO: add this func.
+        if cur not in balanced:
+            balanced.append(cur)
+        cur.discharge()
+    else:  # cur is not yet flow-balanced:
+        upst = cur.get_upstream()
+        if upst != None:  # cur is not an influent
+            for dis in upst:
+                _t = _id_upstream_type(cur, dis)
+                if _t == "INFLUENT" or _t == "SPLITTER_SIDE":
+                    # flow is given (TODO: check in discharge())
+                    dis.discharge()
+                    return dis.get_outlet_flow()
+                elif _t == "SPLITTER_MAIN" or _t == "PIPE":
+                    return _flow_balance(dis, balanced)
+                dis.discharge()
+        else:  # cur itself is an influent
+            cur.discharge()
+    print(cur.__name__, "flow is balanced:", cur.flow_balanced())
+    return cur.get_outlet_flow()
+
+
+    
+
+
+                 
+
+
 
             
 

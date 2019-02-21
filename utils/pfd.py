@@ -34,6 +34,18 @@ from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
 
 
+def _find_mainstream_only_loops(pfd=[]):
+    # find the loops that only include units has no sidestreams (i.e. pipe,
+    # asm_reactor, splitter's downstream_main)
+    # TODO: add code
+    pass
+
+def _check_user_input_flows(pfd=[]):
+    # verify all sidestreams and influent have user input flows
+    # flow given shall be greater than zero at any proc. unit
+    # TODO: add code
+    pass
+
 def check_connection(pfd=[]):
     loose_end = 0
     for unit in pfd:

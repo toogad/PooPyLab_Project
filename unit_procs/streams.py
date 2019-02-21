@@ -149,6 +149,8 @@ class pipe(base):
         ''' Set the mainstream unit that will receive effluent from the
             current unit
         '''
+        #TODO: the downstream_main shall not lead to a self-loop that excludes
+        # a sidestream of any kind
         if self._main_outlet != receiver:  # if the receiver hasn't been added
             self._main_outlet = receiver
             self._main_outlet_connected = receiver != None
