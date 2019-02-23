@@ -32,6 +32,7 @@ from ASMModel import constants
 # ----------------------------------------------------------------------------
 # pipe class - Change Log:
 # 20190209 KZ: standardized import
+#   Feb 22, 2019 KZ: added flow_balanced()
 #   Jan 12, 2019 KZ: resume and cleaned up
 #   Jul 28, 2017 KZ: made it more pythonic
 #   Mar 21, 2017 KZ: Migrated to Python3

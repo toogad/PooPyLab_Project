@@ -59,7 +59,21 @@ def _flow_balance(cur, balanced):
     return cur.get_outlet_flow()
 
 
-    
+def _rearrange(pfd):
+    for _u in pfd:
+        if isinstance(_u, effluent) and not isinstance(_u, WAS):
+            pfd.remove(_u)
+            pfd.insert(0, _u)
+            break
+    return None
+
+
+def check_flow_balance(pfd):
+    _rearrange(pfd)
+    balanced = []
+    for i in range(len(pfd)):
+        _flow_balance(pfd[i], balanced)
+    return None
 
 
                  
