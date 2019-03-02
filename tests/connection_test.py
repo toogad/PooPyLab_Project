@@ -33,50 +33,66 @@ def _id_upstream_type(me, upds):
         return "PIPE"
     
 
-def _flow_balance(cur, balanced):
-    # cur: current unit
-    # balance []: collection of balanced units
-
-    if cur.flow_balanced():  #TODO: add this func.
-        if cur not in balanced:
-            balanced.append(cur)
-        cur.discharge()
-    else:  # cur is not yet flow-balanced:
-        upst = cur.get_upstream()
-        if upst != None:  # cur is not an influent
-            for dis in upst:
-                _t = _id_upstream_type(cur, dis)
-                if _t == "INFLUENT" or _t == "SPLITTER_SIDE":
-                    # flow is given (TODO: check in discharge())
-                    dis.discharge()
-                    return dis.get_outlet_flow()
-                elif _t == "SPLITTER_MAIN" or _t == "PIPE":
-                    return _flow_balance(dis, balanced)
-                dis.discharge()
-        else:  # cur itself is an influent
-            cur.discharge()
-    print(cur.__name__, "flow is balanced:", cur.flow_balanced())
-    return cur.get_outlet_flow()
+def _check_WAS(pfd):
+    # Check the validity of the WAS units in the pfd. 
+    #   1) All WAS units shall be connected to side streams of splitters;
+    #   2) There can only be 0 or 1 SRT controlling WAS (via its upstream
+    #   splitter side);
+    # Satisfying the above requirements will allow the SRT controlling splitter
+    # to be moved to the front of the pfd.
 
 
-def _rearrange(pfd):
+    # SRT Controlling splitter to be found:
+    _srt_ctrl_splt = None  
+    _was_connect_error = False
+    _srt_ctrl_count = 0
+
     for _u in pfd:
-        if isinstance(_u, effluent) and not isinstance(_u, WAS):
+        if isinstance(_u, WAS):
+            _u_upstr = _u.get_upstream()
+            for _upds in _u_upstr:
+                if _id_upstream_type(_u, _upds) != "SPLITTER_SIDE":
+                    print("CONNECTION ERROR:", _u.__name__, 
+                            "shall connect to a side stream.")
+                    _was_connect_error = True
+                    break
+                elif _upds.is_SRT_controller():
+                    _srt_ctrl_splt = _upds
+                    _srt_ctrl_count += 1
+
+    if _was_connect_error:
+        return None
+
+    if _srt_ctrl_count > 1:
+        print("PFD ERROR: More than ONE SRT controlling splitters.")
+    elif _srt_ctrl_count == 0:
+        print("PFD ERROR: No SRT controlling splitter was specified.")
+    else:
+        print("Found one SRT controller splitter; Moved to the front of PFD")
+        pfd.remove(_srt_ctrl)
+        pfd.insert(0, _srt_ctrl)
+
+    return None
+
+
+
+
+
+    
+
+def _move_SRT_Controller_to_front(pfd):
+
+    for _u in pfd:
+        if isinstance(_u, WAS):
             pfd.remove(_u)
             pfd.insert(0, _u)
             break
     return None
 
 
-def check_flow_balance(pfd):
-    _rearrange(pfd)
-    balanced = []
-    for i in range(len(pfd)):
-        _flow_balance(pfd[i], balanced)
-    return None
 
 
-                 
+
 
 
 
