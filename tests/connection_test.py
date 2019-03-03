@@ -3,7 +3,6 @@
 # Author: Kai Zhang
 #
 # Change Log:
-# 2019-03-02: modify pfd checking func.
 # 2019-02-16: finding out flow discharge
 # 2019-02-10: passed connection/disconnection tests
 # 2019-02-09: initial
@@ -12,78 +11,8 @@
 from unit_procs.streams import influent, effluent, WAS, splitter, pipe
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
-from utils.pfd import check_connection, show_pfd
+from utils.pfd import check_pfd, show_pfd
 import pdb
-
-
-def _id_upstream_type(me, upds):
-    # identify the type of an upstream discharger (upds) of (me)
-    # me: a process unit
-    # upds: an upstream discharger of "me"
-
-    if isinstance(me, influent):
-        return "VOID"
-    elif isinstance(upds, influent):
-        return "INFLUENT"
-    elif isinstance(upds, splitter):  # splitter & its derived types
-        if me == upds.get_downstream_main():
-            return "SPLITTER_MAIN"
-        else:
-            return "SPLITTER_SIDE"
-    elif isinstance(upds, pipe):  # pipe & its derived types
-        return "PIPE"
-    
-
-def _check_WAS(pfd):
-    # Check the validity of the WAS units in the pfd. 
-    #   1) All WAS units shall be connected to side streams of splitters;
-    #   2) There can only be 0 or 1 SRT controlling WAS (via its upstream
-    #   splitter side);
-    # Satisfying the above requirements will allow the SRT controlling splitter
-    # to be moved to the front of the pfd.
-
-
-    # SRT Controlling splitter to be found:
-    _srt_ctrl_splt = None  
-    _was_connect_status = False
-    _srt_ctrl_count = 0
-
-    for _u in pfd:
-        if isinstance(_u, WAS):
-            _u_upstr = _u.get_upstream()
-            for _upds in _u_upstr:
-                if _id_upstream_type(_u, _upds) != "SPLITTER_SIDE":
-                    print("CONNECTION ERROR:", _u.__name__, 
-                            "shall connect to a side stream.")
-                    _was_connect_status = True
-                    break
-                elif _upds.is_SRT_controller():
-                    _srt_ctrl_splt = _upds
-                    _srt_ctrl_count += 1
-
-    if _srt_ctrl_count > 1:
-        print("PFD ERROR: More than ONE SRT controlling splitters.")
-    elif _srt_ctrl_count == 0:
-        print("PFD ERROR: No SRT controlling splitter was specified.")
-    else:
-        print("Found one SRT controller splitter; Moved to the front of PFD")
-        pfd.remove(_srt_ctrl)
-        pfd.insert(0, _srt_ctrl)
-
-    return _was_connect_status
-
-def _check_sidestreams(pfd):
-    # Check the validity of the sidestreams of all splitter types
-    # All side stream flows shall be defined by user except for the
-    # SRT_Controller's.
-
-    _sidestream_flow_defined = True
-    for _u in pfd:
-        if isinstance(_u, splitter) and not _u.sidestream_flow_defined():
-            print("PFD ERROR: Sidestream feeding", _u.__name__, \
-                    "needs its flow defined.")
-    return _sidestream_flow_defined
-            
 
 
 if __name__ == "__main__":
@@ -148,16 +77,18 @@ if __name__ == "__main__":
         return None
         
     construct_pfd()
-    check_connection(wwtp)
+    check_pfd(wwtp)
     show_pfd(wwtp)
 
     destroy_pfd()
-    check_connection(wwtp)
+    check_pfd(wwtp)
     show_pfd(wwtp)
 
     print('\n', "Reconstructing PFD...")
     construct_pfd()
-    check_connection(wwtp)
+    #pdb.set_trace()
+    check_pfd(wwtp)
+    input("press a key")
     show_pfd(wwtp)
 
 
@@ -175,17 +106,7 @@ if __name__ == "__main__":
             print(": total_outflow=", unit.get_outlet_flow())
 
 
-    # testing _id_upstream_type() func:
-    for unit in wwtp:
-        if isinstance(unit, influent):
-            print(unit.__name__, "is influent without upstream.")
-        else:
-            print(unit.__name__," upstream:")
-            up = unit.get_upstream()
-            for d in up:
-                print("   ", d.__name__, "is of", _id_upstream_type(unit, d))
-
-            
+           
 
     
 
