@@ -3,6 +3,7 @@
 # Author: Kai Zhang
 #
 # Change Log:
+# 2019-03-02: modify pfd checking func.
 # 2019-02-16: finding out flow discharge
 # 2019-02-10: passed connection/disconnection tests
 # 2019-02-09: initial
@@ -44,7 +45,7 @@ def _check_WAS(pfd):
 
     # SRT Controlling splitter to be found:
     _srt_ctrl_splt = None  
-    _was_connect_error = False
+    _was_connect_status = False
     _srt_ctrl_count = 0
 
     for _u in pfd:
@@ -54,14 +55,11 @@ def _check_WAS(pfd):
                 if _id_upstream_type(_u, _upds) != "SPLITTER_SIDE":
                     print("CONNECTION ERROR:", _u.__name__, 
                             "shall connect to a side stream.")
-                    _was_connect_error = True
+                    _was_connect_status = True
                     break
                 elif _upds.is_SRT_controller():
                     _srt_ctrl_splt = _upds
                     _srt_ctrl_count += 1
-
-    if _was_connect_error:
-        return None
 
     if _srt_ctrl_count > 1:
         print("PFD ERROR: More than ONE SRT controlling splitters.")
@@ -72,33 +70,20 @@ def _check_WAS(pfd):
         pfd.remove(_srt_ctrl)
         pfd.insert(0, _srt_ctrl)
 
-    return None
+    return _was_connect_status
 
+def _check_sidestreams(pfd):
+    # Check the validity of the sidestreams of all splitter types
+    # All side stream flows shall be defined by user except for the
+    # SRT_Controller's.
 
-
-
-
-    
-
-def _move_SRT_Controller_to_front(pfd):
-
+    _sidestream_flow_defined = True
     for _u in pfd:
-        if isinstance(_u, WAS):
-            pfd.remove(_u)
-            pfd.insert(0, _u)
-            break
-    return None
-
-
-
-
-
-
-
-
+        if isinstance(_u, splitter) and not _u.sidestream_flow_defined():
+            print("PFD ERROR: Sidestream feeding", _u.__name__, \
+                    "needs its flow defined.")
+    return _sidestream_flow_defined
             
-
-
 
 
 if __name__ == "__main__":

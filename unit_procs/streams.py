@@ -32,7 +32,6 @@ from ASMModel import constants
 # ----------------------------------------------------------------------------
 # pipe class - Change Log:
 # 20190209 KZ: standardized import
-#   Feb 22, 2019 KZ: added flow_balanced()
 #   Jan 12, 2019 KZ: resume and cleaned up
 #   Jul 28, 2017 KZ: made it more pythonic
 #   Mar 21, 2017 KZ: Migrated to Python3
@@ -676,6 +675,7 @@ class effluent(pipe):
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
 # 20190209 KZ: standardized import
+# Mar 02, 2019 KZ: added check on side flow and sidestream_flow_defined()
 # Feb 09, 2019 KZ: revised set_downstream_side()
 # Jul 30, 2017 KZ: pythonic style
 # Mar 21, 2017 KZ: Migrated to Python3
@@ -715,6 +715,7 @@ class splitter(pipe):
         self._side_outlet_flow = 0
         
         self._side_outlet_connected = False
+        self._side_flow_defined = False
 
         self._SRT_controller = False
 
@@ -737,10 +738,18 @@ class splitter(pipe):
         return None
 
 
-    def set_sidestream_flow(self, flow):
-        self._side_outlet_flow = flow
+    def set_sidestream_flow(self, flow=0):
+        if flow >= 0:
+            self._side_outlet_flow = flow
+            if self._SRT_controller:
+                self._side_flow_defined = True
+            elif flow == 0:
+                self._side_flow_defined = False
         #TODO: Need to be able to dynamically update the sidestream flow
         return None
+
+    def sidestream_flow_defined(self):
+        return self._side_flow_defined
     
 
     def totalize_flow(self):
