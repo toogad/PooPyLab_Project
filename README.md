@@ -84,10 +84,12 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
     6)  General guidelines for schedule/milestones/releases.
 
 ===============================================================================
+
 2.0 STRUCTURE OF THE SOFTWARE
     Please refer to the attached structure diagram (COMING SOON)
 
 ===============================================================================
+
 3.0 FUNCTIONALITIES
 
     3.1 Graphic User Interface (GUI):
@@ -193,6 +195,7 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
     3.7 ANY OTHER SUGGESTIONS AND IDEAS??
 
 ===============================================================================
+
 4.0 CURRENT STATUS (WHAT HAVE BEEN DONE)
     This section shall be constantly edited by Kai Zhang to reflect the most 
     recent status of the development.
@@ -236,6 +239,7 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
                     units with the current class definitions.
     
 ===============================================================================
+
 5.0 TO DO LIST
     This section shall be constantly edited by Kai Zhang to reflect the current
     need for the development.
@@ -268,9 +272,4 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         5.6.1   ICONS FOR EACH UNIT TYPE.
         5.6.2   DRAG AND DROP CAPABILITY.
         5.6.3   CONNECT PROCESS FLOW DIAGRAM TO CODE
-
-
-
-
-    
 
