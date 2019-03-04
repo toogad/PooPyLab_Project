@@ -83,7 +83,7 @@ def _id_upstream_type(me, upds):
 #            print("   ", d.__name__, "is of", _id_upstream_type(unit, d))
 
  
-def _check_WAS(pfd):
+def _check_WAS(mywas):
     # Check the validity of the WAS units in the pfd. 
     #   1) All WAS units shall be connected to side streams of splitters via
     #   ONE pipe;
@@ -98,23 +98,22 @@ def _check_WAS(pfd):
     _was_connect_ok = False
     _srt_ctrl_count = 0
 
-    for _u in pfd:
-        if isinstance(_u, WAS):
-            _u_upstr = _u.get_upstream().keys()
-            for _upds in _u_upstr:
-                if isinstance(_upds, pipe) \
-                        and not isinstance(_upds, asm_reactor):
-                    _xu = _upds.get_upstream().keys()
-                    if len(_xu) == 1:
-                        for _uu in _xu:
-                            if _id_upstream_type(_upds, _uu) != "SPLITTER_SIDE":
-                                print("CONNECTION ERROR:", _u.__name__, 
-                                        "shall be 'SIDESTREAM->PIPE->WAS'.")
-                                _was_connect_ok = False
-                                break
-                            if _uu.is_SRT_controller():
-                                _srt_ctrl_splt = _uu
-                                _srt_ctrl_count += 1
+    for _u in mywas:
+        _u_upstr = _u.get_upstream().keys()
+        for _upds in _u_upstr:
+            if isinstance(_upds, pipe) \
+                    and not isinstance(_upds, asm_reactor):
+                _xu = _upds.get_upstream().keys()
+                if len(_xu) == 1:
+                    for _uu in _xu:
+                        if _id_upstream_type(_upds, _uu) != "SPLITTER_SIDE":
+                            print("CONNECTION ERROR:", _u.__name__, 
+                                    "shall be 'SIDESTREAM->PIPE->WAS'.")
+                            _was_connect_ok = False
+                            break
+                        if _uu.is_SRT_controller():
+                            _srt_ctrl_splt = _uu
+                            _srt_ctrl_count += 1
 
     if _srt_ctrl_count > 1:
         print("PFD ERROR: More than ONE SRT controlling splitters.")
@@ -128,14 +127,14 @@ def _check_WAS(pfd):
     return _was_connect_ok
 
 
-def _check_sidestream_flows(pfd):
+def _check_sidestream_flows(mysplitters):
     # Check the validity of the sidestreams of all splitter types
     # All side stream flows shall be defined by user except for the
     # SRT_Controller's.
 
     _sidestream_flow_defined = True
-    for _u in pfd:
-        if isinstance(_u, splitter) and not _u.sidestream_flow_defined():
+    for _u in mysplitters:
+        if not _u.sidestream_flow_defined():
             print("PFD ERROR: Sidestream feeding", _u.__name__, \
                     "needs its flow defined.")
     return _sidestream_flow_defined
@@ -178,9 +177,17 @@ def _has_main_only_loops(pfd):
 
 
 def check_pfd(wwtp):
+    _all_WAS = []
+    _all_splitters = []
+    for _u in wwtp:
+        if isinstance(_u, WAS):
+            _all_WAS.append(_u)
+        elif isinstance(_u, splitter):
+            _all_splitters.append(_u)
+
     _le = _check_connection(wwtp)
-    _WAS_ok = _check_WAS(wwtp)
-    _side_flow_defined = _check_sidestream_flows(wwtp)
+    _WAS_ok = _check_WAS(_all_WAS)
+    _side_flow_defined = _check_sidestream_flows(_all_splitters)
     _has_ms_loops = _has_main_only_loops(wwtp)
 
     if  _le == 0 and _WAS_ok and _side_flow_defined and _has_ms_loops == False:
