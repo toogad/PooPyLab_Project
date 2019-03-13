@@ -49,7 +49,7 @@ def _check_connection(pfd=[]):
             print(unit.__name__,"'s main downstream is not connected")
             loose_end +=1 
     if loose_end == 0:
-        print("The PFD is ready for simulation")
+        print("The units on the PFD are all connected.")
     else:
         print(loose_end, " connecton(s) to be fixed.")
     return loose_end
@@ -99,21 +99,19 @@ def _check_WAS(mywas):
     _srt_ctrl_count = 0
 
     for _u in mywas:
-        _u_upstr = _u.get_upstream().keys()
-        for _upds in _u_upstr:
+        for _upds in _u.get_upstream().keys():
             if isinstance(_upds, pipe) \
                     and not isinstance(_upds, asm_reactor):
-                _xu = _upds.get_upstream().keys()
-                if len(_xu) == 1:
-                    for _uu in _xu:
-                        if _id_upstream_type(_upds, _uu) != "SPLITTER_SIDE":
-                            print("CONNECTION ERROR:", _u.__name__, 
-                                    "shall be 'SIDESTREAM->PIPE->WAS'.")
-                            _was_connect_ok = False
-                            break
-                        if _uu.is_SRT_controller():
-                            _srt_ctrl_splt = _uu
-                            _srt_ctrl_count += 1
+                if len(_upds.get_upstream()) == 1:
+                    _xu = _upds.get_upstream().popitem()[0]
+                    if _id_upstream_type(_upds, _xu) != "SPLITTER_SIDE":
+                        print("CONNECTION ERROR:", _u.__name__, 
+                                "shall be 'SIDESTREAM->PIPE->WAS'.")
+                        _was_connect_ok = False
+                        break
+                    if _xu.is_SRT_controller():
+                        _srt_ctrl_splt = _xu
+                        _srt_ctrl_count += 1
 
     if _srt_ctrl_count > 1:
         print("PFD ERROR: More than ONE SRT controlling splitters.")
@@ -177,13 +175,8 @@ def _has_main_only_loops(pfd):
 
 
 def check_pfd(wwtp):
-    _all_WAS = []
-    _all_splitters = []
-    for _u in wwtp:
-        if isinstance(_u, WAS):
-            _all_WAS.append(_u)
-        elif isinstance(_u, splitter):
-            _all_splitters.append(_u)
+    _all_WAS = [w for w in wwtp if isinstance(w, WAS)]
+    _all_splitters = [s for s in wwtp if isinstance(s, splitter)]
 
     _le = _check_connection(wwtp)
     _WAS_ok = _check_WAS(_all_WAS)
