@@ -3,6 +3,7 @@
 # Author: Kai Zhang
 #
 # Change Log:
+# 2019-03-17: testing pfd_check()
 # 2019-02-16: finding out flow discharge
 # 2019-02-10: passed connection/disconnection tests
 # 2019-02-09: initial
@@ -55,10 +56,12 @@ if __name__ == "__main__":
         p3.set_downstream_main(fc)
         fc.set_downstream_main(p4)
         fc.set_downstream_side(p5)
+        fc.set_sidestream_flow(0.1)
         p4.set_downstream_main(outlet)
         p5.set_downstream_main(splt)
         splt.set_downstream_main(RAS)
         splt.set_downstream_side(p6)
+        splt.set_as_SRT_controller(True)
         RAS.set_downstream_main(ra)
         p6.set_downstream_main(waste)
         print("PFD constructed.")
@@ -77,6 +80,7 @@ if __name__ == "__main__":
         return None
         
     construct_pfd()
+    #pdb.set_trace()
     check_pfd(wwtp)
     show_pfd(wwtp)
 
@@ -85,15 +89,14 @@ if __name__ == "__main__":
     show_pfd(wwtp)
 
     print('\n', "Reconstructing PFD...")
-    construct_pfd()
     #pdb.set_trace()
+    construct_pfd()
     check_pfd(wwtp)
     input("press a key")
     show_pfd(wwtp)
 
 
     inlet.set_flow(0.1)  # mgd
-    fc.set_sidestream_flow(0.16)
     splt.set_sidestream_flow(0.01)
 
 
@@ -104,18 +107,4 @@ if __name__ == "__main__":
                     " side_outflow=", unit._side_outlet_flow)
         else:
             print(": total_outflow=", unit.get_outlet_flow())
-
-
-           
-
-    
-
-
-
-
-
-
-    
-    
-
 

@@ -735,6 +735,8 @@ class splitter(pipe):
 
     def set_as_SRT_controller(self, setting=False):
         self._SRT_controller = setting
+        #TODO: add notes here
+        self._side_flow_defined = setting
         #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
         return None
 
@@ -742,9 +744,10 @@ class splitter(pipe):
     def set_sidestream_flow(self, flow=0):
         if flow >= 0:
             self._side_outlet_flow = flow
+            self._side_flow_defined = True
             if self._SRT_controller:
                 self._side_flow_defined = True
-            elif flow == 0:
+            elif flow <= 0:
                 self._side_flow_defined = False
         #TODO: Need to be able to dynamically update the sidestream flow
         return None

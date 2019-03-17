@@ -99,11 +99,11 @@ def _check_WAS(mywas):
     _srt_ctrl_count = 0
 
     for _u in mywas:
-        for _upds in _u.get_upstream().keys():
+        for _upds in _u.get_upstream():
             if isinstance(_upds, pipe) \
                     and not isinstance(_upds, asm_reactor):
                 if len(_upds.get_upstream()) == 1:
-                    _xu = _upds.get_upstream().popitem()[0]
+                    _xu = [q for q in _upds.get_upstream()][0]
                     if _id_upstream_type(_upds, _xu) != "SPLITTER_SIDE":
                         print("CONNECTION ERROR:", _u.__name__, 
                                 "shall be 'SIDESTREAM->PIPE->WAS'.")
@@ -132,8 +132,7 @@ def _check_sidestream_flows(mysplitters):
     for _u in mysplitters:
         if not _u.sidestream_flow_defined():
             _undefined += 1
-            print("PFD ERROR: Sidestream feeding", _u.__name__, \
-                    "needs its flow defined.")
+            print("PFD ERROR: Sidestream flow undefined", _u.__name__)
 
     return _undefined == 0
             
@@ -156,6 +155,7 @@ def _find_main_only_prefix(cur, done, prefix_ms):
         if _k not in done and _id_upstream_type(cur, _k) != "SPLITTER_SIDE":
             _find_main_only_prefix(_k, done, prefix_ms) 
 
+    prefix_ms.pop()
     done.append(cur)
     return None
 
@@ -169,6 +169,8 @@ def _has_main_only_loops(pfd):
         _find_main_only_prefix(_u, done, prefix_ms)
 
     if len(prefix_ms) > 0:
+        print("PFD ERROR: Found a mainstream-only loop.")
+        print(" Loop={}".format([x.__name__ for x in prefix_ms]))
         return True
     else:
         return False
