@@ -95,7 +95,7 @@ def _check_WAS(mywas):
 
     # SRT Controlling splitter to be found:
     _srt_ctrl_splt = None  
-    _was_connect_ok = False
+    _was_connect_ok = True
     _srt_ctrl_count = 0
 
     for _u in mywas:
@@ -115,14 +115,12 @@ def _check_WAS(mywas):
 
     if _srt_ctrl_count > 1:
         print("PFD ERROR: More than ONE SRT controlling splitters.")
+        _was_connect_ok = False
     elif _srt_ctrl_count == 0:
         print("PFD ERROR: No SRT controlling splitter was specified.")
-    else:
-        print("Found one SRT controller splitter; Moved to the front of PFD")
-        pfd.remove(_srt_ctrl_splt)
-        pfd.insert(0, _srt_ctrl_splt)
+        _was_connect_ok = False
 
-    return _was_connect_ok
+    return _was_connect_ok, _srt_ctrl_splt
 
 
 def _check_sidestream_flows(mysplitters):
@@ -130,12 +128,14 @@ def _check_sidestream_flows(mysplitters):
     # All side stream flows shall be defined by user except for the
     # SRT_Controller's.
 
-    _sidestream_flow_defined = True
+    _undefined = 0
     for _u in mysplitters:
         if not _u.sidestream_flow_defined():
+            _undefined += 1
             print("PFD ERROR: Sidestream feeding", _u.__name__, \
                     "needs its flow defined.")
-    return _sidestream_flow_defined
+
+    return _undefined == 0
             
 
 def _find_main_only_prefix(cur, done, prefix_ms):
@@ -179,11 +179,14 @@ def check_pfd(wwtp):
     _all_splitters = [s for s in wwtp if isinstance(s, splitter)]
 
     _le = _check_connection(wwtp)
-    _WAS_ok = _check_WAS(_all_WAS)
+    _WAS_ok, _srt_ctrl_ = _check_WAS(_all_WAS)
     _side_flow_defined = _check_sidestream_flows(_all_splitters)
     _has_ms_loops = _has_main_only_loops(wwtp)
 
     if  _le == 0 and _WAS_ok and _side_flow_defined and _has_ms_loops == False:
+        print("Found one SRT controller splitter; Moved to the front of PFD")
+        wwtp.remove(_srt_ctrl_)
+        wwtp.insert(0, _srt_ctrl_)
         print("PFD READY")
     else:
         print("FIXED PFD ERRORS BEFORE PROCEEDING")

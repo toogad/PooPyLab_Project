@@ -113,13 +113,13 @@ class pipe(base):
     def add_upstream(self, discharger, branch='Main'): 
         #Connect current unit to the specified branch of the upstream unit
         if discharger not in self._inlet:
-            # Setting the flow to 0.0 is a place-holder when setting up
+            # Setting the flow to 0 is a place-holder when setting up
             # the Process Flow Diagram, because the actual total flow from
             # upstream unit may not have been completely configured. The
             # self.discharge() method of the upstream unit will totalize the
             # flow and blend the components before passing them into the
             # current unit.
-            self._inlet[discharger] = 0.0
+            self._inlet[discharger] = 0
             self._flow_totalized = self._components_blended = False
             self._has_discharger = True
             if branch == 'Main':
@@ -325,6 +325,7 @@ class pipe(base):
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
 # 20190209 KZ: standardized import
+#   Mar 15, 2019 KZ: _outlet --> _main_outlet
 #   July 31, 2017 KZ: Made it more pythonic and changed to python3.
 #   June 16, 2015 KZ: Removed _prefix, _group status and 
 #                       Set(Get)PreFixStatus(), Set(Get)GroupStatus;
@@ -384,7 +385,7 @@ class influent(base):
         self._design_flow = 10 * 1000 / 3.78  # convert to M3/day
 
         # the reactor that receives the plant influent
-        self._outlet = None
+        self._main_outlet = None
         
         # the status about whether there is a downstream unit
         self._main_outlet_connected = False
@@ -421,10 +422,10 @@ class influent(base):
             print("ERROR: WRONG RECEIVER GIVEN TO INFLUENT")
             return None
         if rcvr == None:
-            self._outlet = None
+            self._main_outlet = None
             self._main_outlet_connected = False
-        elif self._outlet != rcvr:
-            self._outlet = rcvr 
+        elif self._main_outlet != rcvr:
+            self._main_outlet = rcvr 
             self._main_outlet_connected = True
             rcvr.add_upstream(self)
         return None
@@ -446,7 +447,7 @@ class influent(base):
         ''' Get the single unit downstream of the current one
             Return Type: base.Base
         '''
-        return self._outlet
+        return self._main_outlet
 
 
     def set_as_visited(self, status=False):
