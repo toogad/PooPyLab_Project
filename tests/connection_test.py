@@ -46,7 +46,7 @@ if __name__ == "__main__":
             ra, rb, fc, outlet,
             RAS, waste, splt]
 
-    def construct_pfd():
+    def construct_MLE():
         # make an MLE plant
         inlet.set_downstream_main(p1)
         p1.set_downstream_main(ra)
@@ -64,10 +64,10 @@ if __name__ == "__main__":
         splt.set_as_SRT_controller(True)
         RAS.set_downstream_main(ra)
         p6.set_downstream_main(waste)
-        print("PFD constructed.")
+        print("MLE PFD constructed.")
         return None
 
-    def destroy_pfd():
+    def destroy_MLE():
         # disconnection is done by removing upstream dischargers of a unit
         p1.remove_upstream(inlet)
         p3.remove_upstream(p1)  # on purpose
@@ -76,21 +76,21 @@ if __name__ == "__main__":
         p6.remove_upstream(splt)
         ra.remove_upstream(RAS)
         outlet.remove_upstream(p4)
-        print("PFD destoryed")
+        print("MLE PFD destoryed")
         return None
         
-    construct_pfd()
+    construct_MLE()
     #pdb.set_trace()
     check_pfd(wwtp)
     show_pfd(wwtp)
 
-    destroy_pfd()
+    destroy_MLE()
     check_pfd(wwtp)
     show_pfd(wwtp)
 
     print('\n', "Reconstructing PFD...")
     #pdb.set_trace()
-    construct_pfd()
+    construct_MLE()
     check_pfd(wwtp)
     input("press a key")
     show_pfd(wwtp)

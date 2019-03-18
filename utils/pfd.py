@@ -25,6 +25,8 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
+#   2019-03-17 KZ: revised _check_WAS()
+#   2019-03-17 KZ: revised _check_sidestream_flows(); _find_main_only_prefix()
 #   2019-03-03 KZ: added PFD checking fucntions
 #   2019-02-12 KZ: init
 #
@@ -72,16 +74,6 @@ def _id_upstream_type(me, upds):
     elif isinstance(upds, pipe):  # pipe & its derived types
         return "PIPE"
     
-## testing _id_upstream_type() func:
-#for unit in wwtp:
-#    if isinstance(unit, influent):
-#        print(unit.__name__, "is influent without upstream.")
-#    else:
-#        print(unit.__name__," upstream:")
-#        up = unit.get_upstream()
-#        for d in up:
-#            print("   ", d.__name__, "is of", _id_upstream_type(unit, d))
-
  
 def _check_WAS(mywas):
     # Check the validity of the WAS units in the pfd. 
@@ -137,43 +129,39 @@ def _check_sidestream_flows(mysplitters):
     return _undefined == 0
             
 
-def _find_main_only_prefix(cur, done, prefix_ms):
-    # cur: current unit being visited
-    # done: units whose upstream dischargers have all beenn analyzed
-    # prefix_ms: the previous mainstream units leading to cur.
-    if isinstance(cur, influent):
-        done.append(cur)
-        return None
+def _find_main_only_prefix(cur, pms):
+    if cur in pms:
+        # found a mainstream-only loop
+        return True
 
-    if cur in prefix_ms:
-        return None
+    if isinstance(cur, effluent) or isinstance(cur, WAS) or cur == None:
+        # current ms_prefix leads to dead end
+        if len(pms) > 0:
+            pms.pop()
+        return False
 
-    prefix_ms.append(cur)
-    _upstr = cur.get_upstream()
+    pms.append(cur)
 
-    for _k in _upstr:
-        if _k not in done and _id_upstream_type(cur, _k) != "SPLITTER_SIDE":
-            _find_main_only_prefix(_k, done, prefix_ms) 
-
-    prefix_ms.pop()
-    done.append(cur)
-    return None
+    if _find_main_only_prefix(cur.get_downstream_main(), pms):
+        return True
+    elif len(pms) > 0:
+        pms.pop()
+        return False
+    else:
+        return False
 
 
 def _has_main_only_loops(pfd):
     # Loops with mainstreams only are not allowed in the PFD
-    done = []
-    prefix_ms = []
 
     for _u in pfd:
-        _find_main_only_prefix(_u, done, prefix_ms)
-
-    if len(prefix_ms) > 0:
-        print("PFD ERROR: Found a mainstream-only loop.")
-        print(" Loop={}".format([x.__name__ for x in prefix_ms]))
-        return True
-    else:
-        return False
+        prefix_ms = []         
+        if _find_main_only_prefix(_u, prefix_ms):
+            print("PFD ERROR: Found a mainstream-only loop.")
+            print(" Loop={}".format([x.__name__ for x in prefix_ms]))
+            return True
+        else:
+            return False
 
 
 def check_pfd(wwtp):
