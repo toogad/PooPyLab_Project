@@ -726,8 +726,7 @@ class splitter(pipe):
     
 
     def is_SRT_controller(self):
-        ''' Mark the splitter whether it controls the plant's Solids Retention
-            Time.
+        ''' Mark the splitter whether it controls the plant's SRT.
             Default value: False
         '''
         return self._SRT_controller
