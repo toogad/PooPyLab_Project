@@ -38,6 +38,18 @@ from unit_procs.streams import splitter
 #   July 11, 2013 KZ: Initial commit
 
 class final_clarifier(splitter):
+    # In order to keep the PooPyLab package simple and focused on the
+    # biological processes, the final clarifier is assumed to be an ideal one.
+    # No detail solids settling model is implemented, as least for now.
+
+    # However, surface overflow rate, solids loading rate, and HRT will be
+    # checked and warnings will be given to user if they are out of normal
+    # ranges. Simulation will not proceed until all parameters are within
+    # proper ranges. TODO: Add actual solids sedimentation model.
+
+    # By default, the mainstream and sidestream outlets are overflow and
+    # underflow, respectively, of the final clarifier.
+
     __id = 0
     def __init__(self, ActiveVol=380, SWD=3.5):
         splitter.__init__(self)
@@ -50,5 +62,47 @@ class final_clarifier(splitter):
         self._SWD = SWD
         self._area = self._active_vol / self._SWD
 
+        # user defined solids capture rate, fraction less than 1.0;
+        # Typically, this is set to 0.95 but user can change the value.
+        self._capture_rate = 0.95
+
+        # user defined underflow solids, mg/L
+        self._under_TSS = 15000
+
+        # calculated overflow TSS, mg/L
+        self._over_TSS = 30  # place holder
+
+        # calculated underflow based on TSS balance
+        self._under_flow = 0  # place holder
+
+        # calculated overflow based on flow balance
+        self._over_flow = 0
+
         print(self.__name__, " initiated successfully.")
         return None
+
+    def estimate_current_state(self):
+        '''Determines the under/over flows based on TSS balance'''
+
+        # functions like self.get_TSS(), get_TKN(), etc shall be reserved for
+        # the overflow (effluent) conditions
+
+        self.blend_components()
+
+        # total inlet solids, kg/d
+        _inlet_solids = self._total_flow * self.get_TSS() * 1E-3
+
+        _under_solids = _inlet_solids * self._capture_rate  # kg/d
+
+        self._under_flow = _under_solids * 1E3 / self._under_TSS
+
+        self._over_flow = self._total_flow - self._under_flow
+
+
+
+
+
+        
+        
+
+        
