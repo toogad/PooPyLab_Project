@@ -23,6 +23,7 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   May 22, 2019 KZ: added options for branch in get_xxxx() functions
 #   Jan 12, 2019 KZ: resumed and cleaned up
 #   Feb 03, 2018 KZ: reviewed
 #   Jul 21, 2017 KZ: made it more pythonic
@@ -122,43 +123,43 @@ class base(object):
         pass
     
     @abstractmethod
-    def get_TSS(self):
+    def get_TSS(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_VSS(self):
+    def get_VSS(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_total_COD(self):
+    def get_total_COD(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_soluble_COD(self):
+    def get_soluble_COD(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_particulate_COD(self):
+    def get_particulate_COD(self, branch="Main_Out"):
         pass
     
     @abstractmethod
-    def get_TN(self):
+    def get_TN(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_particulate_N(self):
+    def get_particulate_N(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_soluble_N(self):
+    def get_soluble_N(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_organic_N(self):
+    def get_organic_N(self, branch="Main_Out"):
         pass
 
     @abstractmethod
-    def get_inorganic_N(self):
+    def get_inorganic_N(self, branch="Main_Out"):
         pass
 
     @abstractmethod

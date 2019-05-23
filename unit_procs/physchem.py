@@ -67,7 +67,7 @@ class final_clarifier(splitter):
         self._capture_rate = 0.95
 
         # user defined underflow solids, mg/L
-        self._under_TSS = 15000
+        self._under_TSS = 12000
 
         # calculated overflow TSS, mg/L
         self._over_TSS = 30  # place holder
@@ -81,25 +81,13 @@ class final_clarifier(splitter):
         print(self.__name__, " initiated successfully.")
         return None
 
+
     def estimate_current_state(self):
         '''Determines the under/over flows based on TSS balance'''
-
-        # functions like self.get_TSS(), get_TKN(), etc shall be reserved for
-        # the overflow (effluent) conditions
 
         self.blend_components()
 
         # total inlet solids, kg/d
-        _inlet_solids = self._total_flow * self.get_TSS() * 1E-3
-
-        _under_solids = _inlet_solids * self._capture_rate  # kg/d
-
-        self._under_flow = _under_solids * 1E3 / self._under_TSS
-
-        self._over_flow = self._total_flow - self._under_flow
-
-
-
 
 
         

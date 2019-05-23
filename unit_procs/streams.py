@@ -90,6 +90,9 @@ class pipe(base):
         #   analyzing the unit
         self._visited = False
 
+        # influent model components, see self._eff_comps for individuals
+        self._inf_comps = [0] * constants._NUM_ASM1_COMPONENTS 
+
         #  THIS IS WHERE THE CURRENT STATE OF THE UNIT IS STORED:
         self._eff_comps = [0] * constants._NUM_ASM1_COMPONENTS
         # _eff_comps[0]: X_I,
@@ -260,15 +263,17 @@ class pipe(base):
         return self._visited
 
 
-    def _sum_helper(self, index_list=[]):
+    def _sum_helper(self, branch="Main_Out", index_list=[]):
         ''' sum up the model components indicated by the index_list'''
-        sum = 0.0
-        for element in index_list:
-            sum += self._eff_comps[element]
+        _sum = 0.0
+        if branch == "Main_Out":
+            _sum = sum(self._eff_comps[i] for i in index_list)
+        elif branch == "In":
+            _sum = sum(self._inf_comps[i] for i in index_list)
         return sum
 
 
-    def get_TSS(self):
+    def get_TSS(self, branch="Main_Out"):
         #TODO: need to make COD/TSS = 1.2 changeable for different type of
         # sludge
         index_list = [0, 1, 2, 3, 4]
