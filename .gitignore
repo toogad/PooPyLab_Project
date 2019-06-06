@@ -51,6 +51,11 @@ target/
 setup.py
 venv/
 bin/
+#other libs
 include/
 lib/
 pyvenv.cfg
+#project reference
+Reference/
+#experimental stuff
+Experiment/
