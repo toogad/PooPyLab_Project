@@ -82,11 +82,22 @@ class splitter(poopy_lab_obj):
         self._total_inflow = 0         
         
         # main outlet flow, m3/d
-        self._mo_flow = 0
-        # side outlet flow, m3/d
+        self._mo_flow = 0 # side outlet flow, m3/d
         self._so_flow = 0
 
-        self._side_flow_defined = False
+        self._flow_source = ["TBD",  # To Be Determined
+                            "UPS",  # UPStream
+                            "USR",  # USeR input
+                            "DWN",  # DoWNstream
+                            ]
+        # default: inlet flow is set auto. by its upstream
+        self._in_flow_set_by = flow_input_source[1]
+        # default: main outlet flow is set auto. by (inlet - side_out)
+        self._mo_flow_set_by = flow_input_source[3]
+        # defult side outlet flow is set by user
+        self._so_flow_set_by = flow_input_source[0] # until input
+
+        self._so_flow_defined = False
 
         self._SRT_controller = False
         
@@ -110,6 +121,7 @@ class splitter(poopy_lab_obj):
 
         self._inflow_totalized = False
         self._in_comps_blended = False
+
         # provision flag for loop-finding need
         self._visited = False
 
@@ -121,7 +133,7 @@ class splitter(poopy_lab_obj):
     def set_as_SRT_controller(self, setting=False):
         self._SRT_controller = setting
         #TODO: add notes here
-        self._side_flow_defined = setting
+        self._so_flow_user_set = setting
         #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
         return None
 
@@ -161,6 +173,7 @@ class splitter(poopy_lab_obj):
             self._inlet[discharger] = 0
             self._inflow_totalized = self._in_comps_blended = False
             self._has_discharger = True
+            self._in_flow_set_by = self._flow_source[1]
             if upst_branch == 'Main':
                 discharger.set_downstream_main(self)
             elif upst_branch == 'Side':
@@ -179,10 +192,22 @@ class splitter(poopy_lab_obj):
 
 
     def totalize_inflow(self):
-        self._total_inflow = sum(self._inlet.values())
-        #TODO: Need to pay attention to the flow balance below during runtime
-        #TODO: Need to check: _mo_flow > 0?
-        self._mo_flow = self._total_inflow - self._so_flow
+        # sidestream outlet flow is required to be defined, either by USR or
+        # DWN, to proceed
+        if not self._so_flow_defined:
+            self._inflow_totalized = False
+            print("ERROR:", self.__name__, 
+                "totalize_inflow() failed due to absence of sidestream flow.")
+            return self._inflow_totalized
+
+        if self._in_flow_set_by == "UPS":
+            self._total_inflow = sum(self._inlet.values())
+            #TODO: Need to pay attention to the flow balance below during runtime
+            #TODO: Need to check: _mo_flow > 0?
+            self._mo_flow = self._total_inflow - self._so_flow
+        elif self._in_flow_set_by == "DWN":
+            self._total_inflow = self._mo_flow + self._so_flow
+
         self._inflow_totalized = True
         return self._total_inflow
 
@@ -190,12 +215,16 @@ class splitter(poopy_lab_obj):
     def blend_inlet_comps(self):
         if self._inflow_totalized == False:
             self.totalize_inflow()
-        if self._total_inflow:  # make sure it's not 0
+
+        if self._inflow_totalized and self._total_inflow:  # make sure it's not 0
             for i in range(constants._NUM_ASM1_COMPONENTS):
                 temp = 0
                 for unit in self._inlet:
                     temp += unit.get_outlet_concs()[i] * unit.get_outlet_flow()
                 self._in_comps[i] = temp / self._total_inflow
+        else:
+            print("ERROR:", self.__name__,"blend_inlet_comps() failed.")
+
         self._in_comps_blended = True
         return None
     
@@ -204,7 +233,7 @@ class splitter(poopy_lab_obj):
         ''' Combined the flows and loads into the current unit'''
         if self._flow_totalized == False:
             self.totalize_inflow()
-        if self._components_blended == False:
+        if self._in_comps_blended == False:
             self.blend_inlet_comps()
         return None
     
@@ -218,6 +247,8 @@ class splitter(poopy_lab_obj):
                 discharger.set_downstream_side(None)
             self._inflow_totalized = self._in_comps_blended = False
             self._has_discharger = len(self._inlet) > 0
+            if not self._has_discharger:
+                self._in_flow_set_by = self._flow_source[1]
         else:
             print('ERROR: UPSTREAM UNIT NOT FOUND')
         return None
@@ -233,6 +264,7 @@ class splitter(poopy_lab_obj):
         elif self._main_outlet != rcvr:
             self._main_outlet = rcvr 
             self._mo_connected = True
+            self._mo_flow_set_by = self._flow_source[1]
             rcvr.add_upstream(self)
         return None
     
@@ -245,6 +277,17 @@ class splitter(poopy_lab_obj):
         return self._main_outlet
 
 
+    def set_main_outflow(self, by_whom=1, flow=0):
+        if flow >= 0:
+            self._mo_flow = flow
+            self._mo_flow_set_by = self._flow_source[by_whom]
+        else:
+            print("ERROR:", self.__name__, "main outlet given invalid flow.")
+            self._mo_flow = 0
+            self._mo_flow_set_by = self._flow_source[0]  # TBD
+        return None
+        
+
     def get_main_outflow(self):
         if not self._inflow_totalized:
             self.totalize_inflow()
@@ -256,18 +299,23 @@ class splitter(poopy_lab_obj):
     def get_main_outlet_concs(self):
         if self._in_comps_blended == False:
             self.blend_inlet_comps()
-        return self._mo_comps.copy()
+        return self._mo_comps[:]
     
 
     def set_downstream_side(self, rcvr):
         if isinstance(rcvr, influent):
-            print("ERROR: WRONG RECEIVER GIVEN TO SIDESTREAM")
+            print("ERROR:", self.__name__, "sidestream given invalid receiver.")
             return None
+        if self._side_outlet != None:
+            print("ERROR:", self.__name__, "given multiple receivers.")
+            return None
+
         if self._side_outlet != rcvr:
             self._side_outlet = rcvr
             self._so_connected = rcvr != None
-            if rcvr != None:
-                rcvr.add_upstream(self, "Side")
+            self._so_flow_set_by = self._flow_source[0]
+            self._so_flow_defined = False
+            rcvr.add_upstream(self, "Side")
         return None
                 
 
@@ -279,20 +327,20 @@ class splitter(poopy_lab_obj):
         return self._side_outlet
 
 
-    def set_sidestream_flow(self, flow=0):
-        if flow >= 0:
+    def set_sidestream_flow(self, by_whom=2, flow=0):
+        if flow > 0 and by_whom != 0:
             self._so_flow = flow
-            self._side_flow_defined = True
+            self._so_flow_set_by = self._flow_source[by_whom]
             if self._SRT_controller:
-                self._side_flow_defined = True
-            elif flow < 0:
-                self._side_flow_defined = False
+                self._so_flow_defined = True
+            else:
+                self._so_flow_set_by = self._flow_source[0]
         #TODO: Need to be able to dynamically update the sidestream flow
         return None
 
 
     def sidestream_flow_defined(self):
-        return self._side_flow_defined
+        return self._so_flow_defined
     
 
     def get_side_outflow(self):
@@ -304,7 +352,7 @@ class splitter(poopy_lab_obj):
     def get_side_outlet_concs(self):
         if self._in_comps_blended == False:
             self.blend_inlet_comps()
-        return self._so_comps.copy()
+        return self._so_comps[:]
     
 
     def set_flow(self, dschgr, flow):
@@ -316,33 +364,31 @@ class splitter(poopy_lab_obj):
 
     def _discharge_main_outlet(self):
         m = self.get_downstream_main()
-        m.set_flow(self, self._mo_flow)
-        m.update_combined_input()
+        if m._in_flow_set_by == "UPS":
+            m.set_flow(self, self._mo_flow)
+            m.update_combined_input()
+        else:
+            print("WARN:", self.__name__, "main outlet receiver does not have
+            its flow source from upstream.")
         return None
 
 
     def _discharge_side_outlet(self):
         s = self.get_downstream_side()
-        s.set_flow(self, self._so_flow)
-        s.update_combined_input() 
+        if s._in_flow_set_by == "UPS":
+            s.set_flow(self, self._so_flow)
+            s.update_combined_input() 
+        else:
+            print("WARN:", self.__name__, "side outlet receiver does not have 
+            its flow source from upstream.")
         return None
  
  
     def discharge(self):
+        # connection check in pdf.check() global function
         self.update_combined_input()
-        if self._main_outlet == None and self._side_outlet == None:
-            print("ERROR:", self.__name__, "downstream unit incomplete")
-
-        if self._main_outlet != None:            
-            self._discharge_main_outlet()
-        else:
-            print("ERROR:", self.__name__, "downstream main outlet incomplete")
-
-        if self._side_outlet != None:
-            self._discharge_side_outlet()
-        elif self._has_sidestream:
-            print("ERROR:", self.__name__, "downstream side outlet incomplete")
-
+        self._discharge_main_outlet()
+        self._discharge_side_outlet()
         return None
 
 
