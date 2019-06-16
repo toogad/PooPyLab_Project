@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190612 KZ: migrated to match the new base (poopy_lab_obj) and new "pipe"
 # 20190209 KZ: standardized import
 # July 30, 2017 KZ: more pythonic style
 # March 21, 2017 KZ: Migrated to Python3
@@ -39,41 +40,26 @@ from ASMModel import constants
 
 class asm_reactor(pipe):
     __id = 0
-    def __init__(self, ActiveVol=380, swd=3.5, \
+
+    def __init__(self, ActiveVol=380, swd=3.5,
                     Temperature=20, DO=2, *args, **kw):
-        pipe.__init__(self) 
-        self.__class__.__id += 1
-        self.__name__ = "Reactor_" + str(self.__id)
         # swd = side water depth in meters, default = ~12 ft
         # ActiveVol in m^3, default value equals to 100,000 gallons
         # Temperature = 20 C by default
         # DO = dissolved oxygen, default = 2.0 mg/L
 
+        pipe.__init__(self) 
+        self.__class__.__id += 1
+        self.__name__ = "Reactor_" + str(self.__id)
+
         self._active_vol = ActiveVol
         self._swd = swd
         self._area = self._active_vol / self._swd
 
-        # _reactor_inf_comps[0]: Inf_X_I,
-        # _reactor_inf_comps[1]: Inf_X_S,
-        # _reactor_inf_comps[2]: Inf_X_BH,
-        # _reactor_inf_comps[3]: Inf_X_BA,
-        # _reactor_inf_comps[4]: Inf_X_D,
-        # _reactor_inf_comps[5]: Inf_S_I,
-        # _reactor_inf_comps[6]: Inf_S_S,
-        # _reactor_inf_comps[7]: -Inf_S_DO, COD = -DO
-        # _reactor_inf_comps[8]: Inf_S_NO,
-        # _reactor_inf_comps[9]: Inf_S_NH,
-        # _reactor_inf_comps[10]: Inf_S_NS,
-        # _reactor_inf_comps[11]: Inf_X_NS,
-        # _reactor_inf_comps[12]: Inf_S_ALK
-        #
-        self._reactor_inf_comps = [0] * constants._NUM_ASM1_COMPONENTS
-
-        # the core material the ASMReactor stores
         self._sludge = ASM_1(Temperature, DO)
-        
-        # the max acceptable error for determining whether the simulation has converged.
-        self._error_tolerance = 1E-4 # temporary number just to hold the place
+ 
+        # the max acceptable error for convergence
+        self._error_tolerance = 1E-4  # placeholder
         # a boolean flag to show convergence status
         self._converged = False
 
@@ -83,21 +69,17 @@ class asm_reactor(pipe):
         print(self.__name__, " Initialized Successfully.")
         return None
 
-
-    def blend_components(self):
-        '''
-            blend_components() for ASMReactor is different from that for Base.
-            Here it blends the contents from upstream and passes the mixture
-            to the reactor's INLET, while to the OUTLET in Base.
-            This is because the Base definition is used in non-reacting units
-            like Pipe, Splitter, etc.
-        '''
-        for index in range(constants._NUM_ASM1_COMPONENTS):
-            temp = 0
-            for unit in self._inlet:
-                temp += unit.get_outlet_concs()[index] * unit.get_outlet_flow()
-            self._reactor_inf_comps[index] = temp / self._total_flow
-            #TODO: how do we handle the _components_blended flag here?
+    
+    # FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
+    #
+    # (INSERT CODE HERE)
+    #
+    def set_active_vol(self, vol=380):
+        # vol in M3
+        if vol > 0:
+            self._active_vol = vol
+        else:
+            print("ERROR:", self.__name__, "requires an active vol > 0 M3.")
         return None
 
 
@@ -105,14 +87,14 @@ class asm_reactor(pipe):
         return self._active_vol
 
 
-    def get_outlet_concs(self):
-        return self._eff_comps
+    def set_ASM_condition(self, Temperature, DO):
+        if Temperature >= 4 and DO > 0:
+            self._sludge.update(Temperature, DO)
+        else:
+            print("ERROR:", self.__name__, "given crazy temperature or DO.")
+        return None
 
-
-    def get_inf_comps(self):
-        return self._reactor_inf_comp
-
-
+   
     def get_ASM_params(self):
         return self._sludge.get_params()
 
@@ -120,24 +102,24 @@ class asm_reactor(pipe):
     def get_ASM_stoichs(self):
         return self._sludge.get_stoichs()
 
-    def update_condition(self, Temperature, DO):
-        self._sludge.update(Temperature, DO)
-        return None
 
-   
     def initial_guess(self):
         #TODO: NEED TO PUT IN FIRST GUESS OF MODEL COMPONENTS HERE
-
-        # store the initial guess as the current state of the reactor
-        self._eff_comps = self._pre_eff_comps[:]
+        pass
 
     
     def estimate_current_state(self):
         # store the current componets received in the most recent iteration.
-        self._pre_eff_comps = self._eff_comps[:]
+        self._pre_eff_comps = self._mo_comps[:]
         # get the components from the next iteration.
-        self._eff_comps = self._sludge.steady_step(self._pre_eff_comps, \
-                                                    self._total_flow, \
-                                                    self._reactor_inf_comp, \
+        self._mo_comps = self._sludge.steady_step(self._pre_eff_comps,
+                                                    self._total_flow,
+                                                    self._in_comps,
                                                     self._active_vol)
+    #
+    # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
+
+
+    # ADJUSTMENTS TO COMMON INTERFACE
+    #
 

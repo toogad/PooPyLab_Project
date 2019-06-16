@@ -1,7 +1,7 @@
 #   This file is part of PooPyLab.
 #
 #    PooPyLab is a simulation software for biological wastewater treatment
-#    processes using the International Water Association Activated Sludge md
+#    processes using the International Water Association Activated Sludge
 #    Models.
 #   
 #    Copyright (C) Kai Zhang
@@ -23,6 +23,8 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   Jun 10, 2019 KZ: further revised to splitter-like base
+#   Jun 04, 2019 KZ: change the base to splitter-like.
 #   May 22, 2019 KZ: added options for branch in get_xxxx() functions
 #   Jan 12, 2019 KZ: resumed and cleaned up
 #   Feb 03, 2018 KZ: reviewed
@@ -49,130 +51,215 @@
 
 from abc import ABCMeta, abstractmethod 
 
-class base(object):
+class poopy_lab_obj(object):
     ''' 
-    base() Object defines the common interfaces for all PooPyLab objects.
+    Defines the common interfaces for all PooPyLab objects.
     '''
     
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get_upstream(self):
-        ''' Get the dict that stores all the upstream units that feed into
-            current one
-            Return Type: dict
+    def has_sidestream(self):
+        ''' 
+        Check if the current unit has a sidestream discharge.
+        Default = True, i.e. splitter always has a sidestream
         '''
         pass
+
     
     @abstractmethod
-    def get_downstream_main(self):
-        ''' Get the single unit downstream of the current one
-            Return Type: base.Base
+    def add_upstream(self, discharger, branch):
+        '''
+        Add the discharger's branch to self._inlet
         '''
         pass
 
+
     @abstractmethod
-    def totalize_flow(self):
-        ''' Totalize all the flows entering the current unit.
-            Return type: NO Return
+    def has_discharger(self):
+        '''
+        Return True if upstream is connected, False if not
         '''
         pass
 
+
     @abstractmethod
-    def blend_components(self):
-        '''
-            blend_components() for Base mixes the contents in all inlet
-            components and send to the OUTLET, assuming no reaction
-            takes palce.
-            The definition is changed in ASMReactor where the mixture
-            is passed to the INLET of the reactor before reactions.
+    def get_upstream(self):
+        ''' 
+        Get the dict that stores all the upstream units that feed into
+        the current one
+        Return Type: {poopy_lab_obj:flow_into_self}
         '''
         pass
+
+    
+    @abstractmethod
+    def totalize_inflow(self):
+        pass
+
+
+    @abstractmethod
+    def blend_inlet_comps(self):
+        pass
+
     
     @abstractmethod
     def update_combined_input(self):
-        ''' Combined the flows and loads into the current unit'''
-        pass
-
-    @abstractmethod
-    def get_outlet_flow(self):
-        ''' Return the total out flow of the current unit (mainstream)
-            Return value type: float/double
+        '''
+        Wrapper that combines the flows and loads into current unit
         '''
         pass
 
+
     @abstractmethod
-    def get_outlet_concs(self):
-        ''' Return the effluent concentrations of the current unit (mainstream)
-            Return type: list
+    def remove_upstream(self, discharger):
+        '''
+        Remove an existing discharger from self._inlet
         '''
         pass
+
+
+    @abstractmethod
+    def set_downstream_main(self, receiver):
+        pass
+
+
+    @abstractmethod
+    def main_outlet_connected(self):
+        pass
+
+
+    @abstractmethod
+    def get_downstream_main(self):
+        pass
+
+
+    @abstractmethod
+    def get_main_outflow(self):
+        ''' 
+        Return the mainstream outlet flow
+        Return value type: float
+        '''
+        pass
+
+
+    @abstractmethod
+    def get_main_outlet_concs(self):
+        '''
+        Return the effluent model components of the mainstream outlet
+        Return type: list
+        '''
+        pass
+
     
+    @abstractmethod
+    def set_downstream_side(self, receiver):
+        pass
+
+    
+    @abstractmethod
+    def side_outlet_connected(self):
+        '''
+        Return True if the downstream main outlet is connected,
+        False if not.
+        '''
+        pass
+
+
+    @abstractmethod
+    def get_downstream_side(self):
+        pass
+
+
+    @abstractmethod
+    def set_sidestream_flow(self, flow):
+        pass
+
+
+    @abstractmethod
+    def sidestream_flow_defined(self):
+        pass
+
+
+    @abstractmethod
+    def get_side_outflow(self):
+        ''' 
+        Return the sidestream outlet flow
+        Return value type: float
+        '''
+        pass
+
+
+    @abstractmethod
+    def get_side_outlet_concs(self):
+        pass
+
+
+    @abstractmethod
+    def set_flow(self, discharger, flow):
+        '''
+        specify the flow from the discharger
+        '''
+        pass
+
+     
     @abstractmethod
     def discharge(self):
-        ''' Pass the total flow and blended components to the next unit.
+        '''
+        Pass the total flow and blended components to the next units.
         '''
         pass
 
-    @abstractmethod
-    def has_sidestream(self):
-        ''' Check if the current unit has a sidestream discharge.
-            Default = False, i.e. no sidestream
-            Return type: boolean
-        '''
-        pass
-    
+
     @abstractmethod
     def get_TSS(self, branch="Main_Out"):
         pass
+
 
     @abstractmethod
     def get_VSS(self, branch="Main_Out"):
         pass
 
-    @abstractmethod
-    def get_total_COD(self, branch="Main_Out"):
-        pass
 
     @abstractmethod
-    def get_soluble_COD(self, branch="Main_Out"):
+    def get_COD(self, branch="Main_Out"):
         pass
 
+
     @abstractmethod
-    def get_particulate_COD(self, branch="Main_Out"):
+    def get_sCOD(self, branch="Main_Out"):
         pass
+
+
+    @abstractmethod
+    def get_pCOD(self, branch="Main_Out"):
+        pass
+
     
     @abstractmethod
     def get_TN(self, branch="Main_Out"):
         pass
 
-    @abstractmethod
-    def get_particulate_N(self, branch="Main_Out"):
-        pass
 
     @abstractmethod
-    def get_soluble_N(self, branch="Main_Out"):
+    def get_orgN(self, branch="Main_Out"):
         pass
 
-    @abstractmethod
-    def get_organic_N(self, branch="Main_Out"):
-        pass
 
     @abstractmethod
-    def get_inorganic_N(self, branch="Main_Out"):
+    def get_inorgN(self, branch="Main_Out"):
         pass
 
-    @abstractmethod
-    def has_discharger(self):
-        ''' Return True if upstream is connected, False if not'''
-        pass
 
     @abstractmethod
-    def main_outlet_connected(self):
-        ''' Return True if the downstream main outlet is connected,
-            False if not.
-        '''
+    def get_pN(self, branch="Main_Out"):
         pass
+
+
+    @abstractmethod
+    def get_sN(self, branch="Main_Out"):
+        pass
+
 
     @abstractmethod
     def set_as_visited(self, Status):
@@ -180,6 +267,7 @@ class base(object):
             process. Status = False by default.
         '''
         pass
+
 
     @abstractmethod
     def is_visited(self):

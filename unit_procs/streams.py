@@ -25,12 +25,389 @@
 # ----------------------------------------------------------------------------
 
 
-from unit_procs.base import base
+from unit_procs.base import poopy_lab_obj
 from ASMModel import constants
 
+# -----------------------------------------------------------------------------
+# splitter class - Change Log:
+# 20190609 KZ: further revised splitter to be the "base" of stream objs.
+# 20190604 KZ: migrating the base to poopy_lab_obj
+# 20190209 KZ: standardized import
+# Mar 02, 2019 KZ: added check on side flow and sidestream_flow_defined()
+# Feb 09, 2019 KZ: revised set_downstream_side()
+# Jul 30, 2017 KZ: pythonic style
+# Mar 21, 2017 KZ: Migrated to Python3
+# Jun 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
+# Jun 23, 2015 KZ: Rewrote sidestream to eliminate Branch class
+# Jun 18, 2015 KZ: Removed _PreFix and _Group status and 
+#                     Set(Get)PreFixStatus(), Set(Get)GroupStatus;
+#                     Renamed _Done to _Visited and SetAs(Is)Done() to
+#                     SetAs(Is)Visited()
+# Mar 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
+#                     Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
+#                     SetAs(Is)Done().
+# Nov 18, 2014 KZ: renamed "SideStream" into "Sidestream";
+#                         Added _SidestreamConnected and SideOutletConnected()
+# Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
+# Apr 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
+# Apr 18, 2014 KZ: Rewrite definition based on the new class system structure
+# Dec 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
+# Dec 07, 2013
+#
+
+
+class splitter(poopy_lab_obj):
+
+    __id = 0
+
+    def __init__(self):
+        self.__class__.__id += 1
+        self.__name__ = "Splitter_" + str(self.__id)
+
+        # _inlet store the upstream units and their flow contribution
+        # in the format of {unit, Flow}
+        self._inlet = {}
+        # outlets shall be a single receiver each
+        self._main_outlet = None
+        self._side_outlet = None
+        
+        # flag to indicate whether there are upstream units
+        self._has_discharger = False
+        self._has_sidestream = True  # always True for splitter
+        # main outlet connection flag
+        self._mo_connected = False
+        # side outlet connection flag
+        self._so_connected = False
+
+        self._total_inflow = 0         
+        
+        # main outlet flow, m3/d
+        self._mo_flow = 0
+        # side outlet flow, m3/d
+        self._so_flow = 0
+
+        self._side_flow_defined = False
+
+        self._SRT_controller = False
+        
+        # influent/main_outlet/side_oulet model components:
+        # _comps[0]: X_I,
+        # _comps[1]: X_S,
+        # _comps[2]: X_BH,
+        # _comps[3]: X_BA,
+        # _comps[4]: X_D,
+        # _comps[5]: S_I,
+        # _comps[6]: S_S,
+        # _comps[7]: -S_DO, COD = -DO
+        # _comps[8]: S_NO,
+        # _comps[9]: S_NH,
+        # _comps[10]: S_NS,
+        # _comps[11]: X_NS,
+        # _comps[12]: S_ALK
+        self._in_comps = [0] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0] * constants._NUM_ASM1_COMPONENTS
+        self._so_comps = [0] * constants._NUM_ASM1_COMPONENTS
+
+        self._inflow_totalized = False
+        self._in_comps_blended = False
+        # provision flag for loop-finding need
+        self._visited = False
+
+        print(self.__name__, "initialized successfully.")
+        return None
+    
+    #  FUNCTIONS UNIQUE TO SPLITTER
+    #
+    def set_as_SRT_controller(self, setting=False):
+        self._SRT_controller = setting
+        #TODO: add notes here
+        self._side_flow_defined = setting
+        #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
+        return None
+
+    
+    def is_SRT_controller(self):
+        return self._SRT_controller
+
+
+    def _sum_helper(self, branch="Main_Out", index_list=[]):
+        ''' sum up the model components indicated by the index_list'''
+        _sum = 0.0
+        if branch == "Main_Out":
+            _sum = sum(self._mo_comps[i] for i in index_list)
+        elif branch == "Inlet":
+            _sum = sum(self._in_comps[i] for i in index_list)
+        elif branch == "Side_Out" and self.has_sidestream():
+            _sum = sum(self._so_comps[i] for i in index_list)
+        return _sum
+        
+    #
+    # END OF FUNCTIONS UNIQUE TO SPLITTER
+
+
+    def has_sidestream(self):
+        return self._has_sidestream
+
+
+    def add_upstream(self, discharger, upst_branch='Main'): 
+        #Connect current unit to the specified branch of the upstream unit
+        if discharger not in self._inlet:
+            # Setting the flow to 0 is a place-holder when setting up
+            # the Process Flow Diagram, because the actual total flow from
+            # upstream unit may not have been completely configured. The
+            # self.discharge() method of the upstream unit will totalize the
+            # flow and blend the components before passing them into the
+            # current unit.
+            self._inlet[discharger] = 0
+            self._inflow_totalized = self._in_comps_blended = False
+            self._has_discharger = True
+            if upst_branch == 'Main':
+                discharger.set_downstream_main(self)
+            elif upst_branch == 'Side':
+                discharger.set_downstream_side(self)
+            else:
+                print("ERROR: UNKNOWN BRANCH SPECIFIED.")
+        return None
+
+
+    def has_discharger(self):
+        return self._has_discharger
+
+
+    def get_upstream(self):
+        return self._inlet
+
+
+    def totalize_inflow(self):
+        self._total_inflow = sum(self._inlet.values())
+        #TODO: Need to pay attention to the flow balance below during runtime
+        #TODO: Need to check: _mo_flow > 0?
+        self._mo_flow = self._total_inflow - self._so_flow
+        self._inflow_totalized = True
+        return self._total_inflow
+
+
+    def blend_inlet_comps(self):
+        if self._inflow_totalized == False:
+            self.totalize_inflow()
+        if self._total_inflow:  # make sure it's not 0
+            for i in range(constants._NUM_ASM1_COMPONENTS):
+                temp = 0
+                for unit in self._inlet:
+                    temp += unit.get_outlet_concs()[i] * unit.get_outlet_flow()
+                self._in_comps[i] = temp / self._total_inflow
+        self._in_comps_blended = True
+        return None
+    
+
+    def update_combined_input(self):
+        ''' Combined the flows and loads into the current unit'''
+        if self._flow_totalized == False:
+            self.totalize_inflow()
+        if self._components_blended == False:
+            self.blend_inlet_comps()
+        return None
+    
+
+    def remove_upstream(self, discharger):
+        if discharger in self._inlet:
+            self._inlet.pop(discharger)
+            if discharger.get_downstream_main() == self:
+                discharger.set_downstream_main(None)
+            else:
+                discharger.set_downstream_side(None)
+            self._inflow_totalized = self._in_comps_blended = False
+            self._has_discharger = len(self._inlet) > 0
+        else:
+            print('ERROR: UPSTREAM UNIT NOT FOUND')
+        return None
+    
+
+    def set_downstream_main(self, rcvr):
+        if isinstance(rcvr, influent):  # None is allowed as a place holder
+            print("ERROR: WRONG RECEIVER GIVEN TO INFLUENT")
+            return None
+        if rcvr == None:
+            self._main_outlet = None
+            self._mo_connected = False
+        elif self._main_outlet != rcvr:
+            self._main_outlet = rcvr 
+            self._mo_connected = True
+            rcvr.add_upstream(self)
+        return None
+    
+
+    def main_outlet_connected(self):
+        return self._mo_connected
+
+
+    def get_downstream_main(self):
+        return self._main_outlet
+
+
+    def get_main_outflow(self):
+        if not self._inflow_totalized:
+            self.totalize_inflow()
+        if self._mo_flow <= 0:
+            print("WARNING:", self.__name__, "main outlet flow <= 0.")
+        return self._mo_flow
+
+
+    def get_main_outlet_concs(self):
+        if self._in_comps_blended == False:
+            self.blend_inlet_comps()
+        return self._mo_comps.copy()
+    
+
+    def set_downstream_side(self, rcvr):
+        if isinstance(rcvr, influent):
+            print("ERROR: WRONG RECEIVER GIVEN TO SIDESTREAM")
+            return None
+        if self._side_outlet != rcvr:
+            self._side_outlet = rcvr
+            self._so_connected = rcvr != None
+            if rcvr != None:
+                rcvr.add_upstream(self, "Side")
+        return None
+                
+
+    def side_outlet_connected(self):
+        return self._so_connected
+
+
+    def get_downstream_side(self):
+        return self._side_outlet
+
+
+    def set_sidestream_flow(self, flow=0):
+        if flow >= 0:
+            self._so_flow = flow
+            self._side_flow_defined = True
+            if self._SRT_controller:
+                self._side_flow_defined = True
+            elif flow < 0:
+                self._side_flow_defined = False
+        #TODO: Need to be able to dynamically update the sidestream flow
+        return None
+
+
+    def sidestream_flow_defined(self):
+        return self._side_flow_defined
+    
+
+    def get_side_outflow(self):
+        if not self._inflow_totalized:
+            self.totalize_inflow()
+        return self._so_flow
+
+
+    def get_side_outlet_concs(self):
+        if self._in_comps_blended == False:
+            self.blend_inlet_comps()
+        return self._so_comps.copy()
+    
+
+    def set_flow(self, dschgr, flow):
+        if dschgr in self._inlet and flow >= 0:
+            self._inlet[dschgr] = flow
+            self._inflow_totalized = False
+        return None
+
+
+    def _discharge_main_outlet(self):
+        m = self.get_downstream_main()
+        m.set_flow(self, self._mo_flow)
+        m.update_combined_input()
+        return None
+
+
+    def _discharge_side_outlet(self):
+        s = self.get_downstream_side()
+        s.set_flow(self, self._so_flow)
+        s.update_combined_input() 
+        return None
+ 
+ 
+    def discharge(self):
+        self.update_combined_input()
+        if self._main_outlet == None and self._side_outlet == None:
+            print("ERROR:", self.__name__, "downstream unit incomplete")
+
+        if self._main_outlet != None:            
+            self._discharge_main_outlet()
+        else:
+            print("ERROR:", self.__name__, "downstream main outlet incomplete")
+
+        if self._side_outlet != None:
+            self._discharge_side_outlet()
+        elif self._has_sidestream:
+            print("ERROR:", self.__name__, "downstream side outlet incomplete")
+
+        return None
+
+
+    def get_TSS(self, br="Main_Out"):
+        #TODO: need to make COD/TSS = 1.2 changeable for different type of
+        # sludge
+        index_list = [0, 1, 2, 3, 4]
+        return self._sum_helper(br, index_list) / 1.2
+
+
+    def get_VSS(self, br="Main_Out"):
+        #TODO: need to make COD/VSS = 1.42 changeable for diff. type of sludge
+        index_list = [0, 1, 2, 3, 4]
+        return self._sum_helper(br, index_list) / 1.42
+    
+
+    def get_COD(self, br="Main_Out"):
+        index_list = [0, 1, 2, 3, 4, 5, 6]
+        return self._sum_helper(br, index_list)
+
+
+    def get_sCOD(self, br="Main_Out"):
+        index_list = [5, 6]
+        return self._sum_helper(br, index_list)
+
+
+    def get_pCOD(self, br="Main_Out"):
+        return self.get_COD(br) - self.get_sCOD(br)
+
+
+    def get_TN(self, br="Main_Out"):
+        index_list = [8, 9, 10, 11]
+        return self._sum_helper(br, index_list)
+
+
+    def get_orgN(self, br="Main_Out"):
+        index_list = [10, 11]
+        return self._sum_helper(br, index_list)
+
+
+    def get_inorgN(self, br="Main_Out"):
+        return self.get_TN(br) - self.get_orgN(br)
+
+
+    def get_pN(self, br="Main_Out"):
+        return self._sum_helper(br, [11])
+
+
+    def get_sN(self, br="Main_Out"):
+        return self.get_TN(br) - self.get_pN(br)
+
+
+    def set_as_visited(self, status=False):
+        self._visited = status
+        return None
+
+
+    def is_visited(self):
+        return self._visited
+ 
 
 # ----------------------------------------------------------------------------
 # pipe class - Change Log:
+# 20190609 KZ: fully migrated to the new base
+# 20190604 KZ: migrating to the new base (poopy_lab_obj)
 # 20190209 KZ: standardized import
 #   Jan 12, 2019 KZ: resume and cleaned up
 #   Jul 28, 2017 KZ: made it more pythonic
@@ -56,279 +433,54 @@ from ASMModel import constants
 #   Mar 08, 2014 KZ: Rewrite according to the new class structure
 #   Dec 07, 2013 Kai Zhang
 
-class pipe(base):
+class pipe(splitter):
     __id = 0
 
     def __init__(self):
+        self.splitter.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'Pipe_' + str(self.__id)
                 
-        # _inlet store the upstream units and their flow contribution
-        # in the format of {unit, Flow}
-        self._inlet = {}
-        
-        # a SINGLE unit that receives all the flows from the
-        # current unit
-        self._main_outlet = None #By default this is the MAIN OUTLET.
-        
-        # flag to indicate whether there are upstream units
-        self._has_discharger = False
+        # pipe has no sidestream
+        self._has_sidestream = False
 
-        # flag to indicate whether there are units in MAIN downstream
-        self._main_outlet_connected = False
-
-        # the Total Inflow, which is the same as the outflow for a pipe obj.
-        self._total_flow = 0         
-        
-        # flag to indicate whether _total_flow has been updated
-        self._flow_totalized = False
-
-        # flag to indicate whether _eff_comps[] have been blended
-        self._components_blended = False
-
-        # flag on whether the loop finding process has finished
-        #   analyzing the unit
-        self._visited = False
-
-        # influent model components, see self._eff_comps for individuals
-        self._inf_comps = [0] * constants._NUM_ASM1_COMPONENTS 
-
-        #  THIS IS WHERE THE CURRENT STATE OF THE UNIT IS STORED:
-        self._eff_comps = [0] * constants._NUM_ASM1_COMPONENTS
-        # _eff_comps[0]: X_I,
-        # _eff_comps[1]: X_S,
-        # _eff_comps[2]: X_BH,
-        # _eff_comps[3]: X_BA,
-        # _eff_comps[4]: X_D,
-        # _eff_comps[5]: S_I,
-        # _eff_comps[6]: S_S,
-        # _eff_comps[7]: -S_DO, COD = -DO
-        # _eff_comps[8]: S_NO,
-        # _eff_comps[9]: S_NH,
-        # _eff_comps[10]: S_NS,
-        # _eff_comps[11]: X_NS,
-        # _eff_comps[12]: S_ALK
+        # inlet and main outlet components are identical for a pipe
+        # make main outlet components an alias of the inlet components
+        self._mo_comps = self._in_comps
+        # side outlet components equal to the inlet, if they existed.
+        # make side outlet components an alias of the inlet components
+        self._so_comps = self._in_comps
 
         print(self.__name__,' initialized successfully.')
         return None
 
 
-    def add_upstream(self, discharger, branch='Main'): 
-        #Connect current unit to the specified branch of the upstream unit
-        if discharger not in self._inlet:
-            # Setting the flow to 0 is a place-holder when setting up
-            # the Process Flow Diagram, because the actual total flow from
-            # upstream unit may not have been completely configured. The
-            # self.discharge() method of the upstream unit will totalize the
-            # flow and blend the components before passing them into the
-            # current unit.
-            self._inlet[discharger] = 0
-            self._flow_totalized = self._components_blended = False
-            self._has_discharger = True
-            if branch == 'Main':
-                discharger.set_downstream_main(self)
-            elif branch == 'Side':
-                discharger.set_downstream_side(self)
-            else:
-                print("ERROR: UNKNOWN BRANCH SPECIFIED.")
-        return None
+    # FUNCTIONS UNIQUE TO PIPE GO HERE:
+    #
+    # (INSERT CODE HERE)
+    #
+    # END OF FUNCTIONS UNIQUE TO PIPE
 
-
-    def remove_upstream(self, discharger):
-        if discharger in self._inlet:
-            self._inlet.pop(discharger)
-            if discharger.get_downstream_main() == self:
-                discharger.set_downstream_main(None)
-            else:
-                discharger.set_downstream_side(None)
-            self._flow_totalized = self._components_blended = False
-            self._has_discharger = len(self._inlet) > 0
-        else:
-            print('ERROR: UPSTREAM UNIT NOT FOUND')
-        return None
-
-
-    def set_downstream_main(self, receiver):
-        ''' Set the mainstream unit that will receive effluent from the
-            current unit
-        '''
-        #TODO: the downstream_main shall not lead to a self-loop that excludes
-        # a sidestream of any kind
-        if self._main_outlet != receiver:  # if the receiver hasn't been added
-            self._main_outlet = receiver
-            self._main_outlet_connected = receiver != None
-            if receiver != None:
-                receiver.add_upstream(self)
-        return None
-
-
-    def get_upstream(self):
-        return self._inlet
-
-
-    def get_downstream_main(self):
-        return self._main_outlet
-
-
-    def totalize_flow(self):
-        ''' Totalize all the flows entering the current unit.
-        '''
-        self._total_flow = sum(self._inlet.values())
-        self._flow_totalized = True
-        return None
-
-
-    def blend_components(self):
-        '''
-            blend_components() for Base mixes the contents in all inlet
-            components and send to the OUTLET, assuming no reaction
-            takes palce.
-            The definition is changed in ASMReactor where the mixture
-            is passed to the INLET of the reactor before reactions.
-        '''
-        if self._flow_totalized == False:
-            self.totalize_flow()
-        if self._total_flow:
-            for index in range(constants._NUM_ASM1_COMPONENTS):
-                temp = 0
-                for unit in self._inlet:
-                    temp += unit.get_outlet_concs()[index] \
-                            * unit.get_outlet_flow()
-                self._eff_comps[index] = temp / self._total_flow
-        self._components_blended = True
+    # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
+    #
+    def set_downstream_side(self, receiver):
+        print("WARNING:", self.__name__, "has no sidestream.")
         return None
     
 
-    def update_combined_input(self):
-        ''' Combined the flows and loads into the current unit'''
-        if self._flow_totalized == False:
-            self.totalize_flow()
-        if self._components_blended == False:
-            self.blend_components()
-        return None
-    
-
-    def get_outlet_flow(self):
-        ''' Return the total out flow of the current unit (mainstream)
-        '''
-        if self._flow_totalized == False:
-            self.totalize_flow()
-        return self._total_flow
-    
-
-    def get_outlet_concs(self):
-        ''' Return the effluent concentrations of the current unit (mainstream)
-        '''
-        if self._components_blended == False:
-            self.blend_components()
-        return self._eff_comps.copy()
-    
-
-    def discharge(self):
-        ''' Pass the total flow and blended components to the next unit.
-        '''
-        self.update_combined_input()
-        if self._main_outlet != None:
-            #TODO: need to make sure the downstream unit get the current
-            #  unit's info 
-            m = self.get_downstream_main()
-            m.set_flow(self, self._total_flow)
-            m.update_combined_input()
-        return None
-    
-
-    def has_discharger(self):
-        ''' Get the status of upstream connection'''
-        return self._has_discharger
-
-
-    def main_outlet_connected(self):
-        ''' Get the status of downstream main connection'''
-        return self._main_outlet_connected
-
-
-    def set_flow(self, dschgr, flow):
-        if dschgr in self._inlet and flow >= 0:
-            self._inlet[dschgr] = flow
-            self._flow_totalized = False
+    def set_sidestream_flow(self, flow):
+        print("WARNING:", self.__name__,"has sidestream flow of ZERO.")
         return None
 
+    #
+    # END OF ADJUSTMENT TO COMMON INTERFACE
 
-    def set_as_visited(self, status=False):
-        self._visited = status
-        return None
-
-
-    def is_visited(self):
-        return self._visited
-
-
-    def _sum_helper(self, branch="Main_Out", index_list=[]):
-        ''' sum up the model components indicated by the index_list'''
-        _sum = 0.0
-        if branch == "Main_Out":
-            _sum = sum(self._eff_comps[i] for i in index_list)
-        elif branch == "In":
-            _sum = sum(self._inf_comps[i] for i in index_list)
-        return sum
-
-
-    def get_TSS(self, branch="Main_Out"):
-        #TODO: need to make COD/TSS = 1.2 changeable for different type of
-        # sludge
-        index_list = [0, 1, 2, 3, 4]
-        return self._sum_helper(index_list) / 1.2
-
-
-    def get_VSS(self):
-        #TODO: need to make COD/VSS = 1.42 changeable for diff. type of sludge
-        index_list = [0, 1, 2, 3, 4]
-        return self._sum_helper(index_list) / 1.42
-    
-
-    def get_total_COD(self):
-        index_list = [0, 1, 2, 3, 4, 5, 6]
-        return self._sum_helper(index_list)
-
-
-    def get_soluble_COD(self):
-        index_list = [5, 6]
-        return self._sum_helper(index_list)
-
-
-    def get_particulate_COD(self):
-        return self.GetTotalCOD - self.getSoluableCOD()
-
-
-    def get_TN(self):
-        index_list = [8, 9, 10, 11]
-        return self._sum_helper(index_list)
-
-
-    def get_organic_N(self):
-        index_list = [10, 11]
-        return self._sum_helper(index_list)
-
-
-    def get_inorganic_N(self):
-        index_list = [8, 9]
-        return self._sum_helper(index_list)
-
-
-    def get_particulate_N(self):
-        return self._eff_comps[11]
-
-
-    def get_soluble_N(self):
-        return self.GetTN() - self.getParticulateN()
-
-
-    def has_sidestream(self):
-        return False  # always False for a pipe
 
 
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
+# 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent
+# 20190609 KZ: migrating to poopy_lab_obj as base, and pipe as parent.
 # 20190209 KZ: standardized import
 #   Mar 15, 2019 KZ: _outlet --> _main_outlet
 #   July 31, 2017 KZ: Made it more pythonic and changed to python3.
@@ -346,30 +498,25 @@ class pipe(base):
 #   March 15, 2014: KZ: redefined for the new class structure.
 #   December 07, 2013 Kai Zhang: first draft
 
-class influent(base):
+class influent(pipe):
     __id = 0
 
     def __init__(self):
+        self.pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Influent_" + str(self.__id)
 
-        # Store the influent characteristics in a list()
-        # For ASM #1:
-        #
-        #    self._inf_comp[0]: X_I
-        #    self._inf_comp[1]: X_S
-        #    self._inf_comp[2]: X_BH
-        #    self._inf_comp[3]: X_BA
-        #    self._inf_comp[4]: X_D
-        #    self._inf_comp[5]: S_I
-        #    self._inf_comp[6]: S_S
-        #    self._inf_comp[7]: S_DO
-        #    self._inf_comp[8]: S_NO
-        #    self._inf_comp[9]: S_NH
-        #    self._inf_comp[10]: S_NS
-        #    self._inf_comp[11]: X_NS
-        #    self._inf_comp[12]: S_ALK
-        self._inf_comp = [0.0] * constants._NUM_ASM1_COMPONENTS
+        # influent has no sidestream
+        self._has_sidestream = False
+
+        # influent has no further upstream discharger
+        self._inlet = None
+
+        # make the main outlet components an alias of the inlet components
+        self._mo_comps = self._in_comps
+
+        # Trick the system by setting True to _has_discharger flag
+        self._has_discharger = True
 
         # Influent characteristics from user measurements/inputs
         # Setting default values for municipal wastewater in USA
@@ -377,7 +524,7 @@ class influent(base):
         self._BOD5 = 250.0
         self._TSS = 250.0
         self._VSS = 200.0
-        self._TNK = 40.0
+        self._TKN = 40.0
         self._NH3 = 28.0
         self._NO = 0.0
         self._TP = 10.0
@@ -389,141 +536,19 @@ class influent(base):
         #   will use MGD. DEFAULT VALUE = 10 MGD. 
         self._design_flow = 10 * 1000 / 3.78  # convert to M3/day
 
-        # the reactor that receives the plant influent
-        self._main_outlet = None
-        
-        # the status about whether there is a downstream unit
-        self._main_outlet_connected = False
-
-        # prefix that leads to current unit, used by the loop
-        # finding process
-        self._prefix = False
-
-        # _group is '' (empty string) if the unit has not been assigned to any
-        #   specific group by the loop finding process.
-        # If the unit is assigned to a group, _group will record the group ID.
-        #TODO: IS THIS STILL USED AT ALL?
-        self._group = ''
-
-        self._visited = False
-        
         print(self.__name__,' initialized successfully.')
         return None
 
-
-    def get_upstream(self):
-        ''' Get the {} that stores all the upstream units that feed into
-            the current one
-            Return Type: None (for Influent) or dict (for others)
-        '''
-        return None
-
-
-    def set_downstream_main(self, rcvr):
-        ''' Set the downstream unit that will receive effluent from 
-            the current unit
-        '''
-        if isinstance(rcvr, influent):  # None is allowed as a place holder
-            print("ERROR: WRONG RECEIVER GIVEN TO INFLUENT")
-            return None
-        if rcvr == None:
-            self._main_outlet = None
-            self._main_outlet_connected = False
-        elif self._main_outlet != rcvr:
-            self._main_outlet = rcvr 
-            self._main_outlet_connected = True
-            rcvr.add_upstream(self)
-        return None
-    
-
-    def has_discharger(self):
-        '''Placeholder, always return True for Influent as it 
-            doesn't need an upstream unit
-        '''
-        return True
-    
-
-    def main_outlet_connected(self):
-        ''' Return the status of outlet connection'''
-        return self._main_outlet_connected
-
-
-    def get_downstream_main(self):
-        ''' Get the single unit downstream of the current one
-            Return Type: base.Base
-        '''
-        return self._main_outlet
-
-
-    def set_as_visited(self, status=False):
-        self._visited = status
-        return None
-
-
-    def is_visited(self):
-        return self._visited
-
-
-    def totalize_flow(self):
-        ''' Totalize all the flows entering the current unit.
-            Return type: NO Return
-            Does nothing for Influent object as the flow is fixed.
-        '''
+    # FUNCTIONS UNIQUE TO INFLUENT
+    #
+    # (INSERT CODE HERE)
+    #
+    def set_fractions(self):
+        # TODO: set fractions for converting user measured influent
+        # characteristics into ASM1 model components.
         pass
 
-
-    def blend_components(self):
-        '''
-            blend_components() for Base mixes the contents in all inlet
-            components and send to the OUTLET, assuming no reaction
-            takes palce.
-            The definition is changed in ASMReactor where the mixture
-            is passed to the INLET of the reactor before reactions.
-            Does nothing for Inlfuent object as the components are in a 
-            single source.
-        '''
-        pass
-
-
-    def update_combined_input(self):
-        ''' Combined the flows and loads into the current unit
-            Doesn't need to do anything since Influent object does not 
-            receive any upstream input.
-        '''
-        pass
-
-
-    def get_outlet_flow(self):
-        ''' Return the total out flow of the current unit (mainstream)
-        '''
-        return self._design_flow
-
-
-    def get_outlet_concs(self):
-        ''' Return the effluent concentrations of the current unit (mainstream)
-        '''
-        return self._inf_comp
-
-
-    def discharge(self):
-        ''' Pass the total flow and blended components to the next unit.
-        '''
-        if self._outlet != None:
-            m = self.get_downstream_main()
-            m.set_flow(self, self._design_flow)
-            m.update_combined_input()
-        return None
-    
-
-    def receive_from(self, dschgr=None):
-        ''' Influent doesn't need to receive anything'''
-        pass
-
-
-    def interpret(self):
-        ''' Convert user input parameters into the ones that the ASM model
-            can understand
-        '''
+    def _convert_to_ASM1_comps(self):
         #TODO: the first set of conversion available here is for municipal 
         #   wastewater. Industrial wastewater may have completely different
         #   conversion factors and needs to be tested.
@@ -550,7 +575,7 @@ class influent(base):
         Inf_X_D = 0.0
         
         # influent TKN (mgN/L), NOT IN InfC
-        Inf_TKN = self._TNK
+        Inf_TKN = self._TKN
         # influent Ammonia-N (mgN/L), 
         Inf_S_NH = self._NH3
         # subdividing TKN into: 
@@ -574,83 +599,60 @@ class influent(base):
         
         Inf_S_DO = self._DO
         
-        #store the converted information in the ASM Components for the influent
-        self._inf_comp = [Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D, \
+        self._in_comps = [Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D, \
                             Inf_S_I, Inf_S_S, -Inf_S_DO, Inf_S_NO, Inf_S_NH, \
                             Inf_S_NS, Inf_X_NS, Inf_S_ALK]
+        return None
+    # 
+    # END OF FUNTIONS UNIQUE TO INFLUENT
 
+    
+    # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
+    #
+    def add_upstream(self, discharger, branch):
+        print("ERROR:", self.__name__, "has NO upstream.")
         return None
 
 
-    def has_sidestream(self):
-        ''' Check if the current unit has a sidestream discharge.
-            Default = False, i.e. no sidestream
-            Return type: boolean
-        '''
-        return False
+    def totalize_inflow(self):
+        # no need to totalize inlet flow for influent
+        pass
+
+    
+    def blend_inlet_comps(self):
+        self._convert_to_ASM_comps()
+        return None
 
 
-    def set_flow(self, flow):
-        if flow >= 0:
-            self._design_flow = flow
+    def update_combined_input(self):
+        pass
+
+
+    def remove_upstream(self, discharger):
+        print("ERROR:", self.__name__, "is an influent and has no upstream")
+        pass
+
+
+    def get_main_outflow(self):
         return self._design_flow
+
+
+    def set_flow(self, discharger=None, flow=10):
+        # influent itself has no discharger. Default design flow = 10 MGD
+        if flow > 0:
+            self._design_flow = flow
+        else:
+            print("ERROR:", self.__name__, "shall have design flow > 0 MGD."
+                    "Design flow NOT CHANGED due to error in user input.")
+        return self._design_flow
+    #
+    # END OF ADJUSTMENT TO COMMON INTERFACE
     
-
-    def get_TSS(self):
-        ''' Return the Total Suspsended Solids (TSS) in the unit '''
-        return self._TSS
-
-
-    def get_VSS(self):
-        ''' Return the Volatile Suspended Solids (VSS) in the unit '''
-        return self._VSS
-
-
-    def get_total_COD(self):
-        ''' Return the Total COD (both soluable and particulate) in the unit'''
-        return self._inf_comp[0] + self._inf_comp[1] + self._inf_comp[2] \
-                + self._inf_comp[3] + self._inf_comp[4] + self._inf_comp[5] \
-                + self._inf_comp[6]
-
-
-    def get_soluble_COD(self):
-        ''' Return the SOLUABLE COD in the unit '''
-        return self._inf_comp[5] + self._inf_comp[6]
-
-
-    def get_particulate_COD(self):
-        ''' Return the PARTICULATE COD in the unit '''
-        return self.get_total_COD() - self.get_soluble_COD()
-    
-
-    def get_TN(self):
-        ''' Return the Total Nitrogen of the unit '''
-        return self._inf_comp[8] + self._inf_comp[9] \
-                + self._inf_comp[10] + self._inf_comp[11]
-
-
-    def get_particulate_N(self):
-        ''' Return organic nitrogen of the unit '''
-        return self._inf_comp[11]
-
-
-    def get_soluble_N(self):
-        ''' Return soluable nitrogen of the unit '''
-        return self.get_TN() - self.get_particulate_N()
-
-
-    def get_organic_N(self):
-        ''' Return organic nitrogen of the unit '''
-        return self._inf_comp[10] + self._inf_comp[11]
-
-
-    def get_inorganic_N(self):
-        ''' Return inorganic nitrogen of the unit '''
-        return self._inf_comp[8] + self._inf_comp[9] 
 
 
 # -----------------------------------------------------------------------------
 # effluent class - Change Log: 
+# 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent.
 # 20190209 KZ: standardized import
 # Jul 30, 2017 KZ: Made it more pythonic.
 # Mar 21, 2017 KZ: Migrated to Python3
@@ -673,170 +675,33 @@ class effluent(pipe):
         pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Effluent_" + str(self.__id)
-        self._main_outlet_connected = True  # dummy
-        print(self.__name__, "initialized successfully.")
-        return None
 
-
-# -----------------------------------------------------------------------------
-# splitter class - Change Log:
-# 20190209 KZ: standardized import
-# Mar 02, 2019 KZ: added check on side flow and sidestream_flow_defined()
-# Feb 09, 2019 KZ: revised set_downstream_side()
-# Jul 30, 2017 KZ: pythonic style
-# Mar 21, 2017 KZ: Migrated to Python3
-# Jun 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
-# Jun 23, 2015 KZ: Rewrote sidestream to eliminate Branch class
-# Jun 18, 2015 KZ: Removed _PreFix and _Group status and 
-#                     Set(Get)PreFixStatus(), Set(Get)GroupStatus;
-#                     Renamed _Done to _Visited and SetAs(Is)Done() to
-#                     SetAs(Is)Visited()
-# Mar 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
-#                     Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
-#                     SetAs(Is)Done().
-# Nov 18, 2014 KZ: renamed "SideStream" into "Sidestream";
-#                         Added _SidestreamConnected and SideOutletConnected()
-# Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
-# Apr 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
-# Apr 18, 2014 KZ: Rewrite definition based on the new class system structure
-# Dec 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
-# Dec 07, 2013
-#
-
-
-class splitter(pipe):
-
-    __id = 0
-
-    def __init__(self):
-        pipe.__init__(self)
-        self.__class__.__id += 1
-        self.__name__ = "Splitter_" + str(self.__id)
-
-        # the main outlet is defined in pipe.pipe as _main_outlet
-        # therefore add the _side_outlet only here.
-        self._side_outlet = None
-        
-        self._main_outlet_flow = 0
-        self._side_outlet_flow = 0
-        
-        self._side_outlet_connected = False
-        self._side_flow_defined = False
-
-        self._SRT_controller = False
+        self._mo_connected = True  # dummy
 
         print(self.__name__, "initialized successfully.")
-
-        return None
-    
-
-    def is_SRT_controller(self):
-        ''' Mark the splitter whether it controls the plant's SRT.
-            Default value: False
-        '''
-        return self._SRT_controller
-
-
-    def set_as_SRT_controller(self, setting=False):
-        self._SRT_controller = setting
-        #TODO: add notes here
-        self._side_flow_defined = setting
-        #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
         return None
 
+    # FUNCTIONS UNIQUE TO EFFLUENT
+    #
+    # (INSERT CODE HERE)
+    #
+    # END OF FUNCTIONS UNIQUE TO EFFLUENT
 
-    def set_sidestream_flow(self, flow=0):
-        if flow >= 0:
-            self._side_outlet_flow = flow
-            self._side_flow_defined = True
-            if self._SRT_controller:
-                self._side_flow_defined = True
-            elif flow <= 0:
-                self._side_flow_defined = False
-        #TODO: Need to be able to dynamically update the sidestream flow
-        return None
-
-    def sidestream_flow_defined(self):
-        return self._side_flow_defined
-    
-
-    def totalize_flow(self):
-        self._total_flow = sum(self._inlet.values())
-        #TODO: Need to pay attention to the flow balance below during runtime
-        #TODO: Need to check: _main_outlet_flow > 0?
-        self._main_outlet_flow = self._total_flow - self._side_outlet_flow
-        self._flow_totalized = True
-        return None
-
-
-    def set_downstream_side(self, rcvr):
-        if isinstance(rcvr, influent):
-            print("ERROR: WRONG RECEIVER GIVEN TO SIDESTREAM")
-            return None
-        if self._side_outlet != rcvr:
-            self._side_outlet = rcvr
-            self._side_outlet_connected = rcvr != None
-            if rcvr != None:
-                rcvr.add_upstream(self, "Side")
-        return None
-                
-
-    def get_downstream_side(self):
-        return self._side_outlet
-
-
+    # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF EFFLUENT
+    #
     def discharge(self):
-        ''' Pass the total flow and blended components to the next unit.
-            Both mainstream and sidestream units shall receive their flows 
-            and component concentratons.
-        '''
-        self.update_combined_input()
-        if self._main_outlet != None and self.set_sidestream_flow != None:
-            m = self.get_downstream_main()
-            m.set_flow(self, self._main_outlet_flow)
-            m.update_combined_input()
-            s = self.get_downstream_side()
-            s.set_flow(self, self._side_outlet_flow)
-            s.update_combined_input() 
-        else:
-            print("ERROR: ", self.__name__, "downstream unit setup incomplete")
-        return None
+        # Effluent is the end of the WWTP's liquid stream
+        pass
 
+    
+    #
+    # END OF ADJUSTMENTS TO COMMON INTERFACE
 
-    def has_sidestream(self):
-        return True  # always True for a splitter
-
-
-    def side_outlet_connected(self):
-        return self._side_outlet_connected
-
-
-    def set_as_visited(self, status=False):
-        self._visited = status
-        return None
-
-
-    def is_visited(self):
-        return self._visited
- 
-    #def GetWAS(self, WWTP, TargetSRT): 
-    #    '''Get the mass of DRY solids to be wasted (WAS) in KiloGram'''
-    #    #WWTP is a list that stores all the process units
-    #    TotalSolids = 0.0 #as TSS in KiloGram
-    #    if self._SRTController:
-    #        for unit in WWTP:
-    #            if isinstance(unit, ASMReactor):
-    #                TotalSolids += unit.GetTSS() \
-    #                               * unit.GetActiveVolume() / 1000.0
-    #    if TargetSRT > 0:
-    #        return TotalSolids / TargetSRT
-    #    else:
-    #        print("Error in Target SRT <=  0 day; GetWAS() returns 0.")
-    #        return 0;
 
 
 # ------------------------------------------------------------------------------
 # WAS class - Change Log:
+# 20190612 KZ: migrated to using pipe as parent.
 # 20190209 KZ: standardized import
 # Jul 30, 2017 KZ: made code more pythonic
 # Mar 21, 2017 KZ: Migrated to Python3
@@ -847,18 +712,20 @@ class splitter(pipe):
 # December 06, 2013 Kai Zhang: Initial design
 
     
-class WAS(effluent): 
+class WAS(pipe):
     __id = 0
+
     def __init__(self):
-        
-        effluent.__init__(self)
+        pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'WAS_' + str(self.__id)
-        self._WAS_flow = 0.0  # Unit: m3/d 
         print(self.__name__,' initialized successfully.')
         return None
 
-
+    # FUNCTIONS UNIQUE TO INFLUENT
+    #
+    # (INSERT CODE HERE)
+    #
     def get_solids_inventory(self, reactor_list=[]):
         ''' Calculate the total solids mass in active reactors '''
         # reactor_list stores the asm_reactor units that contribute
@@ -867,6 +734,7 @@ class WAS(effluent):
         # flow for the entire WWTP.
         #TODO: In the MAIN program, we will need to maintain a list of 
         # reactors that contribute active solids to the WWTP.
+
         inventory = 0.0
         for unit in reactor_list:
             #TODO: IMPORTANT TO CHECK ALL THE UNITS IN THE reactor_list
@@ -878,14 +746,14 @@ class WAS(effluent):
         return inventory
 
 
-    def get_WAS_flow(self, reactor_list=[], SRT=1):
-        #SRT is the plant's SRT from user input
+    def set_WAS_flow(self, reactor_list=[], SRT=5):
+        #SRT is the plant's SRT from user input. Default 5 days.
         self.update_combined_input()
-        self._WAS_flow = self.get_solids_inventory(reactor_list) * 1000 \
+        self._mo_flow = self.get_solids_inventory(reactor_list) * 1000 \
                         / SRT / self.get_TSS()
         #TODO: in MAIN function, we need to check whether the WAS flow
         # is higher than the influent flow
-        return self._WAS_flow
+        return self._mo_flow
 
 
     def inform_SRT_controller(self):
@@ -894,13 +762,26 @@ class WAS(effluent):
         if len(upstream) == 1 \
                 and isinstance(upstream[0], splitter):
             if upstream[0].is_SRT_controller():
-                upstream[0].setup_sidestream(self, self.get_WAS_flow())
-                upstream[0].totalize_flow()
-                upstream[0].discharge()  #TODO: IS THIS NEEDED??
+                upstream[0].set_sidestream_flow(self.set_WAS_flow())
+                upstream[0].totalize_inflow()
+                #upstream[0].discharge()  #TODO: IS THIS NEEDED??
             else:
                 print("The unit upstream of WAS is not SRT controlling")
         else:
             print("Check the unit upstream of WAS. \
-                    There shall be a splitter only")
+                    There shall be one splitter only")
         return None
+
+    # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
+    #
+    def discharge(self):
+        # WAS typically functions as an effluent obj. However, it can also be
+        # a pipe obj. that connects to solids management process units.
+        # Therefore, the discharge function allows a None at the main outlet.
+
+        if self._main_outlet != None:            
+            self._discharge_main_outlet() 
+        return None
+    #
+    # END OF ADJUSTMENTS TO COMMON INTERFACE
 
