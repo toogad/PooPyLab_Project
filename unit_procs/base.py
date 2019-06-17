@@ -135,13 +135,10 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def set_main_outflow(self, by_whom, flow):
-        pass 
-
-    @abstractmethod
     def get_main_outflow(self):
         ''' 
         Return the mainstream outlet flow
+        Return value type: float
         '''
         pass
 
@@ -175,7 +172,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def set_sidestream_flow(self, by_whom, flow):
+    def set_sidestream_flow(self, flow):
         pass
 
 
