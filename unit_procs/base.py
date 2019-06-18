@@ -20,6 +20,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
+# --------------------------------------------------------------------
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
@@ -57,6 +58,15 @@ class poopy_lab_obj(object):
     '''
     
     __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def _balance_flow(self):
+        '''
+        helper function to calculate 1 of the 3 branches' flow based on the
+        other 2.
+        return True if flow balace is done, False otherwise
+        '''
+        pass
 
     @abstractmethod
     def has_sidestream(self):

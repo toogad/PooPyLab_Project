@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190617 KZ: improve flow balance.
 # 20190609 KZ: further revised splitter to be the "base" of stream objs.
 # 20190604 KZ: migrating the base to poopy_lab_obj
 # 20190209 KZ: standardized import
@@ -79,15 +80,25 @@ class splitter(poopy_lab_obj):
         # side outlet connection flag
         self._so_connected = False
 
-        self._total_inflow = 0         
-        
+        # source of flow:
+        self._flow_source = ["USER", "UPSTREAM", "DOWNSTREAM", "TBD"]
+
+        # defaults:
+        self._in_flow_source = self._flow_source[1]  # upstream
+        self._mo_flow_source = self._flow_source[1]  # upstream
+        self._so_flow_source = self._flow_source[3]  # tbd
+        #self._side_flow_defined = False
+
         # main outlet flow, m3/d
         self._mo_flow = 0
         # side outlet flow, m3/d
         self._so_flow = 0
 
-        self._side_flow_defined = False
-
+        # total inlet flow calculated from all dischargers
+        self._total_inflow = 0         
+        # inlet flow back calculated as (_mo_flow + _so_flow)
+        self._in_flow_backcalc = 0
+        
         self._SRT_controller = False
         
         # influent/main_outlet/side_oulet model components:
@@ -145,6 +156,50 @@ class splitter(poopy_lab_obj):
     # END OF FUNCTIONS UNIQUE TO SPLITTER
 
 
+    def _balance_flow(self):
+        # There are the following scenarios for the flow settings for a
+        # splitter:
+        #
+        # 1) default: _in_flow set by the sum of its UPSTREAM (_total_inflow):
+        #       _in_flow_backcalc = _total_inflow
+        #
+        #   1A) _so_flow is set by USER/DOWNSTREAM:
+        #       _mo_flow = _in_flow_backcalc - _so_flow
+        #
+        #   1B) _mo_flow is set by USER/DOWNSTREAM:
+        #       _so_flow = _in_flow_backcalc - _mo_flow
+        #
+        # 2) _mo_flow and _so_flow are set by USER/DOWNSTREAM:
+        #   _in_flow_backcalc = _mo_flow + _so_flow
+        #
+        # Note: _so_flow shall be defined by USER or estimate by the downstream
+        # WAS unit (if the splitter is the SRT_controller)
+        
+        status = True 
+        _so_flow_defined = (self._so_flow_source == self._flow_source[0] or
+                    self._so_flow_source == self._flow_source[2])
+
+        _mo_flow_defined = (self._mo_flow_source == self._flow_source[0] or
+                    self._mo_flow_source == self._flow_source[2])
+
+        if self._in_flow_source == self._flow_source[1]:
+            self._in_flow_backcalc = self.totalize_inflow()
+            if _so_flow_defined:
+                self._mo_flow = self._in_flow_backcalc - self._so_flow
+            elif _mo_flow_defined:
+                self._so_flow = self._in_flow_backcalc - self._mo_flow
+            else:
+                print("ERROR:", self.__name__, "branch flows undefined.")
+                status = False
+        elif _so_flow_defined and _mo_flow_defined:
+            self._in_flow_backcalc = self._mo_flow + self._so_flow
+        else:
+            print("ERROR:", self.__name__, "branch flows undefined.")
+            status = False
+
+        return status
+
+
     def has_sidestream(self):
         return self._has_sidestream
 
@@ -160,6 +215,7 @@ class splitter(poopy_lab_obj):
             # current unit.
             self._inlet[discharger] = 0
             self._inflow_totalized = self._in_comps_blended = False
+            self._in_flow_source = self._flow_source[1]
             self._has_discharger = True
             if upst_branch == 'Main':
                 discharger.set_downstream_main(self)
@@ -180,9 +236,6 @@ class splitter(poopy_lab_obj):
 
     def totalize_inflow(self):
         self._total_inflow = sum(self._inlet.values())
-        #TODO: Need to pay attention to the flow balance below during runtime
-        #TODO: Need to check: _mo_flow > 0?
-        self._mo_flow = self._total_inflow - self._so_flow
         self._inflow_totalized = True
         return self._total_inflow
 
@@ -204,7 +257,7 @@ class splitter(poopy_lab_obj):
         ''' Combined the flows and loads into the current unit'''
         if self._flow_totalized == False:
             self.totalize_inflow()
-        if self._components_blended == False:
+        if self._inflow_totalized and self._in_comps_blended == False:
             self.blend_inlet_comps()
         return None
     
@@ -218,6 +271,8 @@ class splitter(poopy_lab_obj):
                 discharger.set_downstream_side(None)
             self._inflow_totalized = self._in_comps_blended = False
             self._has_discharger = len(self._inlet) > 0
+            if not self._has_discharger:
+                self._in_flow_source = self._flow_source[3]  # tbd
         else:
             print('ERROR: UPSTREAM UNIT NOT FOUND')
         return None
@@ -329,9 +384,8 @@ class splitter(poopy_lab_obj):
  
  
     def discharge(self):
+        # validity check done in pfd.check()
         self.update_combined_input()
-        if self._main_outlet == None and self._side_outlet == None:
-            print("ERROR:", self.__name__, "downstream unit incomplete")
 
         if self._main_outlet != None:            
             self._discharge_main_outlet()
@@ -343,6 +397,8 @@ class splitter(poopy_lab_obj):
         elif self._has_sidestream:
             print("ERROR:", self.__name__, "downstream side outlet incomplete")
 
+        # so that the next round of calc won't bypass totalize_inflow():
+        self._inflow_totalized = False
         return None
 
 
