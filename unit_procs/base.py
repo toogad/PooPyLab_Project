@@ -24,6 +24,7 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   Jun 18, 2019 KZ: added funcs to assist branch flow balance
 #   Jun 10, 2019 KZ: further revised to splitter-like base
 #   Jun 04, 2019 KZ: change the base to splitter-like.
 #   May 22, 2019 KZ: added options for branch in get_xxxx() functions
@@ -60,7 +61,17 @@ class poopy_lab_obj(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def _balance_flow(self):
+    def _adjust_flow_source_flags(self):
+        '''
+        Automatically adjust the flow source flags.
+        Typically run after connections are changed or a particular branch's
+        flow source is changed.
+        '''
+        pass
+
+
+    @abstractmethod
+    def _branch_flow_helper(self):
         '''
         helper function to calculate 1 of the 3 branches' flow based on the
         other 2.
@@ -143,6 +154,11 @@ class poopy_lab_obj(object):
     def get_downstream_main(self):
         pass
 
+    
+    @abstractmethod
+    def set_mainstream_flow(self, flow):
+        pass
+
 
     @abstractmethod
     def get_main_outflow(self):
@@ -213,6 +229,16 @@ class poopy_lab_obj(object):
         pass
 
      
+    @abstractmethod
+    def _discharge_main_outlet(self):
+        pass
+
+
+    @abstractmethod
+    def _discharge_side_outlet(self):
+        pass
+
+
     @abstractmethod
     def discharge(self):
         '''
