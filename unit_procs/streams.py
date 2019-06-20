@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190619 KZ: updated branch flow balance
 # 20190618 KZ: further improve flow balance.
 # 20190617 KZ: improve flow balance.
 # 20190609 KZ: further revised splitter to be the "base" of stream objs.
@@ -81,10 +82,8 @@ class splitter(poopy_lab_obj):
         # side outlet connection flag
         self._so_connected = False
 
-        # defaults:
-        self._upstream_set_in_flow = True
+        # determine how to calculate branch flows
         self._upstream_set_mo_flow = True
-        self._upstream_set_so_flow = False
 
         # to confirm it has received _so_flow
         self._so_flow_defined = False
@@ -154,62 +153,37 @@ class splitter(poopy_lab_obj):
     #
     # END OF FUNCTIONS UNIQUE TO SPLITTER
 
+
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
     #
-    def _adjust_flow_source_flags(self):
-        # This func shall be called when 
-        #   1) user sets the _SRT_controller flag
-        #   2) user add/remove upstream units
-        #   3) user set _mo_flow
-
-        if self._SRT_controller:
-            self._upstream_set_so_flow = False
-            if self._upstream_set_mo_flow:
-                self._upstream_set_in_flow = True
-            else:
-                self._upstream_set_in_flow = False
-        elif self._upstream_set_mo_flow:
-            self._upstream_set_so_flow = False
-            self._upstream_set_in_flow = True
-        else:
-            self._upstream_set_in_flow = self._upstream_set_so_flow = False
-        return None
-
-
     def _branch_flow_helper(self):
-        # There are the following scenarios for the flow settings for a
-        # splitter:
+        # 1) Side outlet flow (_so_flow) can be set by
+        #   1A) either WAS (_SRT_controller) or direct user input
         #
-        # 1) default: _in_flow set by the sum of its UPSTREAM (_total_inflow):
-        #       _in_flow_backcalc = _total_inflow
+        #   2A) upstream (non _SRT_controller)
         #
-        #   1A) _so_flow is set by OTHERS (user or downstream):
-        #       _mo_flow = _in_flow_backcalc - _so_flow
+        # 2) Main outlet flow (_mo_flow) can be set by
         #
-        #   1B) _mo_flow is set by OTHERS:
-        #       _so_flow = _in_flow_backcalc - _mo_flow
+        #   2A) upstream automatically (default):
         #
-        # 2) both _mo_flow and _so_flow are set by OTHERS:
-        #   _in_flow_backcalc = _mo_flow + _so_flow
+        #   2B) direct user input:
         #
-        # Note: _so_flow shall be defined by USER or estimate by the downstream
-        # WAS unit (if the splitter is the SRT_controller)
-        
-        if self._SRT_controller:
-            if not self._upstream_set_mo_flow:
-                self._in_flow_backcalc = self._mo_flow + self._so_flow
-            else:
-                self._mo_flow = self._total_inflow - self._so_flow
-        else:
-            # if not an SRT_controller, one of the _so_flow and _mo_flow shall
-            # be defined:
-            self._in_flow_backcalc = self._total_inflow
+        # 3) Inlet flow is dependent on the two outlet branches' settings
+        #
+        if self._SRT_controller:  # i.e. _so_flow set by a WAS unit
             if self._upstream_set_mo_flow:
+                self._in_flow_backcalc = self._total_inflow
                 self._mo_flow = self._in_flow_backcalc - self._so_flow
             else:
-                # if upstream doesn't set _mo_flow, it has to set _so_flow
-                self._so_flow = self._in_flow_backcalc - self._mo_flow
-
+                self._in_flow_backcalc = self._mo_flow + self._so_flow
+        elif self._upstream_set_mo_flow:
+            self._in_flow_backcalc = self._total_inflow
+            self._mo_flow = self._in_flow_backcalc - self._so_flow
+        else:
+            # if upstream doesn't set _mo_flow, it has to set _so_flow
+            self._in_flow_backcalc = self._total_inflow
+            self._so_flow = self._in_flow_backcalc - self._mo_flow
+            self._so_flow_defined = True
         return None
 
 
@@ -228,9 +202,6 @@ class splitter(poopy_lab_obj):
             # current unit.
             self._inlet[discharger] = 0
             self._has_discharger = True
-
-            self._upstream_set_in_flow = True
-            self._adjust_flow_source_flags()
 
             self._inflow_totalized = self._in_comps_blended = False
 
@@ -316,11 +287,17 @@ class splitter(poopy_lab_obj):
         return self._main_outlet
 
 
+    def set_mainstream_flow_by_upstream(self, f=True):
+        self._upstream_set_mo_flow = f
+        return None
+
     def set_mainstream_flow(self, flow=0):
+        self._upstream_set_mo_flow = False
         if flow >= 0:
             self._mo_flow = flow
-            self._upstream_set_mo_flow = False
-            self._adjust_flow_source_flags()
+        else:
+            print("ERROR:", self.__name__, "given flow < 0.")
+            self._mo_flow = 0
         #TODO: Need to be able to dynamically update the sidestream flow
         return None
             
@@ -364,8 +341,6 @@ class splitter(poopy_lab_obj):
         if flow >= 0:
             self._so_flow = flow
             self._so_flow_defined = True
-            self._upstream_set_so_flow = False
-            self._adjust_flow_source_flags()
         else:
             self._so_flow_defined = False
         #TODO: Need to be able to dynamically update the sidestream flow
@@ -419,12 +394,12 @@ class splitter(poopy_lab_obj):
         if self._main_outlet != None:            
             self._discharge_main_outlet()
         else:
-            print("ERROR:", self.__name__, "downstream main outlet incomplete")
+            print("ERROR:", self.__name__, "main outlet incomplete")
 
         if self._side_outlet != None:
             self._discharge_side_outlet()
         elif self._has_sidestream:
-            print("ERROR:", self.__name__, "downstream side outlet incomplete")
+            print("ERROR:", self.__name__, "side outlet incomplete")
 
         return None
 
@@ -489,6 +464,7 @@ class splitter(poopy_lab_obj):
 
 # ----------------------------------------------------------------------------
 # pipe class - Change Log:
+# 20190619 KZ: revised as per the splitter update.
 # 20190618 KZ: added flow source flags defaults
 # 20190609 KZ: fully migrated to the new base
 # 20190604 KZ: migrating to the new base (poopy_lab_obj)
@@ -528,11 +504,6 @@ class pipe(splitter):
         # pipe has no sidestream
         self._has_sidestream = False
 
-        # default for a pipe:
-        self._upstream_set_in_flow = True
-        self._upstream_set_so_flow = False
-        self._upstream_set_mo_flow = True
-
         # inlet and main outlet components are identical for a pipe
         # make main outlet components an alias of the inlet components
         self._mo_comps = self._in_comps
@@ -552,13 +523,28 @@ class pipe(splitter):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
     #
+    def _branch_flow_helper(self):
+        self._in_flow_backcalc = self._mo_flow = self._total_inflow
+        return None
+
+
+    def set_mainstream_flow_by_upstream(self, f):
+        print("WARN:", self.__name__, "main outlet flow source unchangeable.")
+        return None
+
+
+    def set_mainstream_flow(self, flow):
+        print("ERROR:", self.__name__, "main outlet flow not be set by user.")
+        return None
+
+
     def set_downstream_side(self, receiver):
-        print("WARNING:", self.__name__, "has no sidestream.")
+        print("WARN:", self.__name__, "has no sidestream.")
         return None
     
 
     def set_sidestream_flow(self, flow):
-        print("WARNING:", self.__name__,"has sidestream flow of ZERO.")
+        print("WARN:", self.__name__,"has sidestream flow of ZERO.")
         return None
 
     #
@@ -568,6 +554,7 @@ class pipe(splitter):
 
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
+# 20190619 KZ: updated as per the splitter update.
 # 20190618 KZ: updated along with the splitter revision.
 # 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent
 # 20190609 KZ: migrating to poopy_lab_obj as base, and pipe as parent.
@@ -605,9 +592,7 @@ class influent(pipe):
         self._has_sidestream = False
 
         # defaults:
-        self._upstream_set_in_flow = True  # trick
-        self._upstream_set_mo_flow = True  # always
-        self._upstream_set_so_flow = False  # trick, always
+        self._upstream_set_mo_flow = False
 
         # Influent characteristics from user measurements/inputs
         # Setting default values for municipal wastewater in USA
@@ -700,13 +685,19 @@ class influent(pipe):
     
     # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
     #
+    def _branch_flow_helper(self):
+        self._in_flow_backcalc = self._mo_flow = self._design_flow
+        return None
+
+
     def add_upstream(self, discharger, branch):
         print("ERROR:", self.__name__, "has NO upstream.")
         return None
 
 
     def totalize_inflow(self):
-        pass
+        self._inflow_totalized = True
+        return None
 
 
     def blend_inlet_comps(self):
@@ -715,27 +706,29 @@ class influent(pipe):
 
 
     def remove_upstream(self, discharger):
-        print("ERROR:", self.__name__, "is an influent and has no upstream")
+        print("ERROR:", self.__name__, "has no upstream")
         return None
 
 
-    def set_mainstream_flow(self, flow):
-        print("ERROR:", self.__name__, "allows no user input for main outflow")
+    def set_mainstream_flow(self, flow=10):
+        if flow > 0:
+            self._design_flow = flow
+        else:
+            print("ERROR:", self.__name__, "shall have design flow > 0 MGD."
+                    "Design flow NOT CHANGED due to error in user input.")
         return None
+
+
+    def set_mainstream_flow_by_upstream(self, f):
+        pass
 
 
     def get_main_outflow(self):
         return self._design_flow
 
 
-    def set_flow(self, discharger=None, flow=10):
-        # influent itself has no discharger. Default design flow = 10 MGD
-        if flow > 0:
-            self._design_flow = flow
-        else:
-            print("ERROR:", self.__name__, "shall have design flow > 0 MGD."
-                    "Design flow NOT CHANGED due to error in user input.")
-        return self._design_flow
+    def set_flow(self, discharger, flow):
+        pass
     #
     # END OF ADJUSTMENT TO COMMON INTERFACE
     
@@ -743,6 +736,7 @@ class influent(pipe):
 
 # -----------------------------------------------------------------------------
 # effluent class - Change Log: 
+# 20190619 KZ: revised according to the splitter update
 # 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent.
 # 20190209 KZ: standardized import
 # Jul 30, 2017 KZ: Made it more pythonic.
@@ -769,9 +763,7 @@ class effluent(pipe):
 
         self._mo_connected = True  # dummy
 
-        self._upstream_set_in_flow = False
         self._upstream_set_mo_flow = False  # set by plant wide flow balance
-        self._upstream_set_so_flow = False  # trick, always
 
         print(self.__name__, "initialized successfully.")
         return None
@@ -784,20 +776,31 @@ class effluent(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF EFFLUENT
     #
-    def _adjust_flow_source_flags(self):
-        pass
 
-    #TODO: CONTINUE HERE 
     def _branch_flow_helper(self):
         self._in_flow_backcalc = self._mo_flow + self._so_flow  # _so_flow = 0
         return None
 
 
+    def set_downstream_main(self, rcvr):
+        print("ERROR:", self.__name__,"shall not have any receiver.")
+        return None
+
+
+    def set_mainstream_flow(self, flow=0):
+        if flow >= 0:
+            self._mo_flow = flow
+        else:
+            print("ERROR:", self.__name__, "receives flow < 10.")
+            self._mo_flow = 0
+        return None
+
+
     def discharge(self):
         # Effluent is the end of the WWTP's liquid stream
-        pass
+        self.update_combined_input()
+        return None
 
-    
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
@@ -816,7 +819,7 @@ class effluent(pipe):
 # December 06, 2013 Kai Zhang: Initial design
 
     
-class WAS(pipe):
+class WAS(pipe): #TODO: CONTINUE HERE
     __id = 0
 
     def __init__(self):
@@ -826,7 +829,7 @@ class WAS(pipe):
         print(self.__name__,' initialized successfully.')
         return None
 
-    # FUNCTIONS UNIQUE TO INFLUENT
+    # FUNCTIONS UNIQUE TO WAS
     #
     # (INSERT CODE HERE)
     #

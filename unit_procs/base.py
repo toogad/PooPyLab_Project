@@ -24,6 +24,7 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   Jun 19, 2019 KZ: improved branch flow balance
 #   Jun 18, 2019 KZ: added funcs to assist branch flow balance
 #   Jun 10, 2019 KZ: further revised to splitter-like base
 #   Jun 04, 2019 KZ: change the base to splitter-like.
@@ -51,24 +52,14 @@
 
 
 
-from abc import ABCMeta, abstractmethod 
+from abc import ABCMeta, abstractmethod
 
 class poopy_lab_obj(object):
-    ''' 
+    '''
     Defines the common interfaces for all PooPyLab objects.
     '''
-    
+
     __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def _adjust_flow_source_flags(self):
-        '''
-        Automatically adjust the flow source flags.
-        Typically run after connections are changed or a particular branch's
-        flow source is changed.
-        '''
-        pass
-
 
     @abstractmethod
     def _branch_flow_helper(self):
@@ -87,7 +78,7 @@ class poopy_lab_obj(object):
         '''
         pass
 
-    
+
     @abstractmethod
     def add_upstream(self, discharger, branch):
         '''
@@ -113,7 +104,7 @@ class poopy_lab_obj(object):
         '''
         pass
 
-    
+
     @abstractmethod
     def totalize_inflow(self):
         pass
@@ -123,7 +114,7 @@ class poopy_lab_obj(object):
     def blend_inlet_comps(self):
         pass
 
-    
+
     @abstractmethod
     def update_combined_input(self):
         '''
@@ -154,7 +145,12 @@ class poopy_lab_obj(object):
     def get_downstream_main(self):
         pass
 
-    
+
+    @abstractmethod
+    def set_mainstream_flow_by_upstream(self, flag):
+        pass
+
+
     @abstractmethod
     def set_mainstream_flow(self, flow):
         pass
@@ -162,7 +158,7 @@ class poopy_lab_obj(object):
 
     @abstractmethod
     def get_main_outflow(self):
-        ''' 
+        '''
         Return the mainstream outlet flow
         Return value type: float
         '''
@@ -177,12 +173,12 @@ class poopy_lab_obj(object):
         '''
         pass
 
-    
+
     @abstractmethod
     def set_downstream_side(self, receiver):
         pass
 
-    
+
     @abstractmethod
     def side_outlet_connected(self):
         '''
@@ -209,9 +205,8 @@ class poopy_lab_obj(object):
 
     @abstractmethod
     def get_side_outflow(self):
-        ''' 
+        '''
         Return the sidestream outlet flow
-        Return value type: float
         '''
         pass
 
@@ -228,7 +223,7 @@ class poopy_lab_obj(object):
         '''
         pass
 
-     
+
     @abstractmethod
     def _discharge_main_outlet(self):
         pass
@@ -271,7 +266,7 @@ class poopy_lab_obj(object):
     def get_pCOD(self, branch="Main_Out"):
         pass
 
-    
+
     @abstractmethod
     def get_TN(self, branch="Main_Out"):
         pass
