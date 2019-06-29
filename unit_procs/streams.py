@@ -808,6 +808,7 @@ class effluent(pipe):
 
 # ------------------------------------------------------------------------------
 # WAS class - Change Log:
+# 20190629 KZ: removed inform_SRT_controller()
 # 20190612 KZ: migrated to using pipe as parent.
 # 20190209 KZ: standardized import
 # Jul 30, 2017 KZ: made code more pythonic
@@ -819,13 +820,14 @@ class effluent(pipe):
 # December 06, 2013 Kai Zhang: Initial design
 
     
-class WAS(pipe): #TODO: CONTINUE HERE
+class WAS(pipe):
     __id = 0
 
     def __init__(self):
         pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'WAS_' + str(self.__id)
+        self._mo_connected = True  # assume something always receives WAS
         print(self.__name__,' initialized successfully.')
         return None
 
@@ -859,25 +861,10 @@ class WAS(pipe): #TODO: CONTINUE HERE
         self._mo_flow = self.get_solids_inventory(reactor_list) * 1000 \
                         / SRT / self.get_TSS()
         #TODO: in MAIN function, we need to check whether the WAS flow
-        # is higher than the influent flow
+        # is higher than the influent flow; The WAS flow is then passed to the
+        # SRT controlling splitter by the main loop.
         return self._mo_flow
 
-
-    def inform_SRT_controller(self):
-        ''' Pass the WAS Flow to the upstream SRT Controlling Splitter '''
-        upstream = self.get_upstream().keys()
-        if len(upstream) == 1 \
-                and isinstance(upstream[0], splitter):
-            if upstream[0].is_SRT_controller():
-                upstream[0].set_sidestream_flow(self.set_WAS_flow())
-                upstream[0].totalize_inflow()
-                #upstream[0].discharge()  #TODO: IS THIS NEEDED??
-            else:
-                print("The unit upstream of WAS is not SRT controlling")
-        else:
-            print("Check the unit upstream of WAS. \
-                    There shall be one splitter only")
-        return None
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
