@@ -464,6 +464,7 @@ class splitter(poopy_lab_obj):
 
 # ----------------------------------------------------------------------------
 # pipe class - Change Log:
+# 20190704 KZ: corrected initiation error.
 # 20190619 KZ: revised as per the splitter update.
 # 20190618 KZ: added flow source flags defaults
 # 20190609 KZ: fully migrated to the new base
@@ -497,12 +498,15 @@ class pipe(splitter):
     __id = 0
 
     def __init__(self):
-        self.splitter.__init__(self)
+        splitter.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'Pipe_' + str(self.__id)
                 
         # pipe has no sidestream
         self._has_sidestream = False
+
+        # a pipe's sidestream flow IS DEFINED as ZERO
+        self._so_flow_defined = True
 
         # inlet and main outlet components are identical for a pipe
         # make main outlet components an alias of the inlet components
@@ -554,6 +558,7 @@ class pipe(splitter):
 
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
+# 20190704 KZ: corrected initiation error.
 # 20190619 KZ: updated as per the splitter update.
 # 20190618 KZ: updated along with the splitter revision.
 # 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent
@@ -579,7 +584,7 @@ class influent(pipe):
     __id = 0
 
     def __init__(self):
-        self.pipe.__init__(self)
+        pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Influent_" + str(self.__id)
 
