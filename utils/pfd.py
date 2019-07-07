@@ -118,13 +118,15 @@ def _check_WAS(mywas):
 def _check_sidestream_flows(mysplitters):
     # Check the validity of the sidestreams of all splitter types
     # All side stream flows shall be defined by user except for the
-    # SRT_Controller's.
+    # SRT_Controller's or the final_clarifier's.
+    # The sidestream flow of a final clarifier is determined during runtime.
+    # The main loop shall update its side outlet or main outlet flows.
 
     _undefined = 0
     for _u in mysplitters:
         if not _u.sidestream_flow_defined():
             _undefined += 1
-            print("PFD ERROR: Sidestream flow undefined", _u.__name__)
+            print("PFD ERROR: Sidestream flow undefined:", _u.__name__)
 
     return _undefined == 0
             
@@ -165,8 +167,12 @@ def _has_main_only_loops(pfd):
 
 
 def check_pfd(wwtp):
+
     _all_WAS = [w for w in wwtp if isinstance(w, WAS)]
-    _all_splitters = [s for s in wwtp if isinstance(s, splitter)]
+
+    _all_splitters = [s for s in wwtp 
+            if (isinstance(s, splitter) and not
+                isinstance(s, final_clarifier))]
 
     _le = _check_connection(wwtp)
     _WAS_ok, _srt_ctrl_ = _check_WAS(_all_WAS)
@@ -195,7 +201,8 @@ def show_pfd(wwtp=[]):
                 print(dschgr.__name__, ",", end=" ")
             print()
         print("         : discharges to:", end=" ")
-        if isinstance(unit, effluent) or not unit.main_outlet_connected():
+        if (isinstance(unit, effluent) or isinstance(unit, WAS) 
+                or not unit.main_outlet_connected()):
             print("None")
         elif unit.main_outlet_connected():
             print(unit.get_downstream_main().__name__, end="(main)")

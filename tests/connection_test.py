@@ -3,6 +3,7 @@
 # Author: Kai Zhang
 #
 # Change Log:
+# 2019-07-07: rewritten some testing lines to match the new class struct.
 # 2019-07-04: re-test after class restructuring.
 # 2019-03-17: testing pfd_check()
 # 2019-02-16: finding out flow discharge
@@ -81,8 +82,8 @@ if __name__ == "__main__":
         return None
         
     construct_MLE()
-    #pdb.set_trace()
     check_pfd(wwtp)
+    #pdb.set_trace()
     show_pfd(wwtp)
 
     destroy_MLE()
@@ -97,15 +98,15 @@ if __name__ == "__main__":
     show_pfd(wwtp)
 
 
-    inlet.set_flow(0.1)  # mgd
+    inlet.set_mainstream_flow(0.1)  # mgd
     splt.set_sidestream_flow(0.01)
 
 
     for unit in wwtp:
-        print(unit.__name__, ":total_inflow=", unit.get_outlet_flow(), end="")
+        print(unit.__name__, ":total_inflow=", unit.totalize_inflow(), end="")
         if unit.has_sidestream():
-            print(": main_outflow=", unit._main_outlet_flow,
-                    " side_outflow=", unit._side_outlet_flow)
+            print(": main_outflow=", unit.get_main_outflow(),
+                    " side_outflow=", unit.get_side_outflow())
         else:
-            print(": total_outflow=", unit.get_outlet_flow())
+            print(": total_outflow=", unit.get_main_outflow())
 

@@ -69,7 +69,7 @@ class final_clarifier(splitter):
         self._capture_rate = 0.95
 
         # user defined underflow solids, mg/L
-        self._under_TSS = 12000
+        self._under_TSS = 15000
 
         print(self.__name__, " initiated successfully.")
         return None
@@ -81,7 +81,7 @@ class final_clarifier(splitter):
     def _valid_under_TSS(self, uf_TSS):
         self.update_combined_input()
         _in_tss = self.get_TSS("Inlet")
-        return _in_tss <= uf_TSS < 15000
+        return _in_tss <= uf_TSS < 18000
 
 
     def _settle_solids(self, index_list=[0, 1, 2, 3, 4, 11]):

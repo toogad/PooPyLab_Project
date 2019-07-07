@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190707 KZ: fixed blend_inlet_comps()
 # 20190619 KZ: updated branch flow balance
 # 20190618 KZ: further improve flow balance.
 # 20190617 KZ: improve flow balance.
@@ -236,7 +237,12 @@ class splitter(poopy_lab_obj):
             for i in range(constants._NUM_ASM1_COMPONENTS):
                 temp = 0
                 for unit in self._inlet:
-                    temp += unit.get_outlet_concs()[i] * unit.get_outlet_flow()
+                    if self in unit.get_downstream_main():
+                        temp += unit.get_main_outlet_concs()[i]\
+                                * unit.get_main_outflow()
+                    else:
+                        temp += unit.get_side_outlet_concs()[i]\
+                                * unit.get_side_outflow()
                 self._in_comps[i] = temp / self._total_inflow
         self._in_comps_blended = True
         return None
@@ -702,7 +708,7 @@ class influent(pipe):
 
     def totalize_inflow(self):
         self._inflow_totalized = True
-        return None
+        return self._design_flow
 
 
     def blend_inlet_comps(self):
