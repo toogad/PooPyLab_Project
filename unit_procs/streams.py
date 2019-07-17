@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190715 KZ: added self._type and get_type()
 # 20190707 KZ: fixed blend_inlet_comps()
 # 20190619 KZ: updated branch flow balance
 # 20190618 KZ: further improve flow balance.
@@ -67,6 +68,8 @@ class splitter(poopy_lab_obj):
     def __init__(self):
         self.__class__.__id += 1
         self.__name__ = "Splitter_" + str(self.__id)
+
+        self._type = "splitter"
 
         # _inlet store the upstream units and their flow contribution
         # in the format of {unit, Flow}
@@ -126,33 +129,6 @@ class splitter(poopy_lab_obj):
 
         print(self.__name__, "initialized successfully.")
         return None
-    
-    #  FUNCTIONS UNIQUE TO SPLITTER
-    #
-    def set_as_SRT_controller(self, setting=False):
-        self._SRT_controller = setting
-        #TODO: add notes here
-        self._so_flow_defined = setting
-        #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
-        return None
-
-    
-    def is_SRT_controller(self):
-        return self._SRT_controller
-
-
-    def _sum_helper(self, branch="Main_Out", index_list=[]):
-        ''' sum up the model components indicated by the index_list'''
-        _sum = 0.0
-        if branch == "Main_Out":
-            _sum = sum(self._mo_comps[i] for i in index_list)
-        elif branch == "Inlet":
-            _sum = sum(self._in_comps[i] for i in index_list)
-        elif branch == "Side_Out" and self.has_sidestream():
-            _sum = sum(self._so_comps[i] for i in index_list)
-        return _sum
-    #
-    # END OF FUNCTIONS UNIQUE TO SPLITTER
 
 
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
@@ -186,6 +162,10 @@ class splitter(poopy_lab_obj):
             self._so_flow = self._in_flow_backcalc - self._mo_flow
             self._so_flow_defined = True
         return None
+
+
+    def get_type(self):
+        return self._type
 
 
     def has_sidestream(self):
@@ -272,16 +252,16 @@ class splitter(poopy_lab_obj):
     
 
     def set_downstream_main(self, rcvr):
-        if isinstance(rcvr, influent):  # None is allowed as a place holder
-            print("ERROR:", self.__name__, "main outlet given an influent.")
-            return None
         if rcvr == None:
             self._main_outlet = None
             self._mo_connected = False
-        elif self._main_outlet != rcvr:
+        elif self._main_outlet != rcvr and rcvr.get_type() == "Pipe":
             self._main_outlet = rcvr 
             self._mo_connected = True
             rcvr.add_upstream(self)
+        else:
+            print("ERROR: Only a Pipe can be connected to the main outlet of ",
+                    self.__name__)
         return None
     
 
@@ -324,14 +304,16 @@ class splitter(poopy_lab_obj):
     
 
     def set_downstream_side(self, rcvr):
-        if isinstance(rcvr, influent):
-            print("ERROR: WRONG RECEIVER GIVEN TO SIDESTREAM")
-            return None
-        if self._side_outlet != rcvr:
-            self._side_outlet = rcvr
-            self._so_connected = rcvr != None
-            if rcvr != None:
-                rcvr.add_upstream(self, "Side")
+        if rcvr == None:
+            self._side_outlet = None
+            self._so_connected = False
+        elif self._side_outlet != rcvr and rcvr.get_type() == "Pipe":
+            self._side_outlet = rcvr 
+            self._so_connected = True
+            rcvr.add_upstream(self, "Side")
+        else:
+            print("ERROR: Only a Pipe can be connected to the side outlet of ",
+                    self.__name__)
         return None
                 
 
@@ -466,11 +448,41 @@ class splitter(poopy_lab_obj):
 
     def is_visited(self):
         return self._visited
+    #
+    # END OF COMMON INTERFACE DEFINITIONS
  
+    
+    # FUNCTIONS UNIQUE TO SPLITTER
+    #
+    def set_as_SRT_controller(self, setting=False):
+        self._SRT_controller = setting
+        #TODO: add notes here
+        self._so_flow_defined = setting
+        #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
+        return None
+
+    
+    def is_SRT_controller(self):
+        return self._SRT_controller
+
+
+    def _sum_helper(self, branch="Main_Out", index_list=[]):
+        ''' sum up the model components indicated by the index_list'''
+        _sum = 0.0
+        if branch == "Main_Out":
+            _sum = sum(self._mo_comps[i] for i in index_list)
+        elif branch == "Inlet":
+            _sum = sum(self._in_comps[i] for i in index_list)
+        elif branch == "Side_Out" and self.has_sidestream():
+            _sum = sum(self._so_comps[i] for i in index_list)
+        return _sum
+    #
+    # END OF FUNCTIONS UNIQUE TO SPLITTER
 
 # ----------------------------------------------------------------------------
 # pipe class - Change Log:
 # 20190704 KZ: corrected initiation error.
+# 20190715 KZ: added self._type
 # 20190619 KZ: revised as per the splitter update.
 # 20190618 KZ: added flow source flags defaults
 # 20190609 KZ: fully migrated to the new base
@@ -507,6 +519,8 @@ class pipe(splitter):
         splitter.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'Pipe_' + str(self.__id)
+
+        self._type = "Pipe"
                 
         # pipe has no sidestream
         self._has_sidestream = False
@@ -523,13 +537,6 @@ class pipe(splitter):
 
         print(self.__name__,' initialized successfully.')
         return None
-
-
-    # FUNCTIONS UNIQUE TO PIPE GO HERE:
-    #
-    # (INSERT CODE HERE)
-    #
-    # END OF FUNCTIONS UNIQUE TO PIPE
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
     #
@@ -561,9 +568,16 @@ class pipe(splitter):
     # END OF ADJUSTMENT TO COMMON INTERFACE
 
 
+    # FUNCTIONS UNIQUE TO PIPE GO HERE:
+    #
+    # (INSERT CODE HERE)
+    #
+    # END OF FUNCTIONS UNIQUE TO PIPE
+
 
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
+# 20190715 KZ: added self._type
 # 20190704 KZ: corrected initiation error.
 # 20190619 KZ: updated as per the splitter update.
 # 20190618 KZ: updated along with the splitter revision.
@@ -593,6 +607,8 @@ class influent(pipe):
         pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = "Influent_" + str(self.__id)
+
+        self._type = "Influent"
 
         # influent has no further upstream discharger
         self._inlet = None
@@ -625,7 +641,57 @@ class influent(pipe):
 
         print(self.__name__,' initialized successfully.')
         return None
+    
+    # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
+    #
+    def _branch_flow_helper(self):
+        self._in_flow_backcalc = self._mo_flow = self._design_flow
+        return None
 
+
+    def add_upstream(self, discharger, branch):
+        print("ERROR:", self.__name__, "has NO upstream.")
+        return None
+
+
+    def totalize_inflow(self):
+        self._inflow_totalized = True
+        return self._design_flow
+
+
+    def blend_inlet_comps(self):
+        self._convert_to_ASM_comps()
+        return None
+
+
+    def remove_upstream(self, discharger):
+        print("ERROR:", self.__name__, "has no upstream")
+        return None
+
+
+    def set_mainstream_flow(self, flow=10):
+        if flow > 0:
+            self._design_flow = flow
+        else:
+            print("ERROR:", self.__name__, "shall have design flow > 0 MGD."
+                    "Design flow NOT CHANGED due to error in user input.")
+        return None
+
+
+    def set_mainstream_flow_by_upstream(self, f):
+        pass
+
+
+    def get_main_outflow(self):
+        return self._design_flow
+
+
+    def set_flow(self, discharger, flow):
+        pass
+    #
+    # END OF ADJUSTMENT TO COMMON INTERFACE
+
+    
     # FUNCTIONS UNIQUE TO INFLUENT
     #
     # (INSERT CODE HERE)
@@ -693,60 +759,9 @@ class influent(pipe):
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
 
-    
-    # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
-    #
-    def _branch_flow_helper(self):
-        self._in_flow_backcalc = self._mo_flow = self._design_flow
-        return None
-
-
-    def add_upstream(self, discharger, branch):
-        print("ERROR:", self.__name__, "has NO upstream.")
-        return None
-
-
-    def totalize_inflow(self):
-        self._inflow_totalized = True
-        return self._design_flow
-
-
-    def blend_inlet_comps(self):
-        self._convert_to_ASM_comps()
-        return None
-
-
-    def remove_upstream(self, discharger):
-        print("ERROR:", self.__name__, "has no upstream")
-        return None
-
-
-    def set_mainstream_flow(self, flow=10):
-        if flow > 0:
-            self._design_flow = flow
-        else:
-            print("ERROR:", self.__name__, "shall have design flow > 0 MGD."
-                    "Design flow NOT CHANGED due to error in user input.")
-        return None
-
-
-    def set_mainstream_flow_by_upstream(self, f):
-        pass
-
-
-    def get_main_outflow(self):
-        return self._design_flow
-
-
-    def set_flow(self, discharger, flow):
-        pass
-    #
-    # END OF ADJUSTMENT TO COMMON INTERFACE
-    
-
-
 # -----------------------------------------------------------------------------
 # effluent class - Change Log: 
+# 20190715 KZ: added self._type
 # 20190619 KZ: revised according to the splitter update
 # 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent.
 # 20190209 KZ: standardized import
@@ -772,18 +787,14 @@ class effluent(pipe):
         self.__class__.__id += 1
         self.__name__ = "Effluent_" + str(self.__id)
 
+        self._type = "Effluent"
+
         self._mo_connected = True  # dummy
 
         self._upstream_set_mo_flow = False  # set by plant wide flow balance
 
         print(self.__name__, "initialized successfully.")
         return None
-
-    # FUNCTIONS UNIQUE TO EFFLUENT
-    #
-    # (INSERT CODE HERE)
-    #
-    # END OF FUNCTIONS UNIQUE TO EFFLUENT
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF EFFLUENT
     #
@@ -815,10 +826,17 @@ class effluent(pipe):
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
+    # FUNCTIONS UNIQUE TO EFFLUENT
+    #
+    # (INSERT CODE HERE)
+    #
+    # END OF FUNCTIONS UNIQUE TO EFFLUENT
+
 
 
 # ------------------------------------------------------------------------------
 # WAS class - Change Log:
+# 20190715 KZ: added self._type
 # 20190629 KZ: removed inform_SRT_controller()
 # 20190612 KZ: migrated to using pipe as parent.
 # 20190209 KZ: standardized import
@@ -838,9 +856,26 @@ class WAS(pipe):
         pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'WAS_' + str(self.__id)
+        
+        self._type = "WAS"
+
         self._mo_connected = True  # assume something always receives WAS
         print(self.__name__,' initialized successfully.')
         return None
+
+    # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
+    #
+    def discharge(self):
+        # WAS typically functions as an effluent obj. However, it can also be
+        # a pipe obj. that connects to solids management process units.
+        # Therefore, the discharge function allows a None at the main outlet.
+
+        if self._main_outlet != None:            
+            self._discharge_main_outlet() 
+        return None
+    #
+    # END OF ADJUSTMENTS TO COMMON INTERFACE
+
 
     # FUNCTIONS UNIQUE TO WAS
     #
@@ -875,18 +910,5 @@ class WAS(pipe):
         # is higher than the influent flow; The WAS flow is then passed to the
         # SRT controlling splitter by the main loop.
         return self._mo_flow
-
-
-    # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
-    def discharge(self):
-        # WAS typically functions as an effluent obj. However, it can also be
-        # a pipe obj. that connects to solids management process units.
-        # Therefore, the discharge function allows a None at the main outlet.
-
-        if self._main_outlet != None:            
-            self._discharge_main_outlet() 
-        return None
-    #
-    # END OF ADJUSTMENTS TO COMMON INTERFACE
-
+    # END OF FUNCTIONS UNIQUE TO WAS

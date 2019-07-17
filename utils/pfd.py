@@ -25,6 +25,7 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
+#   2019-07-16 KZ: replaced all isinstance() with get_type() wherever we can
 #   2019-03-17 KZ: revised _check_WAS()
 #   2019-03-17 KZ: revised _check_sidestream_flows(); _find_main_only_prefix()
 #   2019-03-03 KZ: added PFD checking fucntions
@@ -62,11 +63,11 @@ def _id_upstream_type(me, upds):
     # me: a process unit
     # upds: an upstream discharger of "me"
 
-    if isinstance(me, influent):
+    if me.get_type() == "Influent":
         return "VOID"
-    elif isinstance(upds, influent):
+    elif _upds_type == "Influent":
         return "INFLUENT"
-    elif isinstance(upds, splitter):  # splitter & its derived types
+    elif isinstance(upds, splitter):  # splitter & all its derived types
         if me == upds.get_downstream_main():
             return "SPLITTER_MAIN"
         else:
@@ -92,8 +93,7 @@ def _check_WAS(mywas):
 
     for _u in mywas:
         for _upds in _u.get_upstream():
-            if isinstance(_upds, pipe) \
-                    and not isinstance(_upds, asm_reactor):
+            if _upds.get_type() == "Pipe":
                 if len(_upds.get_upstream()) == 1:
                     _xu = [q for q in _upds.get_upstream()][0]
                     if _id_upstream_type(_upds, _xu) != "SPLITTER_SIDE":
@@ -136,7 +136,7 @@ def _find_main_only_prefix(cur, pms):
         # found a mainstream-only loop
         return True
 
-    if isinstance(cur, effluent) or isinstance(cur, WAS) or cur == None:
+    if cur == None or cur.get_type() == "Effluent"  or cur.get_type() == "WAS":
         # current ms_prefix leads to dead end
         if len(pms) > 0:
             pms.pop()
@@ -168,11 +168,9 @@ def _has_main_only_loops(pfd):
 
 def check_pfd(wwtp):
 
-    _all_WAS = [w for w in wwtp if isinstance(w, WAS)]
+    _all_WAS = [w for w in wwtp if w.get_type() == "WAS"]
 
-    _all_splitters = [s for s in wwtp 
-            if (isinstance(s, splitter) and not
-                isinstance(s, final_clarifier))]
+    _all_splitters = [s for s in wwtp if s.get_type() == "Splitter"]
 
     _le = _check_connection(wwtp)
     _WAS_ok, _srt_ctrl_ = _check_WAS(_all_WAS)
@@ -193,13 +191,14 @@ def check_pfd(wwtp):
 def show_pfd(wwtp=[]):
     for unit in wwtp:
         print(unit.__name__, ": receives from:", end=" ")
-        if isinstance(unit, influent):
+        if unit.get_type() == "Influent":
             print("None")
         else:
             upstr = unit.get_upstream()
             for dschgr in upstr:
                 print(dschgr.__name__, ",", end=" ")
             print()
+
         print("         : discharges to:", end=" ")
         if (isinstance(unit, effluent) or isinstance(unit, WAS) 
                 or not unit.main_outlet_connected()):

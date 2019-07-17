@@ -102,6 +102,7 @@ if __name__ == "__main__":
     splt.set_sidestream_flow(0.01)
 
 
+    print("Before Flow Balance:")
     for unit in wwtp:
         print(unit.__name__, ":total_inflow=", unit.totalize_inflow(), end="")
         if unit.has_sidestream():
@@ -109,4 +110,6 @@ if __name__ == "__main__":
                     " side_outflow=", unit.get_side_outflow())
         else:
             print(": total_outflow=", unit.get_main_outflow())
+
+#    for unit in wwtp:
 

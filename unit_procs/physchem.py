@@ -32,6 +32,7 @@ from unit_procs.streams import splitter
 
 # final_clarifier class - Change Log: 
 # 20190612 KZ: migrated to new base
+# 20190715 KZ: added self._type
 # 20190209 KZ: standardized import
 #   July 30, 2017 KZ: made it more pythonic.
 #   March 21, 2017 KZ: Migrated to Python3
@@ -57,6 +58,8 @@ class final_clarifier(splitter):
         self.__class__.__id += 1
         self.__name__ = "FinalClarifier_" + str(self.__id)
 
+        self._type = "Final_Clarifier"
+
         # SWD = side water depth in meters, default = ~12 ft
         # active_vol in m^3, default value equals to 100,000 gallons
         # active_vol assumed not to include bottom cone
@@ -73,6 +76,27 @@ class final_clarifier(splitter):
 
         print(self.__name__, " initiated successfully.")
         return None
+
+
+    # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF FINAL_CLARIFIER
+    #
+    def set_as_SRT_controller(self, setting=False):
+        print("ERROR:", self.__name__, "can't be set as SRT controller")
+        return None
+
+    def set_sidestream_flow(self, flow=0):
+        print("ERROR:", self.__name__, "doesn't accept sidestream flow input.")
+        return None
+
+
+    def discharge(self):
+        self.update_combined_input()
+        self._settle_solids()
+        self._discharge_main_outlet()
+        self._discharge_side_outlet()
+        return None
+    #
+    # END ADJUSTMENTS TO COMMON INTERFACE
 
 
     # FUNCTIONS UNIQUE TO FINAL_CLARIFIER
@@ -132,30 +156,3 @@ class final_clarifier(splitter):
 
     #
     # END OF FUNCTIONS UNQIUE TO FINAL_CLARIFIER
-
-
-    # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF FINAL_CLARIFIER
-    #
-    def set_as_SRT_controller(self, setting=False):
-        print("ERROR:", self.__name__, "can't be set as SRT controller")
-        return None
-
-    def set_sidestream_flow(self, flow=0):
-        print("ERROR:", self.__name__, "doesn't accept sidestream flow input.")
-        return None
-
-
-    def discharge(self):
-        self.update_combined_input()
-        self._settle_solids()
-        self._discharge_main_outlet()
-        self._discharge_side_outlet()
-        return None
-           
-        
-    #
-    # END ADJUSTMENTS TO COMMON INTERFACE
-        
-        
-
-        

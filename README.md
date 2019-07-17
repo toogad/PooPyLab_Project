@@ -148,22 +148,23 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
                 will need to be revisited and carefully developed.
 
     3.3 Dynamic Simulation
-        The approach for the dynamic simulation is expected to be similar to 
-        that of the steady state (Sequential Modular Approach), except that the 
-        solver will be something like RK4. And there will be a time period 
-        defined by the user for the length of the simulation. Influent 
-        concentrations at a particular time may need to be interpolated based 
-        on user input. 
+
+        The approach for the dynamic simulation is expected to take a different
+        approach (Plant Wide Differential Equation System) than that of the
+        steady state (Sequential Modular Approach).
+
+        From a project management standpoint, it is easier to use the
+        same approach (equation system) for both steady state and dynamic
+        simulations. There are papers in the 1980's comparing the pros and cons
+        of the two approaches. The reason for having them both in PooPyLab is
+        Kai's own learning purpose.
+
+        The equation system solver will be something like RK4. And there
+        will be a time period defined by the user for the length of the
+        simulation. Influent concentrations at a particular time may need to be
+        interpolated based on user input.
         
         Much thinking still need to be put into the dyanmic simulation.
-
-        Another approach for the dynamic simulation is to generate the entire
-        group of equations for the overall PFD, and then solve simultaneously
-        for the time (Equation Based Approach). There are papers in the 1980's
-        comparing the pros and cons of the two approaches. I (Kai) personally
-        think that the Sequential Modular Approach may fit the object oriented
-        programming scheme better, since we are programming in Python, an OOP
-        language.
 
         3.3.1   Initial Guess
                 For dynamic simulation, the initial guess will be the steady 
@@ -178,15 +179,18 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         simply use the source code to inherite, modify, and extend the models 
         directly. The users can save the revised models in a separate folder of 
         the PooPyLab project and share with others. That being said, it is 
-        probably still desirable to have extension functionality via the GUI. 
-        If that is to be implemented, there could be the need for code writing
-        code. 
+        probably still desirable to have extension functionality via the GUI
+        that allows user to define his/her own equation systems (another reason
+        to use equation system for both steady state and dynamic simulations).
         
         ANY INPUT ON THIS TOPIC IS WELCOME!
 
     3.5 Report Simulation Results
         The results of either steady state or dynamic simulations will need to
-        be presented in tables and/or plots.
+        be presented in tables and/or plots. 
+
+        Available packages like openPyXL can be used to pipe the output to an
+        Excel spreadsheet.
 
     3.6 Storage and Reloading of Simulation Results
         PooPyLab shall be able to store the simulation results, reload the 
@@ -216,27 +220,27 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
     4.3 Definitions of Classes
         The following classes have been in place with initial definitions.
         However, they are revised constantly. Please refer to the project's
-        repository on GITHUB to see their most recent status and any additional
-        files.
+        repository on github.com to see their most recent status and any
+        additional files.
         
         4.3.1   Base: Common abstract interfaces only.
-        4.3.2   Pipe: Basic flow functions. Multiple inlets, single outlet.
-        4.3.3   Reactor: A Pipe that has active volume and can react.
-        4.3.4   Influent: A unique unit without any upstreams (inlets).
-        4.3.5   Effluent: A unique unit without any downstream (outlet).
-        4.3.6   Branch: Similar to Influent, but to be used as part of a 
-                    Splitter.
-        4.3.7   Splitter: Combination of Pipe and Branch.
-        4.3.8   Clarifier: Currently behave like a Splitter without settling
-                    model built in.
-        4.3.9   WAS: Waste sludge leaves the WWTP from here. Acts like an 
-                    Effluent, but with the capability of SRT control.
-        4.3.10  pyASM1v0_6.py: Preliminary test of the ASM1 and 
-                    scipy.integrate.fsolve() on a CSTR reactor using an example
-                    from Grady Jr. (1999): Biological Wastewater Treatment,
-                    2nd Edition.
-        4.3.11  MainTest.py: Testing the connections among different process
-                    units with the current class definitions.
+        4.3.2   Splitter: Multiple inlet, one main outlet and one side outlet;
+        4.3.3   Pipe: A Splitter without side outlet;
+        4.3.4   ASMReactor: A Pipe that has active volume and can react;
+        4.3.5   Influent: A Pipe that has no further upstream;
+        4.3.6   Effluent: A Pipe that has no further downstream;
+        4.3.7   Final_Clarifier: A Splitter that has different solids
+                concentrations at its main and side outlets;
+        4.3.8   WAS: Waste Activated Sludge unit that is a Pipe and that is
+                able to determine waste sludge flow according to the sludge
+                retention time;
+
+        4.3.9   pyASM1v0_6.py: Preliminary test of the ASM1 and 
+                scipy.integrate.fsolve() on a CSTR reactor using an example
+                from Grady Jr. (1999): Biological Wastewater Treatment,
+                2nd Edition.
+
+        4.3.11  test/: Folder for testing the defined classes
     
 ===============================================================================
 
@@ -244,10 +248,8 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
     This section shall be constantly edited by Kai Zhang to reflect the current
     need for the development.
 
-    5.1 THE CURRENT PLAN FOR BOTH STEADY STATE AND DYANMIC SIMULATIONS IS TO 
-        USE THE SEQUENTIAL MODULAR APPROACH. ADDITIONAL THOUGHTS SHALL BE PUT
-        IN TO EVALUATE WHETHER THE EQUATION BASED APPROACH OFFERS ANY SPECIFIC
-        ADVANTAGES OVER THE CURRENT ONE.
+    5.1 ADDITIONAL THOUGHTS SHALL BE PUT IN TO EVALUATE WHETHER THE EQUATION
+        BASED APPROACH OFFERS ANY SPECIFIC ADVANTAGES OVER THE CURRENT ONE.
 
     5.2 CONTINUE TO TEST THE INTERACTION OF THE PROCESS UNITS, ESPECIALLY
         5.2.1   SLUDGE WASTING AND SRT CONTROL.
@@ -273,3 +275,4 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         5.6.2   DRAG AND DROP CAPABILITY.
         5.6.3   CONNECT PROCESS FLOW DIAGRAM TO CODE
 
+LAST UPDATE: 2019-07-16 KZ

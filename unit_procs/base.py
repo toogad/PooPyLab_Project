@@ -24,6 +24,7 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   Jul 16, 2019 KZ: added get_type()
 #   Jun 19, 2019 KZ: improved branch flow balance
 #   Jun 18, 2019 KZ: added funcs to assist branch flow balance
 #   Jun 10, 2019 KZ: further revised to splitter-like base
@@ -67,6 +68,14 @@ class poopy_lab_obj(object):
         helper function to calculate 1 of the 3 branches' flow based on the
         other 2.
         return True if flow balace is done, False otherwise
+        '''
+        pass
+
+    @abstractmethod
+    def get_type(self):
+        '''
+        Return the type (Influent, Effluent, Pipe, Splitter, etc) of the
+        current object.
         '''
         pass
 

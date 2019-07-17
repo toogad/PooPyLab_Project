@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190715 KZ: added self._type
 # 20190612 KZ: migrated to match the new base (poopy_lab_obj) and new "pipe"
 # 20190209 KZ: standardized import
 # July 30, 2017 KZ: more pythonic style
@@ -52,6 +53,8 @@ class asm_reactor(pipe):
         self.__class__.__id += 1
         self.__name__ = "Reactor_" + str(self.__id)
 
+        self._type = "ASMReactor"
+
         self._active_vol = ActiveVol
         self._swd = swd
         self._area = self._active_vol / self._swd
@@ -68,6 +71,11 @@ class asm_reactor(pipe):
 
         print(self.__name__, " Initialized Successfully.")
         return None
+
+
+    # ADJUSTMENTS TO COMMON INTERFACE
+    #
+    # END OF ADJUSTMENTS TO COMMON INTERFACE
 
     
     # FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
@@ -118,8 +126,4 @@ class asm_reactor(pipe):
                                                     self._active_vol)
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
-
-
-    # ADJUSTMENTS TO COMMON INTERFACE
-    #
 
