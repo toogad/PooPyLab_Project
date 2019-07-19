@@ -97,14 +97,14 @@ class ASM_1():
         #    self._comps[11]: X_NS
         #    self._comps[12]: S_ALK
         #
-        self._comps = [0] * constants._NUM_ASM1_COMPONENTS
+        self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
         return
 
     def _set_params(self):
 
         # Ideal Growth Rate of Heterotrophs (u_H, 1/DAY)
-        self._params['u_H'] = 6 * pow(1.08, self._delta_t)
+        self._params['u_H'] = 6.0 * pow(1.08, self._delta_t)
 
         # Ideal Lysis Rate of Heterotrophs (b_LH, 1/DAY)
         self._params['b_LH'] = 0.408 * pow(1.04, self._delta_t)
@@ -116,7 +116,7 @@ class ASM_1():
         self._params['b_LA'] = 0.096 * pow(1.04, self._delta_t)
 
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
-        self._params['K_S'] = 20
+        self._params['K_S'] = 20.0
 
         # Switch Coefficient for Dissoved O2 of Hetero. (K_OH, mgO2/L)
         self._params['K_OH'] = 0.1
@@ -125,7 +125,7 @@ class ASM_1():
         self._params['K_OA'] = 0.75
 
         # Association Conc. for NH3-N of Auto. (K_NH, mgN/L)
-        self._params['K_NH'] = 1 * pow(1.14, self._delta_t)
+        self._params['K_NH'] = 1.0 * pow(1.14, self._delta_t)
 
         # Association Conc. for NOx of Hetero. (K_NO, mgN/L)
         self._params['K_NO'] = 0.2
