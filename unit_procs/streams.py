@@ -30,6 +30,8 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190721 KZ: reverted to ininstance() for class type check in
+#               set_downstream_main()/_side()
 # 20190715 KZ: added self._type and get_type()
 # 20190707 KZ: fixed blend_inlet_comps()
 # 20190619 KZ: updated branch flow balance
@@ -255,12 +257,13 @@ class splitter(poopy_lab_obj):
         if rcvr == None:
             self._main_outlet = None
             self._mo_connected = False
-        elif self._main_outlet != rcvr and rcvr.get_type() == "Pipe":
-            self._main_outlet = rcvr 
-            self._mo_connected = True
-            rcvr.add_upstream(self)
-        else:
-            print("ERROR: Only a Pipe can be connected to the main outlet of ",
+        elif self._main_outlet != rcvr:
+            if not isinstance(rcvr, influent):
+                self._main_outlet = rcvr 
+                self._mo_connected = True
+                rcvr.add_upstream(self)
+            else:
+                print("ERROR: Influent types CAN NOT be the main outlet of",
                     self.__name__)
         return None
     
@@ -307,13 +310,14 @@ class splitter(poopy_lab_obj):
         if rcvr == None:
             self._side_outlet = None
             self._so_connected = False
-        elif self._side_outlet != rcvr and rcvr.get_type() == "Pipe":
-            self._side_outlet = rcvr 
-            self._so_connected = True
-            rcvr.add_upstream(self, "Side")
-        else:
-            print("ERROR: Only a Pipe can be connected to the side outlet of ",
-                    self.__name__)
+        elif self._side_outlet != rcvr:
+            if not isinstance(rcvr, influent):
+                self._side_outlet = rcvr 
+                self._so_connected = True
+                rcvr.add_upstream(self, "Side")
+            else:
+                print("ERROR: Influent types CAN NOT be the side outlet of",
+                        self.__name__)
         return None
                 
 

@@ -65,7 +65,7 @@ def _id_upstream_type(me, upds):
 
     if me.get_type() == "Influent":
         return "VOID"
-    elif _upds_type == "Influent":
+    elif _upds.get_type() == "Influent":
         return "INFLUENT"
     elif isinstance(upds, splitter):  # splitter & all its derived types
         if me == upds.get_downstream_main():

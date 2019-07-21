@@ -3,6 +3,7 @@
 # Author: Kai Zhang
 #
 # Change Log:
+# 2019-07-21: revised to use the updated classes structure/funcs
 # 2019-03-17: testing pfd_check(), specifically mainstream-only loop finding
 #
 
@@ -33,6 +34,7 @@ if __name__ == "__main__":
 
     wwtp = [inlet, p1, p2, RAS, p4, ra, outlet, splt]
 
+    #pdb.set_trace()
     def construct_bad_pfd():
         # this PFD has a mainstream-only loop
         inlet.set_downstream_main(p1)
