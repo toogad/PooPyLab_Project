@@ -1,0 +1,4 @@
+MODEL_COMPONENT:,X_I,X_H,X_A,X_D
+RATE_EQ (1/DAY)  \ MODEL_COMPONENT_UNIT:,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD
+u_h_max * S_S / (K_S + S_S),0,1,0,0.2
+u_a_max * S_NH / (K_NH + S_NH),0,0.5,1,0.2
