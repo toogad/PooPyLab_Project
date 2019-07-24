@@ -21,7 +21,7 @@
 #
 #
 # --------------------------------------------------------------------
-# Definition of the equation_writter functions.
+# Definition of the equation writing functions.
 #
 
 if __name__ == '__main__':
