@@ -24,6 +24,7 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   Jul 26, 2019 KZ: added is_converged()
 #   Jul 16, 2019 KZ: added get_type()
 #   Jun 19, 2019 KZ: improved branch flow balance
 #   Jun 18, 2019 KZ: added funcs to assist branch flow balance
@@ -71,6 +72,15 @@ class poopy_lab_obj(object):
         '''
         pass
 
+
+    @abstractmethod
+    def is_converged(self):
+        '''
+        Return the convergence status of the unit.
+        '''
+        pass
+
+
     @abstractmethod
     def get_type(self):
         '''
@@ -78,6 +88,7 @@ class poopy_lab_obj(object):
         current object.
         '''
         pass
+
 
     @abstractmethod
     def has_sidestream(self):

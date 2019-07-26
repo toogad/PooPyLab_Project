@@ -25,25 +25,36 @@
 #
 #
 # Change Log:
+# 20190726 KZ: separate the units in a pfd into differenty type groups
 # 20190724 KZ: init
 
 #
 from unit_procs.streams import splitter, pipe, influent, effluent, WAS
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
-from utils.pfd import check_pfd, show_pfd
+import utils.pfd
 import pdb
 
 if __name__ == '__main__':
 
-    import MLE
+    import CMAS
 
-    wwtp = MLE.construct()
-    check_pfd(wwtp)
-    show_pfd(wwtp)
-    k = input("press return to exit...")
+    wwtp = CMAS.construct()
+    utils.pfd.check_pfd(wwtp)
+    utils.pfd.show_pfd(wwtp)
+    CMAS.SRT = 5
 
+    # identify units of different types
+    _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
+    _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
+    _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
+    _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
+    print('Reactors in the PFD: {}'.format([_u.__name__ for _u in _reactors]))
+    print('WAS units in the PFD: {}'.format([_u.__name__ for _u in _WAS]))
+    print('Splitters in the PFD: {}'.format(
+        [_u.__name__ for _u in _splitters]))
+    print('SRT Controlling Splitter in the PFD: {}'.format(
+        [_u.__name__ for _u in _srt_ctrl]))
 
-
-
+    
 

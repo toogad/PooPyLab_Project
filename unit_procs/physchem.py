@@ -31,6 +31,7 @@ from unit_procs.streams import splitter
 # ----------------------------------------------------------------------------
 
 # final_clarifier class - Change Log: 
+# 20190726 KZ: revised discharge() to match the add. of is_converged()
 # 20190612 KZ: migrated to new base
 # 20190715 KZ: added self._type
 # 20190209 KZ: standardized import
@@ -90,10 +91,18 @@ class final_clarifier(splitter):
 
 
     def discharge(self):
+        # record last round's results before updating/discharging:
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
+
         self.update_combined_input()
+        # for a clarifier, the main and side outlets have different solids
+        # concentrations than the inlet's
         self._settle_solids()
+
         self._discharge_main_outlet()
         self._discharge_side_outlet()
+
         return None
     #
     # END ADJUSTMENTS TO COMMON INTERFACE

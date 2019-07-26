@@ -23,10 +23,13 @@
 #    the PooPyLab program
 #
 #    Author: Kai Zhang
-#    Last Update: June 22, 2013
+#   20190726 KZ: added convergence limit
+#   June 22, 2013 KZ: init
 # 
 
 _NUM_ASM1_COMPONENTS = 13
 _NUM_ASM3_COMPONENTS = 13
 _NUM_ASM2d_COMPONENTS = 21
 
+# convergence limit
+_CONVERG_LIMIT = 1E-8

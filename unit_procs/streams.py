@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190726 KZ: added is_converged()
 # 20190721 KZ: reverted to ininstance() for class type check in
 #               set_downstream_main()/_side()
 # 20190715 KZ: added self._type and get_type()
@@ -71,7 +72,7 @@ class splitter(poopy_lab_obj):
         self.__class__.__id += 1
         self.__name__ = "Splitter_" + str(self.__id)
 
-        self._type = "splitter"
+        self._type = "Splitter"
 
         # _inlet store the upstream units and their flow contribution
         # in the format of {unit, Flow}
@@ -120,9 +121,16 @@ class splitter(poopy_lab_obj):
         # _comps[10]: S_NS,
         # _comps[11]: X_NS,
         # _comps[12]: S_ALK
-        self._in_comps = [0] * constants._NUM_ASM1_COMPONENTS 
-        self._mo_comps = [0] * constants._NUM_ASM1_COMPONENTS
-        self._so_comps = [0] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+
+        # results of previous round
+        self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._prev_so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+
+        # convergence status for the unit itself
+        self._convergence = False
 
         self._inflow_totalized = False
         self._in_comps_blended = False
@@ -166,6 +174,18 @@ class splitter(poopy_lab_obj):
         return None
 
 
+    def is_converged(self, limit=1E-8):
+        _mo_cnvg = [abs(self._mo_comps[i] - self._prev_mo_comps[i]) <= limit 
+                for i in range(len(self._mo_comps))]
+
+        _so_cnvg = [abs(self._so_comps[i] - self._prev_so_comps[i]) <= limit
+                for i in range(len(self._so_comps))]
+
+        self._converged = not (False in _mo_cnvg or False in _so_cnvg)
+
+        return self._converged
+
+        
     def get_type(self):
         return self._type
 
@@ -280,6 +300,7 @@ class splitter(poopy_lab_obj):
         self._upstream_set_mo_flow = f
         return None
 
+
     def set_mainstream_flow(self, flow=0):
         self._upstream_set_mo_flow = False
         if flow >= 0:
@@ -380,8 +401,17 @@ class splitter(poopy_lab_obj):
  
  
     def discharge(self):
+        # record last round's results before updating/discharging:
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
+
         # validity check done in pfd.check()
         self.update_combined_input()
+
+        # for a typical splitter, concentrations at the main/side outlets equal
+        # to those at the inlet
+        self._mo_comps = self._in_comps[:]
+        self._so_comps = self._in_comps[:]
 
         if self._main_outlet != None:            
             self._discharge_main_outlet()
@@ -664,7 +694,7 @@ class influent(pipe):
 
 
     def blend_inlet_comps(self):
-        self._convert_to_ASM_comps()
+        self._convert_to_ASM1_comps()
         return None
 
 
@@ -765,6 +795,7 @@ class influent(pipe):
 
 # -----------------------------------------------------------------------------
 # effluent class - Change Log: 
+# 20190726 KZ: added discharge() unique to effluent.
 # 20190715 KZ: added self._type
 # 20190619 KZ: revised according to the splitter update
 # 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent.
@@ -823,8 +854,16 @@ class effluent(pipe):
 
 
     def discharge(self):
+        # record last round's results before updating/discharging:
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
+
         # Effluent is the end of the WWTP's liquid stream
         self.update_combined_input()
+
+        self._mo_comps = self._in_comps[:]
+        self._so_comps = self._in_comps[:]
+
         return None
 
     #
@@ -840,6 +879,7 @@ class effluent(pipe):
 
 # ------------------------------------------------------------------------------
 # WAS class - Change Log:
+# 20190726 KZ: added discharge() to match the add. of is_converged()
 # 20190715 KZ: added self._type
 # 20190629 KZ: removed inform_SRT_controller()
 # 20190612 KZ: migrated to using pipe as parent.
@@ -870,12 +910,18 @@ class WAS(pipe):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
     def discharge(self):
+        # record last round's results before updating/discharging:
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
+
         # WAS typically functions as an effluent obj. However, it can also be
         # a pipe obj. that connects to solids management process units.
         # Therefore, the discharge function allows a None at the main outlet.
-
         if self._main_outlet != None:            
             self._discharge_main_outlet() 
+
+        self._mo_comps = self._in_comps[:]
+        self._so_comps = self._in_comps[:]
         return None
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE

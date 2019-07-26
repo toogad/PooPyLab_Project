@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190726 KZ: revised to match the is_converged()
 # 20190715 KZ: added self._type
 # 20190612 KZ: migrated to match the new base (poopy_lab_obj) and new "pipe"
 # 20190209 KZ: standardized import
@@ -60,14 +61,16 @@ class asm_reactor(pipe):
         self._area = self._active_vol / self._swd
 
         self._sludge = ASM_1(Temperature, DO)
- 
-        # the max acceptable error for convergence
-        self._error_tolerance = 1E-4  # placeholder
-        # a boolean flag to show convergence status
-        self._converged = False
 
-        # model components from the previous round
-        self._pre_eff_comps = []
+        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        # make _so_comps alias of _mo_comps since there is no side stream for a
+        # bioreactor
+        self._so_comps = self._mo_comps
+
+        # results of previous round
+        self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._prev_so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
         print(self.__name__, " Initialized Successfully.")
         return None
@@ -75,6 +78,20 @@ class asm_reactor(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE
     #
+    def discharge(self):
+        # record last round's results before updating/discharging:
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
+
+        self.update_combined_input()
+        # for a reactor, the outlet has different component
+        # concentrations than the inlet
+        self.estimate_current_state()
+
+        self._discharge_main_outlet()
+        self._discharge_side_outlet()
+
+        return None
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
     
@@ -117,13 +134,13 @@ class asm_reactor(pipe):
 
     
     def estimate_current_state(self):
-        # store the current componets received in the most recent iteration.
-        self._pre_eff_comps = self._mo_comps[:]
         # get the components from the next iteration.
         self._mo_comps = self._sludge.steady_step(self._pre_eff_comps,
                                                     self._total_flow,
                                                     self._in_comps,
                                                     self._active_vol)
+        # _so_comps is already an aliase of _mo_comps
+        return None
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
 
