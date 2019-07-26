@@ -28,3 +28,22 @@
 # 20190724 KZ: init
 
 #
+from unit_procs.streams import splitter, pipe, influent, effluent, WAS
+from unit_procs.bio import asm_reactor
+from unit_procs.physchem import final_clarifier
+from utils.pfd import check_pfd, show_pfd
+import pdb
+
+if __name__ == '__main__':
+
+    import MLE
+
+    wwtp = MLE.construct()
+    check_pfd(wwtp)
+    show_pfd(wwtp)
+    k = input("press return to exit...")
+
+
+
+
+
