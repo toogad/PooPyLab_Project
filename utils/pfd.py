@@ -171,7 +171,7 @@ def get_all_units(wwtp, type='ASMReactor'):
     return [w for w in wwtp if w.get_type() == type]
 
 
-def check_pfd(wwtp):
+def check(wwtp):
 
     _all_WAS = get_all_units(wwtp, 'WAS')
 
@@ -193,7 +193,7 @@ def check_pfd(wwtp):
     return None
 
 
-def show_pfd(wwtp=[]):
+def show(wwtp=[]):
     print('Current PFD Configuration:')
     for unit in wwtp:
         print(unit.__name__, ': receives from:', end=' ')

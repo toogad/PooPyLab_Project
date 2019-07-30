@@ -40,8 +40,8 @@ if __name__ == '__main__':
     import CMAS
 
     wwtp = CMAS.construct()
-    utils.pfd.check_pfd(wwtp)
-    utils.pfd.show_pfd(wwtp)
+    utils.pfd.check(wwtp)
+    utils.pfd.show(wwtp)
     CMAS.SRT = 5
 
     # identify units of different types
@@ -49,12 +49,31 @@ if __name__ == '__main__':
     _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
     _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
     _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
+    _final_clar = utils.pfd.get_all_units(wwtp, 'Final_Clarifier')
     print('Reactors in the PFD: {}'.format([_u.__name__ for _u in _reactors]))
     print('WAS units in the PFD: {}'.format([_u.__name__ for _u in _WAS]))
     print('Splitters in the PFD: {}'.format(
         [_u.__name__ for _u in _splitters]))
     print('SRT Controlling Splitter in the PFD: {}'.format(
         [_u.__name__ for _u in _srt_ctrl]))
+    print('Final Clarifier in the PFD: {}'.format(
+        [_u.__name__ for _u in _final_clar]))
+
+    # start the main loop
+    _global_cnvg = False
+    _solids_inv = 0.0
+    _WAS_flow = 0.0
+    while not _global_cnvg:
+        for elem in wwtp:
+            if not elem in _srt_ctrl:
+                elem.update_combined_input()
+                elem.discharge()
+            elif elem in :
+                _solids_inv = elem.get_solids_inventory(_reactors)
+                _WAS_flow =#TODO: CONTINUE HERE 
+
+
+
 
     
 

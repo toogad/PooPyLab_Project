@@ -44,7 +44,7 @@
 from unit_procs.streams import influent, effluent, WAS, splitter, pipe
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
-from utils.pfd import check_pfd, show_pfd
+from utils.pfd import check, show
 import pdb
 
 
