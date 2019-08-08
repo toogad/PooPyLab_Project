@@ -28,11 +28,11 @@ if __name__ == '__main__':
 
     import csv
 
-    with open("model.csv", 'r') as csvf:
-        r = csv.reader(csvf)
-        for row in r:
-            print(row)
-    csvf.close()
+#    with open("model.csv", 'r') as csvf:
+#        r = csv.reader(csvf)
+#        for row in r:
+#            print(row)
+#    csvf.close()
 
     with open("model.csv", 'r') as csvf:
         dr = csv.DictReader(csvf)
@@ -45,6 +45,5 @@ if __name__ == '__main__':
         for row in dr:
             print(row.keys())
             print(row.values())
-            
     csvf.close()
 
