@@ -1,5 +1,5 @@
-S_I,S_S,X_I,X_S,X_BH,X_BA,X_D,S_O,S_NO,S_NH,S_NS,X_NS,S_ALK,COMPONENT_NAME,,
-0,1,2,3,4,5,6,7,8,9,10,11,12,COMPONENT_ID (_i_),RATE_EQUATION_ID (_j_),RATE_EQUATION_DESCRIPTION
+S_I,S_S,X_I,X_S,X_BH,X_BA,X_D,S_O,S_NO,S_NH,S_NS,X_NS,S_ALK,,,
+0,1,2,3,4,5,6,7,8,9,10,11,12,Rate_Eq_j,(_j_),RATE_EQUATION_DESCRIPTION
 0,-1 / Y_H,0,0,1,0,0,( Y_H – 1 ) / Y_H,0,-i_XB,0,0,-i_XB / 14,u_max_H * S_S / ( K_S + S_S ) * S_O / ( K_OH + S_O ) * X_BH,0,Growth of Aerobic Heterotrophs
 0,-1 / Y_H,0,0,1,0,0,0,( Y_H – 1 ) / ( 2.86 * Y_H ),-i_XB,0,0,( 1 – Y_H ) / ( 14 * 2.86 * Y_H ) - i_XB / 14,u_max_H * S_S / ( K_S + S_S ) * K_OH / ( K_OH + S_O) * S_NO / ( K_NO + S_NO ) * cf_g * X_BH,1,Growth of Anoxic Heterotrophs
 0,0,0,0,0,1,0,( Y_A – 4.57 ) / Y_A,1 / Y_A,-i_XB - 1 / Y_A,0,0,-i_XB / 14 - 1 / ( 7 * Y_A ),u_max_A * S_NH / ( K_NH + S_NH ) * S_O / ( K_OA + S_O ) * X_BA,2,Growth of Aerobic Autotrophs
@@ -8,3 +8,5 @@ S_I,S_S,X_I,X_S,X_BH,X_BA,X_D,S_O,S_NO,S_NH,S_NS,X_NS,S_ALK,COMPONENT_NAME,,
 0,0,0,0,0,0,0,0,0,1,-1,0,1 / 14,k_a * S_NS * X_BH,5,Ammonification of Dissolved Organic N
 0,1,0,-1,0,0,0,0,0,0,0,0,0,k_h * ( X_S / X_BH ) / ( K_X + X_S / X_BH ) * ( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ) * X_BH,6,Hydrolysis of Particulate Substrate
 0,0,0,0,0,0,0,0,0,0,1,-1,0,k_h * ( X_S / X_BH ) / ( K_X + X_S / X_BH ) * ( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ) * X_BH * X_NS / X_S,7,Hydrolysis of Particulate Organic N
+Inert Soluble COD,Readily Biodegradable COD,Inert Particulate COD,Slowly Biodegradable COD,Heterotrophic Biomass,Autotrophic Biomass,Biomass Debris due to Decay,Dissolved O2,Nitite/Nitrate N,Ammonia N,Dissolved Organic N,Particulate Organic N,Alkalinity,Rate_Eq_j,(_j_),RATE_EQUATION_DESCRIPTION
+mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as N,mg/L as N,mg/L as N,mg/L as N,mg/L as CaCO3,mg/L-d,NA,NA

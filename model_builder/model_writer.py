@@ -40,10 +40,10 @@ if __name__ == '__main__':
             print(row)
     csvf.close()
 
-    with open("model.csv", 'r') as csvf:
-        dr = csv.DictReader(csvf)
-        for row in dr:
-            print(row.keys())
-            print(row.values())
-    csvf.close()
-
+#    with open("model.csv", 'r') as csvf:
+#        dr = csv.DictReader(csvf)
+#        for row in dr:
+#            print(row.keys())
+#            print(row.values())
+#    csvf.close()
+#
