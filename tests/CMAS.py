@@ -35,6 +35,8 @@
 #                              +----------p5---------> waste (WAS)
 #
 #
+#       splt* is an SRT Controlling Splitter
+#
 #    Author: Kai Zhang
 #
 # Change Log: 
@@ -45,7 +47,6 @@ from unit_procs.streams import influent, effluent, WAS, splitter, pipe
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
 from utils.pfd import check, show
-import pdb
 
 
 inlet = influent()
@@ -71,7 +72,7 @@ wwtp = [inlet,
         ra, fc, outlet,
         RAS, waste, splt]
 
-SRT = 10  # day
+#SRT = 10  # day
 
 def construct():
     # make an CMAS plant

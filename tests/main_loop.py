@@ -40,37 +40,75 @@ if __name__ == '__main__':
     import CMAS
 
     wwtp = CMAS.construct()
+
     utils.pfd.check(wwtp)
+
     utils.pfd.show(wwtp)
-    CMAS.SRT = 5
 
     # identify units of different types
+    _inf = utils.pfd.get_all_units(wwtp, 'Influent')
+
     _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
+
     _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
+
     _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
+
     _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
+
     _final_clar = utils.pfd.get_all_units(wwtp, 'Final_Clarifier')
+
+    _eff = utils.pfd.get_all_units(wwtp, 'Effluent')
+
+    print('Influent in the PFD: {}'.format([_u.__name__ for _u in _inf]))
+
+    _plant_inf_flow = sum([_u.get_main_outflow() for _u in _inf])
+    print(' Total influent flow into plant:', _plant_inf_flow)
+
     print('Reactors in the PFD: {}'.format([_u.__name__ for _u in _reactors]))
+
     print('WAS units in the PFD: {}'.format([_u.__name__ for _u in _WAS]))
+
     print('Splitters in the PFD: {}'.format(
         [_u.__name__ for _u in _splitters]))
+
     print('SRT Controlling Splitter in the PFD: {}'.format(
         [_u.__name__ for _u in _srt_ctrl]))
+
     print('Final Clarifier in the PFD: {}'.format(
         [_u.__name__ for _u in _final_clar]))
 
+    print('Effluent in the PFD: {}'.format([_u.__name__ for _u in _eff]))
+
+    CMAS.SRT = 5
+
+    _uf_tss = 15000
+
+    for fc in _final_clar:
+        fc.set_underflow_TSS(_uf_tss)
+
     # start the main loop
-    _global_cnvg = False
-    _solids_inv = 0.0
-    _WAS_flow = 0.0
-    while not _global_cnvg:
+    _WAS_flow = 0.0  # M3/d
+
+    #pdb.set_trace()
+
+    while True:
+        if utils.pfd.check_global_cnvg(wwtp):
+            break
         for elem in wwtp:
-            if not elem in _srt_ctrl:
-                elem.update_combined_input()
-                elem.discharge()
-            elif elem in :
-                _solids_inv = elem.get_solids_inventory(_reactors)
-                _WAS_flow =#TODO: CONTINUE HERE 
+
+            elem.update_combined_input()
+            elem.discharge()
+
+            if elem.get_type() == 'WAS':
+                _WAS_flow = elem.set_WAS_flow(CMAS.SRT, _reactors, _eff)
+
+            if elem.is_SRT_controller():
+                elem.set_sidestream_flow(_WAS_flow)
+
+            if elem.get_type() == 'Effluent':
+                elem.set_flow(_plant_inf_flow - _WAS_flow)
+
 
 
 
