@@ -96,6 +96,7 @@ class final_clarifier(splitter):
         self._prev_so_comps = self._so_comps[:]
 
         self.update_combined_input()
+
         # for a clarifier, the main and side outlets have different solids
         # concentrations than the inlet's
         self._settle_solids()
@@ -113,19 +114,19 @@ class final_clarifier(splitter):
     # (INSERT CODE HERE)
     def _valid_under_TSS(self, uf_TSS):
         self.update_combined_input()
-        _in_tss = self.get_TSS("Inlet")
-        return _in_tss <= uf_TSS < 18000
+        _in_tss = self.get_TSS('Inlet')
+        return _in_tss <= uf_TSS <= 18000
 
 
     def _settle_solids(self, index_list=[0, 1, 2, 3, 4, 11]):
         if not self._valid_under_TSS(self._under_TSS):
-            print("ERROR:", self.__name__, "has invalid underflow TSS.")
+            print('ERROR:', self.__name__, 'has invalid underflow TSS.')
             return None
 
-        _in_tss = self.get_TSS("Inlet")
+        _in_tss = self.get_TSS('Inlet')
         self._so_flow = (self._total_inflow * _in_tss * self._capture_rate
                         / self._under_TSS)
-        self._side_flow_defined = True  # TODO: CONTINUE HERE
+        self._side_flow_defined = True
         self._mo_flow = self._total_inflow - self._so_flow
 
         # overflow TSS
@@ -156,7 +157,7 @@ class final_clarifier(splitter):
         return None
 
 
-    def set_underflow_TSS(self, uf_TSS=12000):
+    def set_underflow_TSS(self, uf_TSS=15000):
         if self._valid_under_TSS(uf_TSS):
             self._under_TSS = uf_TSS
         else:

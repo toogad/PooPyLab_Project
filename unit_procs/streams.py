@@ -130,7 +130,7 @@ class splitter(poopy_lab_obj):
         self._prev_so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
         # convergence status for the unit itself
-        self._convergence = False
+        self._converged = False
 
         self._inflow_totalized = False
         self._in_comps_blended = False
@@ -879,6 +879,7 @@ class effluent(pipe):
 
 # ------------------------------------------------------------------------------
 # WAS class - Change Log:
+# 20190809 KZ: added effluent solids in set_WAS_flow()
 # 20190726 KZ: added discharge() to match the add. of is_converged()
 # 20190715 KZ: added self._type
 # 20190629 KZ: removed inform_SRT_controller()
@@ -951,11 +952,17 @@ class WAS(pipe):
         return inventory
 
 
-    def set_WAS_flow(self, reactor_list=[], SRT=5):
+    def set_WAS_flow(self, SRT=5, reactor_list=[], effluent_list=[]):
         #SRT is the plant's SRT from user input. Default 5 days.
         self.update_combined_input()
-        self._mo_flow = self.get_solids_inventory(reactor_list) * 1000 \
-                        / SRT / self.get_TSS()
+
+        _eff_solids = 0.0
+        for _u in effluent_list:
+            _eff_solids += (_u.get_TSS() * _u.get_main_outflow() * 1E-3)  # KG
+
+        self._mo_flow = ((self.get_solids_inventory(reactor_list) * 1E3 / SRT
+                        - _eff_solids ) / self.get_TSS())
+
         #TODO: in MAIN function, we need to check whether the WAS flow
         # is higher than the influent flow; The WAS flow is then passed to the
         # SRT controlling splitter by the main loop.
