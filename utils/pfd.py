@@ -25,6 +25,7 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
+#   2019-08-08 KZ: added check_global_cnvg()
 #   2019-07-26 KZ: added get_all_units() to group specific types of units
 #   2019-07-16 KZ: replaced all isinstance() with get_type() wherever we can
 #   2019-03-17 KZ: revised _check_WAS()
@@ -223,4 +224,14 @@ def show(wwtp=[]):
         else:
             print()
     return None
+
+def check_global_cnvg(wwtp):
+    _glb_cnvg = True
+    for unit in wwtp:
+        if not unit.is_converged():
+            _glb_cnvg = False
+            print(unit.__name__, 'not converged yet')
+            break
+    return _glb_cnvg
+
 
