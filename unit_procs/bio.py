@@ -30,7 +30,8 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
-# 20190813 KZ: fixed discharge() side outlet
+# 20190813 KZ: fixed discharge() side outlet; fixed flow into
+#               estimate_current_state()
 # 20190812 KZ: corrected a few params in solver func.
 # 20190726 KZ: revised to match the is_converged()
 # 20190715 KZ: added self._type
@@ -81,18 +82,14 @@ class asm_reactor(pipe):
     # ADJUSTMENTS TO COMMON INTERFACE
     #
     def discharge(self):
-        # record last round's results before updating/discharging:
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
-
-        self.update_combined_input()
+        #self.update_combined_input()
         # for a reactor, the outlet has different component
         # concentrations than the inlet
         self.estimate_current_state()
-
         self._discharge_main_outlet()
 
         return None
+
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
     
@@ -137,7 +134,7 @@ class asm_reactor(pipe):
     def estimate_current_state(self):
         # get the components from the next iteration.
         self._mo_comps = self._sludge.steady_step(self._prev_mo_comps,
-                                                    self._mo_flow,
+                                                    self._total_inflow,
                                                     self._in_comps,
                                                     self._active_vol)
         # _so_comps is already an aliase of _mo_comps

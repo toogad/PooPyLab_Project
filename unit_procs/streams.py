@@ -30,6 +30,8 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190813 KZ: revised discharge(), removed _inflow_totalized and
+#               in_comps_blended flags
 # 20190726 KZ: added is_converged()
 # 20190721 KZ: reverted to ininstance() for class type check in
 #               set_downstream_main()/_side()
@@ -132,8 +134,9 @@ class splitter(poopy_lab_obj):
         # convergence status for the unit itself
         self._converged = False
 
-        self._inflow_totalized = False
-        self._in_comps_blended = False
+        #self._inflow_totalized = False
+        #self._in_comps_blended = False
+
         # provision flag for loop-finding need
         self._visited = False
 
@@ -206,7 +209,7 @@ class splitter(poopy_lab_obj):
             self._inlet[discharger] = 0
             self._has_discharger = True
 
-            self._inflow_totalized = self._in_comps_blended = False
+            #self._inflow_totalized = self._in_comps_blended = False
 
             if upst_branch == 'Main':
                 discharger.set_downstream_main(self)
@@ -228,34 +231,37 @@ class splitter(poopy_lab_obj):
 
     def totalize_inflow(self):
         self._total_inflow = sum(self._inlet.values())
-        self._inflow_totalized = True
+        #self._inflow_totalized = True
         return self._total_inflow
 
 
     def blend_inlet_comps(self):
-        if not self._inflow_totalized:
-            self.totalize_inflow()
+        #if not self._inflow_totalized:
+        self.totalize_inflow()
         if self._total_inflow:  # make sure it's not 0
             for i in range(constants._NUM_ASM1_COMPONENTS):
                 temp = 0
                 for unit in self._inlet:
-                    if self in unit.get_downstream_main():
+                    if self == unit.get_downstream_main():
                         temp += unit.get_main_outlet_concs()[i]\
                                 * unit.get_main_outflow()
                     else:
                         temp += unit.get_side_outlet_concs()[i]\
                                 * unit.get_side_outflow()
                 self._in_comps[i] = temp / self._total_inflow
-        self._in_comps_blended = True
+        #self._in_comps_blended = True
         return None
     
 
     def update_combined_input(self):
         ''' Combined the flows and loads into the current unit'''
-        if not self._inflow_totalized:
-            self.totalize_inflow()
-        if self._inflow_totalized and not self._in_comps_blended:
-            self.blend_inlet_comps()
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
+
+        #if not self._inflow_totalized:
+        self.totalize_inflow()
+        #if self._inflow_totalized and not self._in_comps_blended:
+        self.blend_inlet_comps()
         return None
     
 
@@ -266,7 +272,7 @@ class splitter(poopy_lab_obj):
                 discharger.set_downstream_main(None)
             else:
                 discharger.set_downstream_side(None)
-            self._inflow_totalized = self._in_comps_blended = False
+            #self._inflow_totalized = self._in_comps_blended = False
             self._has_discharger = len(self._inlet) > 0
         else:
             print("ERROR:", self.__name__, "inlet unit not found for removal.")
@@ -313,8 +319,8 @@ class splitter(poopy_lab_obj):
             
 
     def get_main_outflow(self):
-        if not self._inflow_totalized:
-            self.totalize_inflow()
+        #if not self._inflow_totalized:
+        self.totalize_inflow()
         self._branch_flow_helper()
         if self._mo_flow <= 0:
             print("WARN/ERROR:", self.__name__, "main outlet flow <= 0.")
@@ -322,8 +328,8 @@ class splitter(poopy_lab_obj):
 
 
     def get_main_outlet_concs(self):
-        if self._in_comps_blended == False:
-            self.blend_inlet_comps()
+        #if self._in_comps_blended == False:
+        self.blend_inlet_comps()
         return self._mo_comps[:]
     
 
@@ -365,24 +371,24 @@ class splitter(poopy_lab_obj):
     
 
     def get_side_outflow(self):
-        if not self._inflow_totalized:
-            self.totalize_inflow()
-            self._branch_flow_helper()
+        #if not self._inflow_totalized:
+        self.totalize_inflow()
+        self._branch_flow_helper()
         if self._so_flow < 0:
             print("WARN/ERROR:", self.__name__,"side outlet flow < 0.")
         return self._so_flow
 
 
     def get_side_outlet_concs(self):
-        if self._in_comps_blended == False:
-            self.blend_inlet_comps()
+        #if self._in_comps_blended == False:
+        self.blend_inlet_comps()
         return self._so_comps[:]
     
 
     def set_flow(self, dschgr, flow):
         if dschgr in self._inlet and flow >= 0:
             self._inlet[dschgr] = flow
-            self._inflow_totalized = False
+            #self._inflow_totalized = False
         return None
 
 
@@ -401,12 +407,9 @@ class splitter(poopy_lab_obj):
  
  
     def discharge(self):
-        # record last round's results before updating/discharging:
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
+        #self.update_combined_input()
 
-        # validity check done in pfd.check()
-        self.update_combined_input()
+        self._branch_flow_helper()
 
         # for a typical splitter, concentrations at the main/side outlets equal
         # to those at the inlet
@@ -680,6 +683,7 @@ class influent(pipe):
     #
     def _branch_flow_helper(self):
         self._in_flow_backcalc = self._mo_flow = self._design_flow
+        self._so_flow = 0.0
         return None
 
 
@@ -689,7 +693,8 @@ class influent(pipe):
 
 
     def totalize_inflow(self):
-        self._inflow_totalized = True
+        self._branch_flow_helper()
+        #self._inflow_totalized = True
         return self._design_flow
 
 
@@ -725,7 +730,15 @@ class influent(pipe):
 
 
     def discharge(self):
-        self._mo_comps = self._in_comps  # ok w/ using alias
+
+        self._prev_mo_comps = self._mo_comps = self._in_comps  # ok w/ alias
+        self._prev_so_comps = self._so_comps = self._in_comps
+
+        if self._main_outlet != None:            
+            self._discharge_main_outlet()
+        else:
+            print("ERROR:", self.__name__, "main outlet incomplete")
+
         return None
     #
     # END OF ADJUSTMENT TO COMMON INTERFACE
