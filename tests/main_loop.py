@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20190812 KZ: first test run...failed
 # 20190726 KZ: separate the units in a pfd into differenty type groups
 # 20190724 KZ: init
 
@@ -93,11 +94,9 @@ if __name__ == '__main__':
     #pdb.set_trace()
 
     while True:
-        if utils.pfd.check_global_cnvg(wwtp):
-            break
-        for elem in wwtp:
 
-            elem.update_combined_input()
+        for elem in wwtp:
+            #elem.update_combined_input()
             elem.discharge()
 
             if elem.get_type() == 'WAS':
@@ -109,6 +108,8 @@ if __name__ == '__main__':
             if elem.get_type() == 'Effluent':
                 elem.set_flow(_plant_inf_flow - _WAS_flow)
 
+        if utils.pfd.check_global_cnvg(wwtp):
+            break
 
 
 
