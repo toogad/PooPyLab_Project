@@ -89,7 +89,7 @@ def construct():
     splt.set_as_SRT_controller(True)
     RAS.set_downstream_main(ra)
     p5.set_downstream_main(waste)
-    inlet.set_mainstream_flow(0.1)  # mgd
+    inlet.set_mainstream_flow(10)  # mgd
     splt.set_sidestream_flow(0.01)
 
     print("CMAS PFD constructed.")

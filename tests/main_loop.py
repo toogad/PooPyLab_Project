@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20190813 KZ: 2nd test run...failed
 # 20190812 KZ: first test run...failed
 # 20190726 KZ: separate the units in a pfd into differenty type groups
 # 20190724 KZ: init
@@ -96,6 +97,9 @@ if __name__ == '__main__':
     while True:
 
         for elem in wwtp:
+            if elem.__name__ == 'Reactor_1':
+                pdb.set_trace()
+
             elem.update_combined_input()
             elem.discharge()
 
