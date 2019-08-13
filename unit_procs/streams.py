@@ -96,14 +96,14 @@ class splitter(poopy_lab_obj):
         self._so_flow_defined = False
 
         # main outlet flow, m3/d
-        self._mo_flow = 0
+        self._mo_flow = 0.0
         # side outlet flow, m3/d
-        self._so_flow = 0
+        self._so_flow = 0.0
 
         # total inlet flow calculated from all dischargers
         self._total_inflow = 0         
         # inlet flow back calculated as (_mo_flow + _so_flow)
-        self._in_flow_backcalc = 0
+        self._in_flow_backcalc = 0.0
         
         self._SRT_controller = False
         
@@ -722,6 +722,11 @@ class influent(pipe):
 
     def set_flow(self, discharger, flow):
         pass
+
+
+    def discharge(self):
+        self._mo_comps = self._in_comps  # ok w/ using alias
+        return None
     #
     # END OF ADJUSTMENT TO COMMON INTERFACE
 

@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190812 KZ: corrected a few params in solver func.
 # 20190726 KZ: revised to match the is_converged()
 # 20190715 KZ: added self._type
 # 20190612 KZ: migrated to match the new base (poopy_lab_obj) and new "pipe"
@@ -135,8 +136,8 @@ class asm_reactor(pipe):
     
     def estimate_current_state(self):
         # get the components from the next iteration.
-        self._mo_comps = self._sludge.steady_step(self._pre_eff_comps,
-                                                    self._total_flow,
+        self._mo_comps = self._sludge.steady_step(self._prev_mo_comps,
+                                                    self._mo_flow,
                                                     self._in_comps,
                                                     self._active_vol)
         # _so_comps is already an aliase of _mo_comps
