@@ -101,7 +101,7 @@ class splitter(poopy_lab_obj):
         self._so_flow = 0.0
 
         # total inlet flow calculated from all dischargers
-        self._total_inflow = 0         
+        self._total_inflow = 0.0
         # inlet flow back calculated as (_mo_flow + _so_flow)
         self._in_flow_backcalc = 0.0
         

@@ -130,8 +130,11 @@ class final_clarifier(splitter):
         self._mo_flow = self._total_inflow - self._so_flow
 
         # overflow TSS
-        _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
-                        / self._mo_flow)
+        if self._mo_flow > 0:
+            _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
+                            / self._mo_flow)
+        else:
+            _of_tss = 30  #TODO: is this ok?
         
         # initiate _mo_comps and _so_comps so that all dissolved components
         # (S_*) are identical among the three streams
@@ -142,7 +145,10 @@ class final_clarifier(splitter):
         # each component is split into the overflow and underflow keeping its
         # fraction in clarifier inlet TSS.
         for i in index_list:
-            _frac = self._in_comps[i] / _in_tss
+            if _in_tss > 0:
+                _frac = self._in_comps[i] / _in_tss
+            else:
+                _frac = 0
             self._mo_comps[i] = _of_tss * _frac
             self._so_comps[i] = self._under_TSS * _frac
         

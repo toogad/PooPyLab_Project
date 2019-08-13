@@ -96,7 +96,7 @@ if __name__ == '__main__':
     while True:
 
         for elem in wwtp:
-            #elem.update_combined_input()
+            elem.update_combined_input()
             elem.discharge()
 
             if elem.get_type() == 'WAS':
@@ -105,11 +105,16 @@ if __name__ == '__main__':
             if elem.is_SRT_controller():
                 elem.set_sidestream_flow(_WAS_flow)
 
-            if elem.get_type() == 'Effluent':
-                elem.set_flow(_plant_inf_flow - _WAS_flow)
-
         if utils.pfd.check_global_cnvg(wwtp):
             break
+
+    for elem in wwtp:
+        print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
+            elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
+        print('     main outlet conc = {}'.format(
+            elem.get_main_outlet_concs()))
+        print('     side outlet conc = {}'.format(
+            elem.get_side_outlet_concs()))
 
 
 

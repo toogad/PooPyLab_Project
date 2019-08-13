@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190813 KZ: fixed discharge() side outlet
 # 20190812 KZ: corrected a few params in solver func.
 # 20190726 KZ: revised to match the is_converged()
 # 20190715 KZ: added self._type
@@ -90,7 +91,6 @@ class asm_reactor(pipe):
         self.estimate_current_state()
 
         self._discharge_main_outlet()
-        self._discharge_side_outlet()
 
         return None
     # END OF ADJUSTMENTS TO COMMON INTERFACE
