@@ -26,6 +26,7 @@
 #
 # Change Log:
 # 2019-02-09 KZ: standardized import
+# 2019-08-12 KZ: fixed typos
 #    Dec 13, 2017 KZ: Fixed a few mismatched parentheses 
 #    Jul 20, 2017 KZ: Changed to pythonic style
 #    Mar 21, 2017 KZ: Changed to Python3
@@ -97,7 +98,7 @@ class ASM_1():
         #    self._comps[11]: X_NS
         #    self._comps[12]: S_ALK
         #
-        self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._comps = [1.0] * constants._NUM_ASM1_COMPONENTS
 
         return
 
@@ -364,7 +365,7 @@ class ASM_1():
         return self._stoichs['0_12'] * self._r0_AerGH() \
                 + self._stoichs['1_12'] * self._r1_AxGH() \
                 + self._stoichs['2_12'] * self._r2_AerGA() \
-                + self._stoichs['5_123'] * self._r5_AmmSN()
+                + self._stoichs['5_12'] * self._r5_AmmSN()
 
 
     def _steady(self, ExtCompList, InFlow, InfComp, Vol):
