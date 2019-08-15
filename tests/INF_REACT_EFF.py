@@ -26,7 +26,7 @@
 #
 #    Process Flow Diagram:
 #
-#    inlet --p1-> outlet
+#    inlet --p1-> reactor --p2-> outlet
 #
 #
 #    Author: Kai Zhang
@@ -35,20 +35,27 @@
 #
 
 from unit_procs.streams import influent, effluent, pipe
+from unit_procs.bio import asm_reactor
 from utils.pfd import check, show
 
 
 inlet = influent()
 p1 = pipe()
+p2 = pipe()
+reactor = asm_reactor()
 outlet = effluent()
 
 wwtp = [inlet,
-        p1,
+        p1, p2,
+        reactor,
         outlet]
 
 def construct():
     inlet.set_downstream_main(p1)
-    p1.set_downstream_main(outlet)
+    p1.set_downstream_main(reactor)
+    reactor.set_downstream_main(p2)
+    reactor.set_ASM_condition(20, 4)
+    p2.set_downstream_main(outlet)
 
     print("PFD constructed.")
 

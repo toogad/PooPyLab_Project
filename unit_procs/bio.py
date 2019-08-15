@@ -46,7 +46,7 @@ from ASMModel import constants
 class asm_reactor(pipe):
     __id = 0
 
-    def __init__(self, ActiveVol=380, swd=3.5,
+    def __init__(self, ActiveVol=38000, swd=3.5,
                     Temperature=20, DO=2, *args, **kw):
         # swd = side water depth in meters, default = ~12 ft
         # ActiveVol in m^3, default value equals to 100,000 gallons
@@ -65,15 +65,15 @@ class asm_reactor(pipe):
 
         self._sludge = ASM_1(Temperature, DO)
 
-        self._in_comps = [0.01] * constants._NUM_ASM1_COMPONENTS 
-        self._mo_comps = [0.01] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
         # make _so_comps alias of _mo_comps since there is no side stream for a
         # bioreactor
         self._so_comps = self._mo_comps
 
         # results of previous round
-        self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
-        self._prev_so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._prev_mo_comps = [1.0] * constants._NUM_ASM1_COMPONENTS
+        self._prev_so_comps = self._prev_mo_comps
 
         return None
 
@@ -83,7 +83,7 @@ class asm_reactor(pipe):
     def discharge(self):
         self._branch_flow_helper()
         self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
+        self._prev_so_comps = self._mo_comps[:]
 
         self.estimate_current_state()
         self._discharge_main_outlet()

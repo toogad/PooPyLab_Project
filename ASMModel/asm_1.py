@@ -63,9 +63,9 @@ from scipy.optimize import fsolve
 
 class ASM_1():
 
-    def __init__(self, Temp=20, DO=2):
+    def __init__(self, WWtemp=20, DO=2):
 
-        self._temperature = Temp
+        self._temperature = WWtemp
         self._bulk_DO = DO 
         
         # define the model parameters and stochoimetrics as dict() so that it
@@ -91,7 +91,7 @@ class ASM_1():
         #    self._comps[4]: X_D
         #    self._comps[5]: S_I
         #    self._comps[6]: S_S
-        #    self._comps[7]: S_DO
+        #    self._comps[7]: S_DO as COD
         #    self._comps[8]: S_NO
         #    self._comps[9]: S_NH
         #    self._comps[10]: S_NS
@@ -168,75 +168,75 @@ class ASM_1():
     # STOCHIOMETRIC MATRIX (Use the Table 6.1, p193, Grady Jr. et al 1999)
     def _set_stoichs(self):
 
-        self._stoichs['0_2'] = 1
+        self._stoichs['0_2'] = 1.0
 
-        self._stoichs['0_6'] = -1 / self._params['Y_H']
+        self._stoichs['0_6'] = -1.0 / self._params['Y_H']
 
-        self._stoichs['0_7'] = -(1 - self._params['Y_H']) / self._params['Y_H']
-        # multiply -1 to express as oxygen
+        self._stoichs['0_7'] = (1.0 - self._params['Y_H']) / self._params['Y_H']
+        # TODO: multiply -1 to express as oxygen
 
         self._stoichs['0_9'] = -self._params['i_N_XB']
 
-        self._stoichs['0_12'] = -self._params['i_N_XB'] / 14
+        self._stoichs['0_12'] = -self._params['i_N_XB'] / 14.0
 
-        self._stoichs['1_2'] = 1
+        self._stoichs['1_2'] = 1.0
 
-        self._stoichs['1_6'] = -1 / self._params['Y_H']
+        self._stoichs['1_6'] = -1.0 / self._params['Y_H']
 
-        self._stoichs['1_8'] = -(1 - self._params['Y_H']) \
+        self._stoichs['1_8'] = -(1.0 - self._params['Y_H']) \
                                 / (2.86 * self._params['Y_H'])
 
         self._stoichs['1_9'] = -self._params['i_N_XB']
 
-        self._stoichs['1_12'] = (1 - self._params['Y_H']) \
-                                / (14 * 2.86 * self._params['Y_H']) \
-                                - self._params['i_N_XB'] / 14
+        self._stoichs['1_12'] = (1.0 - self._params['Y_H']) \
+                                / (14.0 * 2.86 * self._params['Y_H']) \
+                                - self._params['i_N_XB'] / 14.0
 
-        self._stoichs['2_3'] = 1
+        self._stoichs['2_3'] = 1.0
 
-        self._stoichs['2_7'] = -(4.57 - self._params['Y_A']) \
+        self._stoichs['2_7'] = (4.57 - self._params['Y_A']) \
                                 / self._params['Y_A']
-        # multiply -1 to express as oxygen
+        # TODO: multiply -1 to express as oxygen
 
-        self._stoichs['2_8'] = 1 / self._params['Y_A']
+        self._stoichs['2_8'] = 1.0 / self._params['Y_A']
 
         self._stoichs['2_9'] = -self._params['i_N_XB'] \
-                                - 1 / self._params['Y_A']
+                                - 1.0 / self._params['Y_A']
 
         self._stoichs['2_12'] = -self._params['i_N_XB'] / 14 \
-                                - 1 / (7 * self._params['Y_A'])
+                                - 1.0 / (7.0 * self._params['Y_A'])
 
-        self._stoichs['3_1'] = 1 - self._params['f_D_']
+        self._stoichs['3_1'] = 1.0 - self._params['f_D_']
 
-        self._stoichs['3_2'] = -1
+        self._stoichs['3_2'] = -1.0
 
         self._stoichs['3_4'] = self._params['f_D_']
 
         self._stoichs['3_11'] = self._params['i_N_XB'] - self._params['f_D_'] \
                                 * self._params['i_N_XD']
 
-        self._stoichs['4_1'] = 1 - self._params['f_D_']
+        self._stoichs['4_1'] = 1.0 - self._params['f_D_']
 
-        self._stoichs['4_3'] = -1
+        self._stoichs['4_3'] = -1.0
 
         self._stoichs['4_4'] = self._params['f_D_']
 
         self._stoichs['4_11'] = self._params['i_N_XB'] - self._params['f_D_'] \
                                 * self._params['i_N_XD']
 
-        self._stoichs['5_9'] = 1
+        self._stoichs['5_9'] = 1.0
 
-        self._stoichs['5_10'] = -1
+        self._stoichs['5_10'] = -1.0
 
-        self._stoichs['5_12'] = 1 / 14
+        self._stoichs['5_12'] = 1.0 / 14.0
 
-        self._stoichs['6_1'] = -1
+        self._stoichs['6_1'] = -1.0
 
-        self._stoichs['6_6'] = 1
+        self._stoichs['6_6'] = 1.0
 
-        self._stoichs['7_10'] = 1
+        self._stoichs['7_10'] = 1.0
 
-        self._stoichs['7_11'] = -1
+        self._stoichs['7_11'] = -1.0
 
         return None
     ##=========================== End of Stoichiometrics =====================
