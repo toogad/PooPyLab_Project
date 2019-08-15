@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190814 KZ: revised timing for setting _prev_mo_comps and _prev_so_comps
 # 20190813 KZ: revised discharge(), removed _inflow_totalized and
 #               in_comps_blended flags
 # 20190726 KZ: added is_converged()
@@ -123,9 +124,9 @@ class splitter(poopy_lab_obj):
         # _comps[10]: S_NS,
         # _comps[11]: X_NS,
         # _comps[12]: S_ALK
-        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
-        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
-        self._so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = [0.01] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0.01] * constants._NUM_ASM1_COMPONENTS
+        self._so_comps = [0.01] * constants._NUM_ASM1_COMPONENTS
 
         # results of previous round
         self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
@@ -186,6 +187,8 @@ class splitter(poopy_lab_obj):
 
         self._converged = not (False in _mo_cnvg or False in _so_cnvg)
 
+        print('{} cnvg: {}'.format(self.__name__, _mo_cnvg, _so_cnvg))
+
         return self._converged
 
         
@@ -237,10 +240,10 @@ class splitter(poopy_lab_obj):
 
     def blend_inlet_comps(self):
         #if not self._inflow_totalized:
-        self.totalize_inflow()
+        #self.totalize_inflow()
         if self._total_inflow:  # make sure it's not 0
             for i in range(constants._NUM_ASM1_COMPONENTS):
-                temp = 0
+                temp = 0.0
                 for unit in self._inlet:
                     if self == unit.get_downstream_main():
                         temp += unit.get_main_outlet_concs()[i]\
@@ -255,8 +258,6 @@ class splitter(poopy_lab_obj):
 
     def update_combined_input(self):
         ''' Combined the flows and loads into the current unit'''
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
 
         #if not self._inflow_totalized:
         self.totalize_inflow()
@@ -329,7 +330,7 @@ class splitter(poopy_lab_obj):
 
     def get_main_outlet_concs(self):
         #if self._in_comps_blended == False:
-        self.blend_inlet_comps()
+        #self.blend_inlet_comps()
         return self._mo_comps[:]
     
 
@@ -381,7 +382,7 @@ class splitter(poopy_lab_obj):
 
     def get_side_outlet_concs(self):
         #if self._in_comps_blended == False:
-        self.blend_inlet_comps()
+        #self.blend_inlet_comps()
         return self._so_comps[:]
     
 
@@ -407,7 +408,8 @@ class splitter(poopy_lab_obj):
  
  
     def discharge(self):
-        #self.update_combined_input()
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
 
         self._branch_flow_helper()
 
@@ -731,9 +733,10 @@ class influent(pipe):
 
     def discharge(self):
 
-        self._prev_mo_comps = self._mo_comps = self._in_comps  # ok w/ alias
-        self._prev_so_comps = self._so_comps = self._in_comps
-
+        # influent concentrations don't change for steady state simulation
+        self._prev_mo_comps = self._prev_so_comps = self._in_comps[:]
+        self._mo_comps = self._so_comps = self._in_comps[:]
+ 
         if self._main_outlet != None:            
             self._discharge_main_outlet()
         else:

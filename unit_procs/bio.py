@@ -65,8 +65,8 @@ class asm_reactor(pipe):
 
         self._sludge = ASM_1(Temperature, DO)
 
-        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
-        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = [0.01] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0.01] * constants._NUM_ASM1_COMPONENTS
         # make _so_comps alias of _mo_comps since there is no side stream for a
         # bioreactor
         self._so_comps = self._mo_comps
@@ -82,9 +82,10 @@ class asm_reactor(pipe):
     # ADJUSTMENTS TO COMMON INTERFACE
     #
     def discharge(self):
-        #self.update_combined_input()
-        # for a reactor, the outlet has different component
-        # concentrations than the inlet
+        self._branch_flow_helper()
+        self._prev_mo_comps = self._mo_comps[:]
+        self._prev_so_comps = self._so_comps[:]
+
         self.estimate_current_state()
         self._discharge_main_outlet()
 
