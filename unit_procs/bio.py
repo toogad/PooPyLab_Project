@@ -75,7 +75,6 @@ class asm_reactor(pipe):
         self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
         self._prev_so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
-        print(self.__name__, " Initialized Successfully.")
         return None
 
 

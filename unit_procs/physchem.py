@@ -75,7 +75,6 @@ class final_clarifier(splitter):
         # user defined underflow solids, mg/L
         self._under_TSS = 15000
 
-        print(self.__name__, " initiated successfully.")
         return None
 
 

@@ -141,7 +141,6 @@ class splitter(poopy_lab_obj):
         # provision flag for loop-finding need
         self._visited = False
 
-        print(self.__name__, "initialized successfully.")
         return None
 
 
@@ -574,7 +573,6 @@ class pipe(splitter):
         # make side outlet components an alias of the inlet components
         self._so_comps = self._in_comps
 
-        print(self.__name__,' initialized successfully.')
         return None
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
@@ -676,9 +674,8 @@ class influent(pipe):
         # Plant influent flow in M3/DAY
         # TODO: will be user-input from GUI. FROM THE GUI, USER
         #   will use MGD. DEFAULT VALUE = 10 MGD. 
-        self._design_flow = 10 * 1000 / 3.78  # convert to M3/day
+        self._design_flow = 10 * 1E3 * 3.78  # convert to M3/day
 
-        print(self.__name__,' initialized successfully.')
         return None
     
     # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
@@ -849,13 +846,13 @@ class effluent(pipe):
 
         self._upstream_set_mo_flow = False  # set by plant wide flow balance
 
-        print(self.__name__, "initialized successfully.")
         return None
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF EFFLUENT
     #
 
     def _branch_flow_helper(self):
+        # the _mo_flow of an effluent is set externally (global main loop)
         self._in_flow_backcalc = self._mo_flow + self._so_flow  # _so_flow = 0
         return None
 
@@ -875,12 +872,10 @@ class effluent(pipe):
 
 
     def discharge(self):
-        # record last round's results before updating/discharging:
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 
-        # Effluent is the end of the WWTP's liquid stream
-        self.update_combined_input()
+        self._branch_flow_helper()
 
         self._mo_comps = self._in_comps[:]
         self._so_comps = self._in_comps[:]
@@ -926,15 +921,16 @@ class WAS(pipe):
         self._type = "WAS"
 
         self._mo_connected = True  # assume something always receives WAS
-        print(self.__name__,' initialized successfully.')
+
         return None
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
     def discharge(self):
-        # record last round's results before updating/discharging:
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
+
+        # the _branch_flow_helper() is not run here
 
         # WAS typically functions as an effluent obj. However, it can also be
         # a pipe obj. that connects to solids management process units.
