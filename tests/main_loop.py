@@ -25,6 +25,8 @@
 #
 #
 # Change Log:
+# 20190814 KZ: test run...I should've tested individual unit_proc before
+#               linking them in a PFD.
 # 20190813 KZ: 2nd test run...failed
 # 20190812 KZ: first test run...failed
 # 20190726 KZ: separate the units in a pfd into differenty type groups
@@ -92,12 +94,10 @@ if __name__ == '__main__':
     # start the main loop
     _WAS_flow = 0.0  # M3/d
 
-    #pdb.set_trace()
-
     while True:
 
         for elem in wwtp:
-            if elem.__name__ == 'Reactor_1':
+            if elem.__name__ == 'tbd':
                 pdb.set_trace()
 
             elem.update_combined_input()
@@ -109,6 +109,7 @@ if __name__ == '__main__':
             if elem.is_SRT_controller():
                 elem.set_sidestream_flow(_WAS_flow)
 
+        pdb.set_trace()
         if utils.pfd.check_global_cnvg(wwtp):
             break
 
