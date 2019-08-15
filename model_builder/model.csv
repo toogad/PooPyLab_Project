@@ -9,4 +9,4 @@ S_I,S_S,X_I,X_S,X_BH,X_BA,X_D,S_O,S_NO,S_NH,S_NS,X_NS,S_ALK,"RATE_EQUATION (r_j_
 0,1,0,-1,0,0,0,0,0,0,0,0,0,k_h * ( X_S / X_BH ) / ( K_X + X_S / X_BH ) * ( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ) * X_BH,Hydrolysis of Particulate Substrate,6
 0,0,0,0,0,0,0,0,0,0,1,-1,0,k_h * ( X_S / X_BH ) / ( K_X + X_S / X_BH ) * ( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ) * X_BH * X_NS / X_S,Hydrolysis of Particulate Organic N,7
 Inert Soluble COD,Readily Biodegradable COD,Inert Particulate COD,Slowly Biodegradable COD,Heterotrophic Biomass,Autotrophic Biomass,Biomass Debris due to Decay,Dissolved O2,Nitite/Nitrate N,Ammonia N,Dissolved Organic N,Particulate Organic N,Alkalinity,Rate_Eq_j,RATE_EQUATION_DESCRIPTION,(_j_)
-mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as N,mg/L as N,mg/L as N,mg/L as N,mg/L as CaCO3,mg/L-d,NA,NA
+mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as N,mg/L as N,mg/L as N,mg/L as N,mmol/L as CaCO3,mg/L-d,NA,NA
