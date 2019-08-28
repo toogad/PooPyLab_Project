@@ -118,91 +118,6 @@ class ASM_1():
         return current_state
 
 
-    def _dCdt(self, ExtCompList, InFlow, InfComp, Vol):
-        '''
-        Defines dC/dt for the system:
-        Original variables in stand alone script: 
-            (CompList, Parameters, Stoichiometrics, InfComp, SRT, Vol, Bulk_DO)
-        InfComp is a List that represent the Influent values 
-            (get them from the ASMReactor) of the ASM1 Components
-            
-            0_X_I, 1_X_S, 2_X_BH, 3_X_BA, 4_X_D
-            5_S_I, 6_S_S, 7_S_DO, 8_S_NO, 9_S_NH, 10_S_NS, 11_X_NS, 12_S_ALK
-        
-        ASM1._bulk_DO in mgO2/L
-
-        ExtCompList is a representation of self._Components in the
-        definition of self._steady() in order to use scipy.optimize.fsolve(). 
-        '''
-        # TODO: The resulting ExtCompList values will need to be passed to
-        #        self._Components
-        # Steady state equations that calculate the simulation results:
-        # FROM NOW ON: Reactor Influent Flow = Reactor Effluent Flow
-        # Overall mass balance:
-        # dComp/dt == InfFlow / ActVol * (InfConc - EffConc) + GrowthRate
-        #          == (InfConc - EffConc) / HRT + GrowthRate
-
-        _HRT = Vol / InFlow
-        
-        # for C0_X_I, assume perfect solid-liquid separation 
-        # (i.e. X_I = 0 mg/L in effluent)
-        result = [(InfComp[0] - ExtCompList[0]) / _HRT 
-                        + self._rate0_X_I()]
-
-        # for C1_X_S, assume perfect solid-liquid separation 
-        # (i.e. X_S = 0 mg/L in effluent)
-        result.append((InfComp[1] - ExtCompList[1]) / _HRT 
-                        + self._rate1_X_S())
-
-        # for C2_X_BH, assume perfect solid-liquid separation 
-        # (i.e. X_BH = 0 mg/L in effluent)
-        result.append((InfComp[2] - ExtCompList[2]) / _HRT
-                        + self._rate2_X_BH())
-
-        # for C3_X_BA, assume perfect solid-liquid separation 
-        # (i.e. X_BA = 0 mg/L in effluent)
-        result.append((InfComp[3] - ExtCompList[3]) / _HRT
-                        + self._rate3_X_BA())
-
-        # for C4_X_D, assume perfect solid-liquid separation 
-        # (i.e. X_D = 0.0 mg/L in effluent)
-        result.append((InfComp[4] - ExtCompList[4]) / _HRT
-                        + self._rate4_X_D())
-
-        #    for C5_S_I
-        result.append((InfComp[5] - ExtCompList[5]) / _HRT
-                        + self._rate5_S_I())
-
-        #    for C6_S_S
-        result.append((InfComp[6] - ExtCompList[6]) / _HRT
-                        + self._rate6_S_S())
-
-        #    for C7_S_DO
-        result.append((InfComp[7] - ExtCompList[7]) / _HRT
-                        + self._rate7_S_DO())
-        # result.append(CompList[8] - Bulk_DO)
-
-        #    for C8_S_NO
-        result.append((InfComp[8] - ExtCompList[8]) / _HRT
-                        + self._rate8_S_NO())
-
-        #    for C9_S_NH
-        result.append((InfComp[9] - ExtCompList[9]) / _HRT
-                        + self._rate9_S_NH())
-
-        #    for C10_S_NS
-        result.append((InfComp[10] - ExtCompList[10]) / _HRT
-                        + self._rate10_S_NS())
-
-        #    for C11_X_NS
-        result.append((InfComp[11] - ExtCompList[11]) / _HRT
-                        + self._rate11_X_NS())
-
-        #    for C12_S_ALK
-        result.append((InfComp[12] - ExtCompList[12]) / _HRT
-                        + self._rate12_S_Alk())
-
-        return result
 
 
     def integrate(self, prevComp, 
@@ -606,5 +521,92 @@ class ASM_1():
         #    for C12_S_ALK
         result.append(InFlow * (InfComp[12] - ExtCompList[12]) \
                         + self._rate12_S_Alk() * Vol)
+
+        return result
+
+
+    def _dCdt(self, ExtCompList, InFlow, InfComp, Vol):
+        '''
+        Defines dC/dt for the system:
+        Original variables in stand alone script: 
+            (CompList, Parameters, Stoichiometrics, InfComp, SRT, Vol, Bulk_DO)
+        InfComp is a List that represent the Influent values 
+            (get them from the ASMReactor) of the ASM1 Components
+            
+            0_X_I, 1_X_S, 2_X_BH, 3_X_BA, 4_X_D
+            5_S_I, 6_S_S, 7_S_DO, 8_S_NO, 9_S_NH, 10_S_NS, 11_X_NS, 12_S_ALK
+        
+        ASM1._bulk_DO in mgO2/L
+
+        ExtCompList is a representation of self._Components in the
+        definition of self._steady() in order to use scipy.optimize.fsolve(). 
+        '''
+        # TODO: The resulting ExtCompList values will need to be passed to
+        #        self._Components
+        # Steady state equations that calculate the simulation results:
+        # FROM NOW ON: Reactor Influent Flow = Reactor Effluent Flow
+        # Overall mass balance:
+        # dComp/dt == InfFlow / ActVol * (InfConc - EffConc) + GrowthRate
+        #          == (InfConc - EffConc) / HRT + GrowthRate
+
+        _HRT = Vol / InFlow
+        
+        # for C0_X_I, assume perfect solid-liquid separation 
+        # (i.e. X_I = 0 mg/L in effluent)
+        result = [(InfComp[0] - ExtCompList[0]) / _HRT 
+                        + self._rate0_X_I()]
+
+        # for C1_X_S, assume perfect solid-liquid separation 
+        # (i.e. X_S = 0 mg/L in effluent)
+        result.append((InfComp[1] - ExtCompList[1]) / _HRT 
+                        + self._rate1_X_S())
+
+        # for C2_X_BH, assume perfect solid-liquid separation 
+        # (i.e. X_BH = 0 mg/L in effluent)
+        result.append((InfComp[2] - ExtCompList[2]) / _HRT
+                        + self._rate2_X_BH())
+
+        # for C3_X_BA, assume perfect solid-liquid separation 
+        # (i.e. X_BA = 0 mg/L in effluent)
+        result.append((InfComp[3] - ExtCompList[3]) / _HRT
+                        + self._rate3_X_BA())
+
+        # for C4_X_D, assume perfect solid-liquid separation 
+        # (i.e. X_D = 0.0 mg/L in effluent)
+        result.append((InfComp[4] - ExtCompList[4]) / _HRT
+                        + self._rate4_X_D())
+
+        #    for C5_S_I
+        result.append((InfComp[5] - ExtCompList[5]) / _HRT
+                        + self._rate5_S_I())
+
+        #    for C6_S_S
+        result.append((InfComp[6] - ExtCompList[6]) / _HRT
+                        + self._rate6_S_S())
+
+        #    for C7_S_DO
+        result.append((InfComp[7] - ExtCompList[7]) / _HRT
+                        + self._rate7_S_DO())
+        # result.append(CompList[8] - Bulk_DO)
+
+        #    for C8_S_NO
+        result.append((InfComp[8] - ExtCompList[8]) / _HRT
+                        + self._rate8_S_NO())
+
+        #    for C9_S_NH
+        result.append((InfComp[9] - ExtCompList[9]) / _HRT
+                        + self._rate9_S_NH())
+
+        #    for C10_S_NS
+        result.append((InfComp[10] - ExtCompList[10]) / _HRT
+                        + self._rate10_S_NS())
+
+        #    for C11_X_NS
+        result.append((InfComp[11] - ExtCompList[11]) / _HRT
+                        + self._rate11_X_NS())
+
+        #    for C12_S_ALK
+        result.append((InfComp[12] - ExtCompList[12]) / _HRT
+                        + self._rate12_S_Alk())
 
         return result
