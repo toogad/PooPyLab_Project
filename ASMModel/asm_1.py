@@ -25,6 +25,7 @@
 #    as part of the Reactor object
 #
 # Change Log:
+# 2019-08-27 KZ: added integrate()
 # 2019-02-09 KZ: standardized import
 # 2019-08-12 KZ: fixed typos
 #    Dec 13, 2017 KZ: Fixed a few mismatched parentheses 
