@@ -34,6 +34,13 @@ from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
 
 
+def _wwtp_active_vol(reactors=[]):
+    ''' 
+    get the sum of asm reactors' active volume.
+    '''
+    return sum([r.get_active_vol() for r in reactors])
+
+
 def initial_guess(params={}, reactors=[], Inf_Flow=1.0, plant_inf=[]):
     '''
     Generate the initial guess to be used for the starting point of model
@@ -48,13 +55,14 @@ def initial_guess(params={}, reactors=[], Inf_Flow=1.0, plant_inf=[]):
     # plant_inf: model components for the entire wwtp's influent
     
     # assume outlet bsCOD
-    Eff_S_S = 100  # mg/L
+    Eff_S_S = 100.0  # mg/L
 
     # assume full nitrification (if inf TKN is sufficient)
     Eff_S_NH = 1.0  # mgN/L
 
     #Safety Factor
     SF = 1.25
+
     # convert b_LH and b_LA to b_H and b_A, respectively
     b_H = params['b_LH'] * (1.0 - params['Y_H'] * (1.0 - params['f_D_']))
     b_A = params['b_LA'] * (1.0 - params['Y_A'] * (1.0 - params['f_D_']))
@@ -73,42 +81,70 @@ def initial_guess(params={}, reactors=[], Inf_Flow=1.0, plant_inf=[]):
     print('Min Oxic SRT for Autotrophs = {} (day)', SRT_OXIC_A)
     print('SELECTED Oxic SRT = {} (day)', SRT_OXIC)
 
-    # Effluent S_S and S_NH based on the actual oxic SRT
-    Eff_S_S = params['K_S'] * (1.0 / SRT_OXIC + b_H) \
-                / (params['u_H'] - (1.0 / SRT_OXIC + b_H))
+    # Initial guesses of S_S and S_NH based on the selected oxic SRT
+    init_S_S = params['K_S'] * (1.0 / SRT_OXIC + b_H) \
+            / (params['u_H'] - (1.0 / SRT_OXIC + b_H))
 
-    Eff_S_NH = params['K_NH'] * (1.0 / SRT_OXIC + b_A) \
-                / (params['u_A'] - (1.0 / SRT_OXIC + b_A))
+    init_S_NH = params['K_NH'] * (1.0 / SRT_OXIC + b_A) \
+            / (params['u_A'] - (1.0 / SRT_OXIC + b_A))
 
-    print('Eff. S_S = {} (mg/L COD)', Eff_S_S)
-    print('Eff. S_NH = {} (mg/L COD)', Eff_S_NH)
+    print('Eff. S_S = {} (mg/L COD)', init_Eff_S_S)
+    print('Eff. S_NH = {} (mg/L COD)', init_Eff_S_NH)
 
-    # daily heterotrphic biomass production, unit: gCOD/day
-    daily_heter_biomass_prod = Inf_Flow  * (Inf_S_S + Inf_X_S - Eff_S_S) \
-                * ((1.0 + params['f_D_'] * params['b_LH'] * SRT_OXIC)
-                / (1.0 + b_H * SRT_OXIC)
-                * params['Y_H'])
+    # daily active heterotrphic biomass production, unit: gCOD/day
+    daily_heter_biomass_prod = Inf_Flow  * (Inf_S_S + Inf_X_S - init_S_S)\
+            * params['Y_H'] / (1.0 + b_H * SRT_OXIC)
 
     # Nitrogen Requried for assimilation
     NR = 0.087 * params['Y_H'] \
             * (1.0 + params['f_D_'] * params['b_LH'] * SRT_OXIC) \
             / (1.0 + b_H * SRT_OXIC)
     
-    # daily autotrophic biomass production, unit: gCOD/day
+    init_S_NO = (Inf_TKN - NR * (Inf_S_S + Inf_X_S - init_S_S) - init_S_NH)
+
+    # daily active autotrophic biomass production, unit: gCOD/day
     daily_auto_biomass_prod = Inf_Flow \
-                * (Inf_TKN - NR * (Inf_S_S + Inf_X_S - Eff_S_S) - Eff_S_NH) \
-                * (1.0 + params['f_D_'] * params['b_LA'] * SRT_OXIC) 
-                / (1.0 + b_A * SRT_OXIC)
-                * params['Y_A']
+            * init_S_NO \
+            * params['Y_A'] / (1.0 + b_A * SRT_OXIC)
 
+    # daily heterotrphic debris production, unit: gCOD/day
+    daily_heter_debris_prod = daily_heter_biomass_prod \
+            * (params['f_D_'] * params['b_LH'] * SRT_OXIC)
 
+    # daily autotrophic debris production, unit: gCOD/day
+    daily_auto_debris_prod = daily_auto_biomass_prod \
+            * (params['f_D_'] * params['b_LA'] * SRT_OXIC)
 
     
+    # treat the entire plant's reactor active vol as a single CSTR
+    _hyp_cstr_vol = _wwtp_active_vol(reactors)
 
-    
+    # initial guesses of X_BH, X_BA, and X_D
+    init_X_BH = SRT_OXIC * daily_heter_biomass_prod / _hyp_cstr_vol
+    init_X_BA = SRT_OXIC * daily_auto_biomass_prod / _hyp_cstr_vol
+    init_X_D = SRT_OXIC \
+            * (daily_heter_debris_prod + daily_auto_debris_prod) \
+            / _hyp_cstr_vol
 
+    # TODO: ALWAYS make sure the indeces are correct as per the model
+    init_X_I = plant_inf[0]
+    init_X_S = 0.0  
+    # init_X_BH above
+    # init_X_BA above
+    # init_X_D above
+    init_S_I = plant_inf[5]
+    # init_S_S above
+    init_S_DO = 2.0  # assume full aerobic for the hypothetical CSTR
+    # init_S_NO above
+    # init_S_NH above
+    init_S_NS = Inf_TKN * 0.01  # TODO: assume 1% influent TKN as sol.org.N
+    init_X_NS = 0.087 * (init_X_BH + init_X_BA + init_X_D)
+    init_S_Alk = plant_inf[12] - 7.14 * (init_S_NO - plant_inf[8]) / 50.0
 
-    pass
+    return [init_X_I, init_X_S, init_X_BH, init_X_BA, init_X_D, 
+            init_S_I, init_S_S, init_S_DO, init_S_NO, init_S_NH,
+            init_S_NS, init_X_NS, init_S_Alk]
+
 
 
 
