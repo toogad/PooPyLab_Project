@@ -119,8 +119,6 @@ class ASM_1():
         return current_state
 
 
-
-
     def integrate(self, prevComp, 
                         InFlow, InfComp, 
                         Vol, 
@@ -156,16 +154,20 @@ class ASM_1():
         self._stoich = self._set_stoichs()
         return 0
 
+
     def get_params(self):
         return self._params.copy()
 
+
     def get_stoichs(self):
         return self._stoichs.copy()
+
 
     def get_all_comps(self):
         #TODO: Need to determine where to provide GetAllComponents(), in
         # ASMReactor or here?
         return self._comps[:]
+
 
     def get_bulk_DO(self):
         return self._bulk_DO
