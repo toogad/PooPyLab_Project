@@ -25,6 +25,7 @@
 #    Author: Kai Zhang
 #
 # CHANGE LOG:
+# 20190903 KZ: corrected b_H & b_A in initial_guess()
 # 20190828 KZ: init
 #
 
@@ -63,17 +64,15 @@ def initial_guess(params={}, reactors=[], Inf_Flow=1.0, plant_inf=[]):
     #Safety Factor
     SF = 1.25
 
-    # convert b_LH and b_LA to b_H and b_A, respectively
-    b_H = params['b_LH'] * (1.0 - params['Y_H'] * (1.0 - params['f_D_']))
-    b_A = params['b_LA'] * (1.0 - params['Y_A'] * (1.0 - params['f_D_']))
-
     # OXIC SRT required for Eff_S_S, assuming DO is sufficiently high
     SRT_OXIC_H = 1.0 \
-            / (params['u_H'] * Eff_S_S / (Eff_S_S + params['K_S']) - b_H)
+            / (params['u_H'] * Eff_S_S / (Eff_S_S + params['K_S'])
+                    - params['b_LH'])
 
     # Oxic SRT required for Eff_S_NH, assuming DO is sufficiently high
     SRT_OXIC_A = 1.0 \
-            / (params['u_A'] * Eff_S_NH / (Eff_S_NH + params['K_NH']) - b_A)
+            / (params['u_A'] * Eff_S_NH / (Eff_S_NH + params['K_NH'])
+                    - params['b_LA'])
 
     SRT_OXIC = max(SRT_OXIC_A, SRT_OXIC_H) * SF
 
@@ -82,30 +81,30 @@ def initial_guess(params={}, reactors=[], Inf_Flow=1.0, plant_inf=[]):
     print('SELECTED Oxic SRT = {} (day)', SRT_OXIC)
 
     # Initial guesses of S_S and S_NH based on the selected oxic SRT
-    init_S_S = params['K_S'] * (1.0 / SRT_OXIC + b_H) \
-            / (params['u_H'] - (1.0 / SRT_OXIC + b_H))
+    init_S_S = params['K_S'] * (1.0 / SRT_OXIC + params['b_LH']) \
+            / (params['u_H'] - (1.0 / SRT_OXIC + params['b_LH']))
 
-    init_S_NH = params['K_NH'] * (1.0 / SRT_OXIC + b_A) \
-            / (params['u_A'] - (1.0 / SRT_OXIC + b_A))
+    init_S_NH = params['K_NH'] * (1.0 / SRT_OXIC + params['b_LA']) \
+            / (params['u_A'] - (1.0 / SRT_OXIC + params['b_LA']))
 
     print('Eff. S_S = {} (mg/L COD)', init_Eff_S_S)
     print('Eff. S_NH = {} (mg/L COD)', init_Eff_S_NH)
 
     # daily active heterotrphic biomass production, unit: gCOD/day
     daily_heter_biomass_prod = Inf_Flow  * (Inf_S_S + Inf_X_S - init_S_S)\
-            * params['Y_H'] / (1.0 + b_H * SRT_OXIC)
+            * params['Y_H'] / (1.0 + params['b_LH'] * SRT_OXIC)
 
     # Nitrogen Requried for assimilation
     NR = 0.087 * params['Y_H'] \
             * (1.0 + params['f_D_'] * params['b_LH'] * SRT_OXIC) \
-            / (1.0 + b_H * SRT_OXIC)
+            / (1.0 + params['b_LH'] * SRT_OXIC)
     
     init_S_NO = (Inf_TKN - NR * (Inf_S_S + Inf_X_S - init_S_S) - init_S_NH)
 
     # daily active autotrophic biomass production, unit: gCOD/day
     daily_auto_biomass_prod = Inf_Flow \
             * init_S_NO \
-            * params['Y_A'] / (1.0 + b_A * SRT_OXIC)
+            * params['Y_A'] / (1.0 + params['b_LA'] * SRT_OXIC)
 
     # daily heterotrphic debris production, unit: gCOD/day
     daily_heter_debris_prod = daily_heter_biomass_prod \
