@@ -126,11 +126,6 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
 
 
-    def initial_guess(self):
-        #TODO: NEED TO PUT IN FIRST GUESS OF MODEL COMPONENTS HERE
-        pass
-
-    
     def estimate_current_state(self):
         # get the components from the next iteration.
         self._mo_comps = self._sludge.steady_step(self._prev_mo_comps,
@@ -139,6 +134,18 @@ class asm_reactor(pipe):
                                                     self._active_vol)
         # _so_comps is already an aliase of _mo_comps
         return None
+
+
+    def integrate(self):
+        '''
+        Integrate the model forward in time.
+        '''
+        
+        # Determine the next step size based on the requirement:
+        #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
+        #   0 < del_t < SRT_C_k, where
+        #   C is the individual model component and k is the kth reactor
+
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
 

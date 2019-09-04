@@ -539,8 +539,6 @@ class ASM_1():
             0_X_I, 1_X_S, 2_X_BH, 3_X_BA, 4_X_D
             5_S_I, 6_S_S, 7_S_DO, 8_S_NO, 9_S_NH, 10_S_NS, 11_X_NS, 12_S_ALK
         
-        ASM1._bulk_DO in mgO2/L
-
         ExtCompList is a representation of self._Components in the
         definition of self._steady() in order to use scipy.optimize.fsolve(). 
         '''

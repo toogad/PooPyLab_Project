@@ -177,6 +177,15 @@ class splitter(poopy_lab_obj):
         return None
 
 
+    def assign_initial_guess(self, initial_guess):
+        ''' 
+        Assign the initial guess into _prev_mo_comps and _prev_so_comps
+        '''
+        self._prev_so_comps = initial_guess[:]
+        self._prev_mo_comps = initial_guess[:]
+        return None
+
+
     def is_converged(self, limit=1E-8):
         _mo_cnvg = [abs(self._mo_comps[i] - self._prev_mo_comps[i]) <= limit 
                 for i in range(len(self._mo_comps))]
