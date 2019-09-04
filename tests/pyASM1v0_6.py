@@ -523,8 +523,11 @@ Eff_S_NH = 1.0 #mgN/L
 #Safety Factor
 SF = 1.25
 # convert b_LH and b_LA to b_H and b_A, respectively
-b_H = GP['b_LH'] * (1 - GP['Y_H'] * (1.0 - GP['f_D_']))
-b_A = GP['b_LA'] * (1 - GP['Y_A'] * (1.0 - GP['f_D_']))
+#b_H = GP['b_LH'] * (1 - GP['Y_H'] * (1.0 - GP['f_D_']))
+#b_A = GP['b_LA'] * (1 - GP['Y_A'] * (1.0 - GP['f_D_']))
+
+b_H = GP['b_LH']
+b_A = GP['b_LA']
 
 #print "b_H = ", b_H, " b_A = ", b_A
 
