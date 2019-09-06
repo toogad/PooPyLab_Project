@@ -1,35 +1,35 @@
 S_O,S_I,S_S,S_NH,S_NS,S_NO,S_ALK,X_I,X_S,X_BH,X_BA,X_D,X_NS,"RATE_EQUATION (r_j_, where j is Rate_Eq_ID starting at 0)",RATE_EQUATION_DESCRIPTION,RATE_EQUATION_ID
 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
-( Y_H – 1 ) / Y_H,0,-1 / Y_H,-i_XB,0,0,-i_XB / 14,0,0,1,0,0,0,u_max_H * S_S / ( K_S + S_S ) * S_O / ( K_OH + S_O ) * X_BH,Growth of Aerobic Heterotrophs,0
-0,0,-1 / Y_H,-i_XB,0,( Y_H – 1 ) / ( 2.86 * Y_H ),( 1 – Y_H ) / ( 14 * 2.86 * Y_H ) - i_XB / 14,0,0,1,0,0,0,u_max_H * S_S / ( K_S + S_S ) * K_OH / ( K_OH + S_O) * S_NO / ( K_NO + S_NO ) * cf_g * X_BH,Growth of Anoxic Heterotrophs,1
-( Y_A – 4.57 ) / Y_A,0,0,-i_XB - 1 / Y_A,0,1 / Y_A,-i_XB / 14 - 1 / ( 7 * Y_A ),0,0,0,1,0,0,u_max_A * S_NH / ( K_NH + S_NH ) * S_O / ( K_OA + S_O ) * X_BA,Growth of Aerobic Autotrophs,2
-0,0,0,0,0,0,0,0,1 – f_D,-1,0,f_D,i_XB – f_D * i_XD,b_H * X_BH,Decay of Heterotrophs,3
-0,0,0,0,0,0,0,0,1 – f_D,0,-1,f_D,i_XB – f_D * i_XD,b_A * X_BA,Decay of Autotrophs,4
+( Y_H – 1 ) / Y_H,0,-1 / Y_H,-i_N_XB,0,0,-i_N_XB / 14,0,0,1,0,0,0,u_max_H * S_S / ( K_S + S_S ) * S_O / ( K_OH + S_O ) * X_BH,Growth of Aerobic Heterotrophs,0
+0,0,-1 / Y_H,-i_N_XB,0,( Y_H – 1 ) / ( 2.86 * Y_H ),( 1 – Y_H ) / ( 14 * 2.86 * Y_H ) - i_N_XB / 14,0,0,1,0,0,0,u_max_H * S_S / ( K_S + S_S ) * K_OH / ( K_OH + S_O) * S_NO / ( K_NO + S_NO ) * cf_g * X_BH,Growth of Anoxic Heterotrophs,1
+( Y_A – 4.57 ) / Y_A,0,0,-i_N_XB - 1 / Y_A,0,1 / Y_A,-i_N_XB / 14 - 1 / ( 7 * Y_A ),0,0,0,1,0,0,u_max_A * S_NH / ( K_NH + S_NH ) * S_O / ( K_OA + S_O ) * X_BA,Growth of Aerobic Autotrophs,2
+0,0,0,0,0,0,0,0,1 – f_D,-1,0,f_D,i_N_XB – f_D * i_N_XD,b_H * X_BH,Decay of Heterotrophs,3
+0,0,0,0,0,0,0,0,1 – f_D,0,-1,f_D,i_N_XB – f_D * i_N_XD,b_A * X_BA,Decay of Autotrophs,4
 0,0,0,1,-1,0,1 / 14,0,0,0,0,0,0,k_a * S_NS * X_BH,Ammonification of Dissolved Organic N,5
 0,0,1,0,0,0,0,0,-1,0,0,0,0,k_h * ( X_S / X_BH ) / ( K_X + X_S / X_BH ) * ( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ) * X_BH,Hydrolysis of Particulate Substrate,6
 0,0,0,0,1,0,0,0,0,0,0,0,-1,k_h * ( X_S / X_BH ) / ( K_X + X_S / X_BH ) * ( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ) * X_BH * X_NS / X_S,Hydrolysis of Particulate Organic N,7
 Dissolved O2,Inert Soluble COD,Readily Biodegradable COD,Ammonia N,Dissolved Organic N,Nitite/Nitrate N,Alkalinity,Inert Particulate COD,Slowly Biodegradable COD,Heterotrophic Biomass,Autotrophic Biomass,Biomass Debris due to Decay,Particulate Organic N,Rate_Eq_j,RATE_EQUATION_DESCRIPTION,(_j_)
-mg/L as COD,mg/L as COD,mg/L as COD,mg/L as N,mg/L as N,mg/L as N,mmol/L as CaCO3,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as N,mg/L-d,NA,NA
+mg/L as O2,mg/L as COD,mg/L as COD,mg/L as N,mg/L as N,mg/L as N,mmol/L as CaCO3,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as N,mg/L-d,NA,NA
 END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST,END_ST
 ,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,
 PARAMETERS,TYPICAL_VALUE_AT_20C,ARRENIUS_THETA,UNIT,PARAMETER_DESCRIPTION,PARAMETER_ID,,,,,,,,,,
-u_max_H,6.000,1.072,1/day,Ideal Specific Growth Rate of Heterotrophs,0,,,,,,,,,,
-u_max_A,0.800,1.103,1/day,Ideal Specific Growth Rate of Autotrophs,1,,,,,,,,,,
-K_S,20.000,1.000,mg/L as COD,Half Saturation Concentration for Organic Substrate,2,,,,,,,,,,
-K_OH,0.200,1.000,mg/L as O2,Half Saturation Concentration for O2 for Heterotrophs,3,,,,,,,,,,
-K_NH,1.000,1.000,mg/L as N,Half Saturation Concentration for TKN,4,,,,,,,,,,
-K_OA,0.400,1.000,mg/L as O2,Half Saturation Concentration for O2 for Autotrophs (Nitrifiers),5,,,,,,,,,,
-K_NO,0.500,1.000,mg/L as N,Half Saturation Concentration for NOx-N,6,,,,,,,,,,
-K_X,0.030,1.116,mg/L as COD,Half Saturation Concentration for Hydrolysis,7,,,,,,,,,,
-Y_H,0.670,1.000,mgCOD / mgCOD,True Yield for Heterotrophs,8,,,,,,,,,,
-Y_A,0.240,1.000,mgCOD / mgN,True Yield for Autotrophs (Nitrifiers),9,,,,,,,,,,
-b_H,0.620,1.120,1/day,Specific Decay Rate for Heterotrophs,10,,,,,,,,,,
-b_A,0.096,1.120,1/day,Specific Decay Rate for Autotrophs (Nitrifiers),11,,,,,,,,,,
-k_a,0.080,1.072,m3 COD / (g-day),Specific Ammonification Rate,12,,,,,,,,,,
-k_h,3.000,1.116,gCOD/(gBiomass_COD-day),Specific Hydrolysis Rate,13,,,,,,,,,,
-f_D,0.080,1.000,NA,Fraction of Cell Debris in Decayed Biomass,14,,,,,,,,,,
-cf_g,0.800,1.000,NA,Correction Factor for Heterotrophs Capable of Anoxic Growth,15,,,,,,,,,,
-cf_h,0.400,1.000,NA,Correction Factor for Hydrolytic Activities,16,,,,,,,,,,
-i_XB,0.086,1.000,gN/gBiomass_COD,Fraction: N / Biomass_COD ,17,,,,,,,,,,
-i_XD,0.060,1.000,gN/gDebris_COD,Fraction: N / Debris_COD,18,,,,,,,,,,
+u_max_H,6,1.072,1/day,Ideal Specific Growth Rate of Heterotrophs,0,,,,,,,,,,
+u_max_A,0.8,1.103,1/day,Ideal Specific Growth Rate of Autotrophs,1,,,,,,,,,,
+K_S,20,1,mg/L as COD,Half Saturation Concentration for Organic Substrate,2,,,,,,,,,,
+K_OH,0.2,1,mg/L as O2,Half Saturation Concentration for O2 for Heterotrophs,3,,,,,,,,,,
+K_NH,1,1,mg/L as N,Half Saturation Concentration for TKN,4,,,,,,,,,,
+K_OA,0.4,1,mg/L as O2,Half Saturation Concentration for O2 for Autotrophs (Nitrifiers),5,,,,,,,,,,
+K_NO,0.5,1,mg/L as N,Half Saturation Concentration for NOx-N,6,,,,,,,,,,
+K_X,0.03,1.116,mg/L as COD,Half Saturation Concentration for Hydrolysis,7,,,,,,,,,,
+Y_H,0.67,1,mgCOD / mgCOD,True Yield for Heterotrophs,8,,,,,,,,,,
+Y_A,0.24,1,mgCOD / mgN,True Yield for Autotrophs (Nitrifiers),9,,,,,,,,,,
+b_H,0.62,1.12,1/day,Specific Decay Rate for Heterotrophs,10,,,,,,,,,,
+b_A,0.096,1.12,1/day,Specific Decay Rate for Autotrophs (Nitrifiers),11,,,,,,,,,,
+k_a,0.08,1.072,m3 COD / (g-day),Specific Ammonification Rate,12,,,,,,,,,,
+k_h,3,1.116,gCOD/(gBiomass_COD-day),Specific Hydrolysis Rate,13,,,,,,,,,,
+f_D,0.08,1,NA,Fraction of Cell Debris in Decayed Biomass,14,,,,,,,,,,
+cf_g,0.8,1,NA,Correction Factor for Heterotrophs Capable of Anoxic Growth,15,,,,,,,,,,
+cf_h,0.4,1,NA,Correction Factor for Hydrolytic Activities,16,,,,,,,,,,
+i_N_XB,0.086,1,gN/gBiomass_COD,Fraction: N / Biomass_COD ,17,,,,,,,,,,
+i_N_XD,0.06,1,gN/gDebris_COD,Fraction: N / Debris_COD,18,,,,,,,,,,
