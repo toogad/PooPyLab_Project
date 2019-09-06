@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190905 KZ: revised getTSS...to match new model component order
 # 20190814 KZ: revised timing for setting _prev_mo_comps and _prev_so_comps
 # 20190813 KZ: revised discharge(), removed _inflow_totalized and
 #               in_comps_blended flags
@@ -442,23 +443,23 @@ class splitter(poopy_lab_obj):
     def get_TSS(self, br="Main_Out"):
         #TODO: need to make COD/TSS = 1.2 changeable for different type of
         # sludge
-        index_list = [0, 1, 2, 3, 4]
+        index_list = [7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list) / 1.2
 
 
     def get_VSS(self, br="Main_Out"):
         #TODO: need to make COD/VSS = 1.42 changeable for diff. type of sludge
-        index_list = [0, 1, 2, 3, 4]
+        index_list = [7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list) / 1.42
     
 
     def get_COD(self, br="Main_Out"):
-        index_list = [0, 1, 2, 3, 4, 5, 6]
+        index_list = [1, 2, 7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list)
 
 
     def get_sCOD(self, br="Main_Out"):
-        index_list = [5, 6]
+        index_list = [1, 2]
         return self._sum_helper(br, index_list)
 
 
@@ -467,12 +468,12 @@ class splitter(poopy_lab_obj):
 
 
     def get_TN(self, br="Main_Out"):
-        index_list = [8, 9, 10, 11]
+        index_list = [3, 4, 5, 12]
         return self._sum_helper(br, index_list)
 
 
     def get_orgN(self, br="Main_Out"):
-        index_list = [10, 11]
+        index_list = [4, 12]
         return self._sum_helper(br, index_list)
 
 
@@ -481,7 +482,7 @@ class splitter(poopy_lab_obj):
 
 
     def get_pN(self, br="Main_Out"):
-        return self._sum_helper(br, [11])
+        return self._sum_helper(br, [12])
 
 
     def get_sN(self, br="Main_Out"):

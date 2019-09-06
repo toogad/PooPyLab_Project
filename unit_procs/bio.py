@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190905 KZ: started adding integrate()
 # 20190813 KZ: fixed discharge() side outlet; fixed flow into
 #               estimate_current_state()
 # 20190812 KZ: corrected a few params in solver func.
@@ -72,8 +73,11 @@ class asm_reactor(pipe):
         self._so_comps = self._mo_comps
 
         # results of previous round
-        self._prev_mo_comps = [1.0] * constants._NUM_ASM1_COMPONENTS
+        self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
         self._prev_so_comps = self._prev_mo_comps
+
+        # changes of model components over a small time step
+        self._del_C_del_t = []
 
         return None
 
@@ -136,15 +140,33 @@ class asm_reactor(pipe):
         return None
 
 
-    def integrate(self):
+    def integrate(self, f_s=0.15, f_p=2.0):
         '''
         Integrate the model forward in time.
         '''
-        
-        # Determine the next step size based on the requirement:
+        # f_s: fraction of max step for soluble model components, typ=5%-20%
+        # f_p: fraction of max step for particulate model components, typ=2.0
+
+        # Determine the next step size based on:
         #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
-        #   0 < del_t < SRT_C_k, where
+        #   0 < del_t < Retention_Time_C_k, where
         #   C is the individual model component and k is the kth reactor
+        self._del_C_del_t = self._sludge._dCdt(
+                            self._mo_comps, self._total_inflow,
+                            self._in_comps, self._active_vol)
+
+        _uppers = [self._mo_comps[i] * abs(self._del_C_del_t[i]) 
+                    for i in range(len(self._del_C_del_t))]
+
+        _max_step = min(_uppers)
+
+        _step_sol = f_s * _max_step
+        _step_part = f_p * _max_step
+
+        #TODO: NEED TO RE_ARRANGE THE ORDER OF THE MODEL COMPONENTS SO THAT ALL
+        # SOLUBLE ONES ARE AT THE UPPER HALF AND PARTICULATE LOWER.
+         
+        return
 
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
