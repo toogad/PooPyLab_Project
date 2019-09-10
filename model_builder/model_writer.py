@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     import csv
 
-    with open("model.csv", 'r') as csvf:
+    with open("template_asm1.csv", 'r') as csvf:
         r = csv.reader(csvf)
         for row in r:
             print(row)
