@@ -31,7 +31,9 @@
 #
 #    Author: Kai Zhang
 #
-# Change Log: 2019-08-15 KZ: init
+# Change Log: 
+# 20190911 KZ: set_model_condition replaced set_ASM_condition
+# 20190815 KZ: init
 #
 
 from unit_procs.streams import influent, effluent, pipe
@@ -54,7 +56,7 @@ def construct():
     inlet.set_downstream_main(p1)
     p1.set_downstream_main(reactor)
     reactor.set_downstream_main(p2)
-    reactor.set_ASM_condition(20, 4)
+    reactor.set_model_condition(20, 4)
     p2.set_downstream_main(outlet)
 
     print("PFD constructed.")

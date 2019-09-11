@@ -25,12 +25,14 @@
 #
 #
 # Change Log:
+# 20190911 KZ: continued after rearraning ASM1 and integration function
 # 20190815 KZ: init
 #
 
 from unit_procs.streams import pipe, influent, effluent
 from unit_procs.bio import asm_reactor
 import utils.pfd
+import utils.run
 import pdb
 
 if __name__ == '__main__':
@@ -84,6 +86,24 @@ if __name__ == '__main__':
     # start the main loop
     _WAS_flow = 0.0  # M3/d
 
+    _params = _reactors[0].get_model_params()
+    print('Model parameters: {}'.format(_params))
+
+    for _u in _inf:
+        _u.update_combined_input()
+        _u.discharge()
+
+    # TODO: what if there are multiple influent units?
+    _seed = utils.run.initial_guess(_params, 
+                                    _reactors,
+                                    _inf[0].get_main_outflow(), 
+                                    _inf[0].get_main_outlet_concs())
+
+    print('Initial guess = {}'.format(_seed))
+
+    for _r in _reactors:
+        _r.assign_initial_guess(_seed)
+
     round = 1
     while round <= 100:
 
@@ -93,7 +113,7 @@ if __name__ == '__main__':
             elem.discharge()
 
             if elem.get_type() == 'WAS':
-                _WAS_flow = elem.set_WAS_flow(1, _reactors, _eff)
+                _WAS_flow = elem.set_WAS_flow(5, _reactors, _eff)
 
             if elem.is_SRT_controller():
                 elem.set_sidestream_flow(_WAS_flow)
