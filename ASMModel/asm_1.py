@@ -76,13 +76,11 @@ class ASM_1():
         self._stoichs = {}
         self._delta_t = 20.0 - self._temperature
         
-        # define a Python Dictionary to store Parameters
         self._set_params()
         
-        # define a Python Dictionary to store Stochoimetrics
         self._set_stoichs()
         
-        # define a Python List to store ASM components
+        # ASM components
         # The Components the ASM components IN THE REACTOR
         # For ASM #1:
         #
@@ -207,8 +205,7 @@ class ASM_1():
     #=============================== End of Parameter Definition ==============
 
     # STOCHIOMETRIC MATRIX 
-    # (Use the Table 6.1, p193, Grady Jr. et al 1999)
-    # (revised to match the .csv model template file in the model_builder
+    # (make sure to match the .csv model template file in the model_builder
     # folder, Sep 04, 2019)
     # _stoichs['x_y'] ==> x is process rate id, and y is component id
     def _set_stoichs(self):
@@ -333,24 +330,27 @@ class ASM_1():
     # Monod Factor of Ammonia-N on Autotrophs
     # Monod Factor of NOx-N on Autotrophs
     #
-    def _monod (self, My_Eff_S_TBD, My_K_TBD):
+    def _monod(self, My_Eff_S_TBD, My_K_TBD):
         return My_Eff_S_TBD / (My_Eff_S_TBD + My_K_TBD)
 
+
     # Aerobic Growth Rate of Heterotrophs (_r0_AerGH, mgCOD/L/day)
-    def _r0_AerGH (self):
+    def _r0_AerGH(self):
         return  self._params['u_max_H'] \
                 * self._monod(self._comps[2], self._params['K_S']) \
                 * self._monod(self._bulk_DO, self._params['K_OH']) \
                 * self._comps[9]
 
+
     # Anoxic Growth Rate of Heterotrophs (_r1_AxGH, mgCOD/L/day)
-    def _r1_AxGH (self):
+    def _r1_AxGH(self):
         return  self._params['u_max_H'] \
                 * self._monod(self._comps[2], self._params['K_S']) \
                 * self._monod(self._params['K_OH'], self._bulk_DO) \
                 * self._monod(self._comps[5], self._params['K_NO']) \
                 * self._params['cf_g'] \
                 * self._comps[9]
+
 
     # Aerobic Growth Rate of Autotrophs (_r2_AerGA, mgCOD/L/day)
     def _r2_AerGA(self):
@@ -359,13 +359,16 @@ class ASM_1():
                 * self._monod(self._bulk_DO, self._params['K_OA']) \
                 * self._comps[10]
 
+
     # Death and Lysis Rate of Heterotrophs (_r3_DLH, mgCOD/L/day)
     def _r3_DLH(self):
         return  self._params['b_LH'] * self._comps[9]
 
+
     # Death and Lysis Rate of Autotrophs (_r4_DLA, mgCOD/L/day)
     def _r4_DLA(self):
         return  self._params['b_LA'] * self._comps[10]
+
 
     # Ammonification Rate of Soluable Organic N (_r5_AmmSN, mgN/L/day)
     def _r5_AmmSN(self):
@@ -373,22 +376,23 @@ class ASM_1():
                 * self._comps[4] \
                 * self._comps[9]
 
+
     # Hydrolysis Rate of Particulate Organics (_r6_HydX, mgCOD/L/day)
     def _r6_HydX(self):
         return  self._params['k_h'] \
                 * self._monod(self._comps[8] / self._comps[9], \
                                 self._params['K_X']) \
-                * (self._monod(self._bulk_DO, \
-                                self._params['K_OH']) \
+                * (self._monod(self._bulk_DO, self._params['K_OH']) \
                     + self._params['cf_h'] \
                     * self._monod(self._params['K_OH'], self._bulk_DO) \
-                    * self._monod(self._comps[5], \
-                                    self._params['K_NO'])) \
+                    * self._monod(self._comps[5], self._params['K_NO'])) \
                 * self._comps[9]
+
 
     # Hydrolysis Rate of Part. Organic N (_r7_HydXN, mgN/L/day)
     def _r7_HydXN(self):
         return self._r6_HydX() * self._comps[12] / self._comps[8]
+
 
     #---------Overall Process Rate Equations for Individual Components---
 

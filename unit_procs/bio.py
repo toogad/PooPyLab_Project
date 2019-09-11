@@ -65,6 +65,8 @@ class asm_reactor(pipe):
         self._area = self._active_vol / self._swd
 
         self._sludge = ASM_1(Temperature, DO)
+        # make an alias
+        self._sludge._comps = self._mo_comps
 
         self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
         self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
@@ -89,7 +91,7 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        self.estimate_current_state()
+        self.integrate()
         self._discharge_main_outlet()
 
         return None
@@ -114,7 +116,7 @@ class asm_reactor(pipe):
         return self._active_vol
 
 
-    def set_ASM_condition(self, Temperature, DO):
+    def set_model_condition(self, Temperature, DO):
         if Temperature >= 4 and DO > 0:
             self._sludge.update(Temperature, DO)
         else:
@@ -122,28 +124,31 @@ class asm_reactor(pipe):
         return None
 
    
-    def get_ASM_params(self):
+    def get_model_params(self):
         return self._sludge.get_params()
 
 
-    def get_ASM_stoichs(self):
+    def get_model_stoichs(self):
         return self._sludge.get_stoichs()
 
 
-    def estimate_current_state(self):
-        # get the components from the next iteration.
-        self._mo_comps = self._sludge.steady_step(self._prev_mo_comps,
-                                                    self._total_inflow,
-                                                    self._in_comps,
-                                                    self._active_vol)
-        # _so_comps is already an aliase of _mo_comps
-        return None
+#    def estimate_current_state(self):
+#        # get the components from the next iteration.
+#        self._mo_comps = self._sludge.steady_step(self._prev_mo_comps,
+#                                                    self._total_inflow,
+#                                                    self._in_comps,
+#                                                    self._active_vol)
+#        # _so_comps is already an aliase of _mo_comps
+#        return None
 
 
-    def integrate(self, f_s=0.15, f_p=2.0):
+    def integrate(self, first_index_particulate=7, f_s=0.15, f_p=2.0):
         '''
         Integrate the model forward in time.
         '''
+        # first_index_particulate: first index of particulate model component,
+        #   assuming all components before this index are soluble, and all
+        #   starting this index are particulate in the matrix.
         # f_s: fraction of max step for soluble model components, typ=5%-20%
         # f_p: fraction of max step for particulate model components, typ=2.0
 
@@ -162,12 +167,15 @@ class asm_reactor(pipe):
 
         _step_sol = f_s * _max_step
         _step_part = f_p * _max_step
+        
+        for i in range(first_index_particulate):
+            self._mo_comps[i] += self._del_C_del_t[i] * _step_sol
+        
+        for j in range(first_index_particulate, len(self._mo_comps)):
+            self._mo_comps[j] += self._del_C_del_t[j] * _step_part
 
-        #TODO: NEED TO RE_ARRANGE THE ORDER OF THE MODEL COMPONENTS SO THAT ALL
-        # SOLUBLE ONES ARE AT THE UPPER HALF AND PARTICULATE LOWER.
-         
-        return
-
+        return self._mo_comps[:]
+            
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
 

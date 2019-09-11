@@ -125,9 +125,9 @@ class splitter(poopy_lab_obj):
         # _comps[10]: S_NS,
         # _comps[11]: X_NS,
         # _comps[12]: S_ALK
-        self._in_comps = [0.01] * constants._NUM_ASM1_COMPONENTS 
-        self._mo_comps = [0.01] * constants._NUM_ASM1_COMPONENTS
-        self._so_comps = [0.01] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
         # results of previous round
         self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
@@ -624,6 +624,7 @@ class pipe(splitter):
 
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
+# 20190911 KZ: rearranged inf component to match model matrix
 # 20190715 KZ: added self._type
 # 20190704 KZ: corrected initiation error.
 # 20190619 KZ: updated as per the splitter update.
@@ -708,7 +709,7 @@ class influent(pipe):
 
 
     def blend_inlet_comps(self):
-        self._convert_to_ASM1_comps()
+        self._convert_to_model_comps()
         return None
 
 
@@ -763,7 +764,7 @@ class influent(pipe):
         # characteristics into ASM1 model components.
         pass
 
-    def _convert_to_ASM1_comps(self):
+    def _convert_to_model_comps(self):
         #TODO: the first set of conversion available here is for municipal 
         #   wastewater. Industrial wastewater may have completely different
         #   conversion factors and needs to be tested.
@@ -814,9 +815,10 @@ class influent(pipe):
         
         Inf_S_DO = self._DO
         
-        self._in_comps = [Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D, \
-                            Inf_S_I, Inf_S_S, -Inf_S_DO, Inf_S_NO, Inf_S_NH, \
-                            Inf_S_NS, Inf_X_NS, Inf_S_ALK]
+        self._in_comps = [Inf_S_DO, Inf_S_I, Inf_S_S, Inf_S_NH, Inf_S_NS, 
+                            Inf_S_NO, Inf_S_ALK, 
+                            Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
+                            Inf_X_NS]
         return None
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
