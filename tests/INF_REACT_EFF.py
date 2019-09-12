@@ -56,7 +56,8 @@ def construct():
     inlet.set_downstream_main(p1)
     p1.set_downstream_main(reactor)
     reactor.set_downstream_main(p2)
-    reactor.set_model_condition(20, 4)
+    reactor.set_model_condition(15, 4)
+    reactor.set_active_vol(4000)
     p2.set_downstream_main(outlet)
 
     print("PFD constructed.")

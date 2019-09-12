@@ -25,6 +25,7 @@
 #    Author: Kai Zhang
 #
 # CHANGE LOG:
+# 20190911 KZ: eliminated divided_by_zero errors by assigning init_X_S
 # 20190903 KZ: corrected b_H & b_A in initial_guess()
 # 20190828 KZ: init
 #
@@ -138,7 +139,7 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     # init_S_NO above
     init_S_ALK = plant_inf[6] - 7.14 * (init_S_NO - plant_inf[5]) / 50.0
     init_X_I = plant_inf[7]
-    init_X_S = 0.0  
+    init_X_S = 0.1 * inf_X_S  # assumed 10% remain
     # init_X_BH above
     # init_X_BA above
     # init_X_D above

@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190811 KZ: moved assign_initial_guess() to asm_reactor
 # 20190905 KZ: revised getTSS...to match new model component order
 # 20190814 KZ: revised timing for setting _prev_mo_comps and _prev_so_comps
 # 20190813 KZ: revised discharge(), removed _inflow_totalized and
@@ -175,15 +176,6 @@ class splitter(poopy_lab_obj):
             self._in_flow_backcalc = self._total_inflow
             self._so_flow = self._in_flow_backcalc - self._mo_flow
             self._so_flow_defined = True
-        return None
-
-
-    def assign_initial_guess(self, initial_guess):
-        ''' 
-        Assign the initial guess into _prev_mo_comps and _prev_so_comps
-        '''
-        self._prev_so_comps = initial_guess[:]
-        self._prev_mo_comps = initial_guess[:]
         return None
 
 

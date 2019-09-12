@@ -25,6 +25,7 @@
 #    as part of the Reactor object
 #
 # Change Log:
+# 2019-09-11 KZ: revised _dCdt()
 # 2019-09-05 KZ: re-org model components to match .csv model template
 # 2019-08-27 KZ: added integrate()
 # 2019-02-09 KZ: standardized import
@@ -101,7 +102,6 @@ class ASM_1():
         self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
         return
-
 
 
     #====================== Public Interface ==================================
@@ -542,7 +542,7 @@ class ASM_1():
         return result
 
 
-    def _dCdt(self, out_comps, flow, in_comps, vol):
+    def _dCdt(self, flow, in_comps, vol):
         '''
         Defines dC/dt for the system:
         in_comps/ext_comps are lists that represent the Influent values 
@@ -557,43 +557,43 @@ class ASM_1():
 
         _HRT = vol / flow
         
-        result = [(in_comps[0] - out_comps[0]) / _HRT 
+        result = [(in_comps[0] - self._comps[0]) / _HRT 
                         + self._rate0_S_DO()]
 
-        result.append((in_comps[1] - out_comps[1]) / _HRT 
+        result.append((in_comps[1] - self._comps[1]) / _HRT 
                         + self._rate1_S_I())
 
-        result.append((in_comps[2] - out_comps[2]) / _HRT
+        result.append((in_comps[2] - self._comps[2]) / _HRT
                         + self._rate2_S_S())
 
-        result.append((in_comps[3] - out_comps[3]) / _HRT
+        result.append((in_comps[3] - self._comps[3]) / _HRT
                         + self._rate3_S_NH())
 
-        result.append((in_comps[4] - out_comps[4]) / _HRT
+        result.append((in_comps[4] - self._comps[4]) / _HRT
                         + self._rate4_S_NS())
 
-        result.append((in_comps[5] - out_comps[5]) / _HRT
+        result.append((in_comps[5] - self._comps[5]) / _HRT
                         + self._rate5_S_NO())
 
-        result.append((in_comps[6] - out_comps[6]) / _HRT
+        result.append((in_comps[6] - self._comps[6]) / _HRT
                         + self._rate6_S_Alk())
 
-        result.append((in_comps[7] - out_comps[7]) / _HRT
+        result.append((in_comps[7] - self._comps[7]) / _HRT
                         + self._rate7_X_I())
 
-        result.append((in_comps[8] - out_comps[8]) / _HRT
+        result.append((in_comps[8] - self._comps[8]) / _HRT
                         + self._rate8_X_S())
 
-        result.append((in_comps[9] - out_comps[9]) / _HRT
+        result.append((in_comps[9] - self._comps[9]) / _HRT
                         + self._rate9_X_BH())
 
-        result.append((in_comps[10] - out_comps[10]) / _HRT
+        result.append((in_comps[10] - self._comps[10]) / _HRT
                         + self._rate10_X_BA())
 
-        result.append((in_comps[11] - out_comps[11]) / _HRT
+        result.append((in_comps[11] - self._comps[11]) / _HRT
                         + self._rate11_X_D())
 
-        result.append((in_comps[12] - out_comps[12]) / _HRT
+        result.append((in_comps[12] - self._comps[12]) / _HRT
                         + self._rate12_X_NS())
 
         return result

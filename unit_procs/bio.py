@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190911 KZ: got results from integrate()
 # 20190905 KZ: started adding integrate()
 # 20190813 KZ: fixed discharge() side outlet; fixed flow into
 #               estimate_current_state()
@@ -56,7 +57,7 @@ class asm_reactor(pipe):
 
         pipe.__init__(self) 
         self.__class__.__id += 1
-        self.__name__ = "Reactor_" + str(self.__id)
+        self.__name__ = "ASMReactor_" + str(self.__id)
 
         self._type = "ASMReactor"
 
@@ -65,14 +66,13 @@ class asm_reactor(pipe):
         self._area = self._active_vol / self._swd
 
         self._sludge = ASM_1(Temperature, DO)
-        # make an alias
-        self._sludge._comps = self._mo_comps
 
         self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
         self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+
         # make _so_comps alias of _mo_comps since there is no side stream for a
         # bioreactor
-        self._so_comps = self._mo_comps
+        #self._so_comps = self._mo_comps
 
         # results of previous round
         self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
@@ -92,6 +92,7 @@ class asm_reactor(pipe):
         self._prev_so_comps = self._mo_comps[:]
 
         self.integrate()
+        self._so_comps = self._mo_comps[:]
         self._discharge_main_outlet()
 
         return None
@@ -103,6 +104,15 @@ class asm_reactor(pipe):
     #
     # (INSERT CODE HERE)
     #
+    def assign_initial_guess(self, initial_guess):
+        ''' 
+        Assign the initial guess into _sludge.comps
+        '''
+        self._sludge._comps = initial_guess[:]
+        self._mo_comps = initial_guess[:]  # CSTR: outlet = mixed liquor
+        return None
+
+
     def set_active_vol(self, vol=380):
         # vol in M3
         if vol > 0:
@@ -157,11 +167,16 @@ class asm_reactor(pipe):
         #   0 < del_t < Retention_Time_C_k, where
         #   C is the individual model component and k is the kth reactor
         self._del_C_del_t = self._sludge._dCdt(
-                            self._mo_comps, self._total_inflow,
-                            self._in_comps, self._active_vol)
+                            self._total_inflow,
+                            self._in_comps, 
+                            self._active_vol)
 
-        _uppers = [self._mo_comps[i] * abs(self._del_C_del_t[i]) 
-                    for i in range(len(self._del_C_del_t))]
+        _uppers = []
+
+        for i in range(len(self._del_C_del_t)):
+            # screen out the zero items in _del_C_del_t
+            if self._del_C_del_t[i] != 0:
+                _uppers.append(self._mo_comps[i] / abs(self._del_C_del_t[i]))
 
         _max_step = min(_uppers)
 
