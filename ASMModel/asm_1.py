@@ -330,8 +330,8 @@ class ASM_1():
     # Monod Factor of Ammonia-N on Autotrophs
     # Monod Factor of NOx-N on Autotrophs
     #
-    def _monod(self, My_Eff_S_TBD, My_K_TBD):
-        return My_Eff_S_TBD / (My_Eff_S_TBD + My_K_TBD)
+    def _monod(self, term_in_nom_denom, term_only_in_denom):
+        return term_in_nom_denom / (term_in_nom_denom + term_only_in_denom)
 
 
     # Aerobic Growth Rate of Heterotrophs (_r0_AerGH, mgCOD/L/day)
@@ -428,7 +428,7 @@ class ASM_1():
                 + self._stoichs['2_5'] * self._r2_AerGA()
 
 
-    def _rate6_S_Alk(self):
+    def _rate6_S_ALK(self):
         return self._stoichs['0_6'] * self._r0_AerGH() \
                 + self._stoichs['1_6'] * self._r1_AxGH() \
                 + self._stoichs['2_6'] * self._r2_AerGA() \
@@ -467,81 +467,6 @@ class ASM_1():
                 + self._stoichs['7_12'] * self._r7_HydXN()
 
 
-    def _steady(self, out_comps, flow, in_comps, vol):
-        '''
-        Defines the steady state mass balance:
-        in_comps/out_comps are lists that represent the Influent values 
-            (get them from the ASMReactor) of the ASM1 Components
-            
-            0_S_DO, 1_S_I, 2_S_S, 3_S_NH, 4_S_NS, 5_S_NO, 6_S_ALK
-            7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
-        
-        ASM1._bulk_DO in mgO2/L
-
-        '''
-        # TODO: The resulting out_comps values will need to be passed to
-        #        self._Components
-        # Steady state equations that calculate the simulation results:
-        # FROM NOW ON: Reactor Influent Flow = Reactor Effluent Flow
-        # Overall steady state mass balance:
-        # InfFlow * (InfConc - EffConc) + GrowthRate * Actvol == 0
-
-
-        # C0_S_DO
-        result = [flow * (in_comps[0] - out_comps[0]) \
-                    + self._rate0_S_DO() * vol]
-
-        # C1_S_I
-        result.append(flow * (in_comps[1] - out_comps[1]) \
-                        + self._rate1_S_I() * vol)
-
-        # C2_S_S
-        result.append(flow * (in_comps[2] - out_comps[2]) \
-                        + self._rate2_S_S() * vol)
-
-        # C3_S_NH
-        result.append(flow * (in_comps[3] - out_comps[3]) \
-                        + self._rate3_S_NH() * vol)
-
-        # C4_S_NS
-        result.append(flow * (in_comps[4] - out_comps[4]) \
-                        + self._rate4_S_NS() * vol)
-
-        # C5_S_NO
-        result.append(flow * (in_comps[5] - out_comps[5]) \
-                        + self._rate5_S_NO() * vol)
-
-        # C6_S_ALK
-        result.append(flow * (in_comps[6] - out_comps[6]) \
-                        + self._rate6_S_Alk() * vol)
-
-        # C7_X_I
-        result.append(flow * (in_comps[7] - out_comps[7]) \
-                        + self._rate7_X_I() * vol)
-
-        # C8_X_S
-        result.append(flow * (in_comps[8] - out_comps[8]) \
-                        + self._rate8_X_S() * vol)
-
-        # C9_X_BH
-        result.append(flow * (in_comps[9] - out_comps[9]) \
-                        + self._rate9_X_BH() * vol)
-
-        # C10_X_BA
-        result.append(flow * (in_comps[10] - out_comps[10]) \
-                        + self._rate10_X_BA() * vol)
-
-        # C11_X_D
-        result.append(flow * (in_comps[11] - out_comps[11]) \
-                        + self._rate11_X_D() * vol)
-
-        # C12_X_NS
-        result.append(flow * (in_comps[12] - out_comps[12]) \
-                        + self._rate12_X_NS() * vol)
-
-        return result
-
-
     def _dCdt(self, flow, in_comps, vol):
         '''
         Defines dC/dt for the system:
@@ -576,7 +501,7 @@ class ASM_1():
                         + self._rate5_S_NO())
 
         result.append((in_comps[6] - self._comps[6]) / _HRT
-                        + self._rate6_S_Alk())
+                        + self._rate6_S_ALK())
 
         result.append((in_comps[7] - self._comps[7]) / _HRT
                         + self._rate7_X_I())
@@ -595,5 +520,7 @@ class ASM_1():
 
         result.append((in_comps[12] - self._comps[12]) / _HRT
                         + self._rate12_X_NS())
+
+        #print('_sludge._comps: {}'.format(self._comps))
 
         return result

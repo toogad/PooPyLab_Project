@@ -78,9 +78,6 @@ class asm_reactor(pipe):
         self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
         self._prev_so_comps = self._prev_mo_comps
 
-        # changes of model components over a small time step
-        self._del_C_del_t = []
-
         return None
 
 
@@ -142,16 +139,6 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
 
 
-#    def estimate_current_state(self):
-#        # get the components from the next iteration.
-#        self._mo_comps = self._sludge.steady_step(self._prev_mo_comps,
-#                                                    self._total_inflow,
-#                                                    self._in_comps,
-#                                                    self._active_vol)
-#        # _so_comps is already an aliase of _mo_comps
-#        return None
-
-
     def integrate(self, first_index_particulate=7, f_s=0.15, f_p=2.0):
         '''
         Integrate the model forward in time.
@@ -166,28 +153,33 @@ class asm_reactor(pipe):
         #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
         #   0 < del_t < Retention_Time_C_k, where
         #   C is the individual model component and k is the kth reactor
-        self._del_C_del_t = self._sludge._dCdt(
+        _del_C_del_t = self._sludge._dCdt(
                             self._total_inflow,
                             self._in_comps, 
                             self._active_vol)
 
+        print('_del_C_del_t:{}'.format(_del_C_del_t))
+
         _uppers = []
 
-        for i in range(len(self._del_C_del_t)):
+        for i in range(len(_del_C_del_t)):
             # screen out the zero items in _del_C_del_t
-            if self._del_C_del_t[i] != 0:
-                _uppers.append(self._mo_comps[i] / abs(self._del_C_del_t[i]))
+            if _del_C_del_t[i] != 0:
+                _uppers.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
 
         _max_step = min(_uppers)
 
         _step_sol = f_s * _max_step
         _step_part = f_p * _max_step
-        
+
         for i in range(first_index_particulate):
-            self._mo_comps[i] += self._del_C_del_t[i] * _step_sol
+            self._mo_comps[i] += _del_C_del_t[i] * _step_sol
         
         for j in range(first_index_particulate, len(self._mo_comps)):
-            self._mo_comps[j] += self._del_C_del_t[j] * _step_part
+            self._mo_comps[j] += _del_C_del_t[j] * _step_part
+
+        # TODO: there may be problem with this:
+        self._sludge._comps = self._mo_comps[:]
 
         return self._mo_comps[:]
             

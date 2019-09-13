@@ -136,3 +136,4 @@ if __name__ == '__main__':
 
         round += 1
 
+    print(_reactors[0].get_active_vol())
