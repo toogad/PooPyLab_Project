@@ -139,7 +139,7 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
 
 
-    def integrate(self, first_index_particulate=7, f_s=0.15, f_p=2.0):
+    def integrate(self, first_index_particulate=7, f_s=0.2, f_p=2.0):
         '''
         Integrate the model forward in time.
         '''
@@ -167,11 +167,13 @@ class asm_reactor(pipe):
             if _del_C_del_t[i] != 0:
                 _uppers.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
 
-        _max_step = min(_uppers)
+        _max_step_sol = min(_uppers[:first_index_particulate])
+        _max_step_part = min(_uppers[first_index_particulate:])
 
-        _step_sol = f_s * _max_step
-        _step_part = f_p * _max_step
+        _step_sol = f_s * _max_step_sol
+        _step_part = f_s * _max_step_part
 
+        print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
         for i in range(first_index_particulate):
             self._mo_comps[i] += _del_C_del_t[i] * _step_sol
         

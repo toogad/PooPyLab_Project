@@ -106,7 +106,7 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
 
     round = 1
-    while round <= 500:
+    while round <= 200:
 
         for elem in wwtp:
 

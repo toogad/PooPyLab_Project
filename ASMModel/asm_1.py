@@ -482,7 +482,9 @@ class ASM_1():
 
         _HRT = vol / flow
         
-        result = [(in_comps[0] - self._comps[0]) / _HRT 
+        #result = [(in_comps[0] - self._comps[0]) / _HRT 
+        #                + self._rate0_S_DO()]
+        result = [(self._bulk_DO - self._comps[0]) / _HRT 
                         + self._rate0_S_DO()]
 
         result.append((in_comps[1] - self._comps[1]) / _HRT 
