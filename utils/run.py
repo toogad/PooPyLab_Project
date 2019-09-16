@@ -149,3 +149,5 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     return [init_S_DO, init_S_I, init_S_S, init_S_NH, init_S_NS, init_S_NO,
             init_S_ALK,
             init_X_I, init_X_S, init_X_BH, init_X_BA, init_X_D, init_X_NS]
+#    return [2.0, init_S_I, 1.0, 1.0, 1.0, 1.0, 5, init_X_I, 1.0, 500, 20, 1.0,
+#            1.0]

@@ -25,6 +25,9 @@
 #
 #
 # Change Log:
+# 20190916 KZ: compared results against ASIM. ASIM has additional rate
+#           adjustments including K_ALK and ammonia limitations. 
+#           But the results are comparable!!
 # 20190915 KZ: start to get reasonable integration results.
 # 20190911 KZ: got the pfd to run with results. need to verify its validity
 # 20190911 KZ: continued after rearraning ASM1 and integration function
@@ -107,7 +110,7 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
 
     round = 1
-    while round <= 500:
+    while round <= 300:
 
         for elem in wwtp:
 
@@ -127,14 +130,16 @@ if __name__ == '__main__':
         #if utils.pfd.check_global_cnvg(wwtp):
         #    break
 
-        for elem in wwtp:
-            print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
-                elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
-            print('     main outlet conc = {}'.format(
-                elem.get_main_outlet_concs()))
-            print('     side outlet conc = {}'.format(
-                elem.get_side_outlet_concs()))
-
         round += 1
 
+    for elem in wwtp:
+        print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
+            elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
+        print('     main outlet conc = {}'.format(
+            elem.get_main_outlet_concs()))
+        print('     side outlet conc = {}'.format(
+            elem.get_side_outlet_concs()))
+
     print(_reactors[0].get_active_vol())
+    print(_reactors[0].get_model_params())
+    print(_reactors[0].get_model_stoichs())

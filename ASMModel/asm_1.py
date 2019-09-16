@@ -25,6 +25,7 @@
 #    as part of the Reactor object
 #
 # Change Log:
+# 2019-09-16 KZ: corrected temperature effect
 # 2019-09-15 KZ: zero-ed out S_DO's rate to simplify
 # 2019-09-11 KZ: revised _dCdt()
 # 2019-09-05 KZ: re-org model components to match .csv model template
@@ -117,7 +118,7 @@ class ASM_1():
 
         self._temperature = Temp
         self._bulk_DO = DO
-        self._delta_t = 20 - self._temperature
+        self._delta_t = self._temperature - 20.0
         self._param = self._set_params()
         self._stoich = self._set_stoichs()
         return 0
