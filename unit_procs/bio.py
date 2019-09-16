@@ -185,7 +185,8 @@ class asm_reactor(pipe):
             self._mo_comps[i] += _del_C_del_t[i] * _step_sol
         
         for j in range(first_index_particulate, len(self._mo_comps)):
-            self._mo_comps[j] += _del_C_del_t[j] * _step_part
+            # TODO: use the same time step before further optimization
+            self._mo_comps[j] += _del_C_del_t[j] * _step_sol
 
         # TODO: there may be problem with this:
         self._sludge._comps = self._mo_comps[:]
