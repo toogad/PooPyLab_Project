@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # ----------------------------------------------------------------------------
 # Update Log: 
+# 20190915 KZ: start to get reasonable integration results. need more testing
 # 20190911 KZ: got results from integrate()
 # 20190905 KZ: started adding integrate()
 # 20190813 KZ: fixed discharge() side outlet; fixed flow into
@@ -160,15 +161,21 @@ class asm_reactor(pipe):
 
         print('_del_C_del_t:{}'.format(_del_C_del_t))
 
-        _uppers = []
+        _uppers_sol = []
+        _uppers_part = []
 
-        for i in range(len(_del_C_del_t)):
+        for i in range(first_index_particulate):
             # screen out the zero items in _del_C_del_t
             if _del_C_del_t[i] != 0:
-                _uppers.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
+                _uppers_sol.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
 
-        _max_step_sol = min(_uppers[:first_index_particulate])
-        _max_step_part = min(_uppers[first_index_particulate:])
+        for j in range(first_index_particulate, len(_del_C_del_t)):
+            # screen out the zero items in _del_C_del_t
+            if _del_C_del_t[j] != 0:
+                _uppers_part.append(self._mo_comps[j] / abs(_del_C_del_t[j]))
+
+        _max_step_sol = min(_uppers_sol)
+        _max_step_part = min(_uppers_part)
 
         _step_sol = f_s * _max_step_sol
         _step_part = f_s * _max_step_part

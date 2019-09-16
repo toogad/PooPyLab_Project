@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20190915 KZ: start to get reasonable integration results.
 # 20190911 KZ: got the pfd to run with results. need to verify its validity
 # 20190911 KZ: continued after rearraning ASM1 and integration function
 # 20190815 KZ: init
@@ -106,7 +107,7 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
 
     round = 1
-    while round <= 200:
+    while round <= 100:
 
         for elem in wwtp:
 

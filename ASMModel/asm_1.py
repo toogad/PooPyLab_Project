@@ -25,6 +25,7 @@
 #    as part of the Reactor object
 #
 # Change Log:
+# 2019-09-15 KZ: zero-ed out S_DO's rate to simplify
 # 2019-09-11 KZ: revised _dCdt()
 # 2019-09-05 KZ: re-org model components to match .csv model template
 # 2019-08-27 KZ: added integrate()
@@ -196,7 +197,7 @@ class ASM_1():
         self._params['cf_g'] = 0.8
 
         # Ratio of N in Active Biomass (i_N_XB, mgN/mgActiveBiomassCOD)
-        self._params['i_N_XB'] = 0.086
+        self._params['i_N_XB'] = 0.087
 
         # Ratio of N in Debris Biomass (i_N_XD, mgN/mgDebrisBiomassCOD)
         self._params['i_N_XD'] = 0.06
@@ -484,8 +485,9 @@ class ASM_1():
         
         #result = [(in_comps[0] - self._comps[0]) / _HRT 
         #                + self._rate0_S_DO()]
-        result = [(self._bulk_DO - self._comps[0]) / _HRT 
-                        + self._rate0_S_DO()]
+
+        # set DO rate to zero since DO is set to a fix conc.
+        result = [0.0]
 
         result.append((in_comps[1] - self._comps[1]) / _HRT 
                         + self._rate1_S_I())
