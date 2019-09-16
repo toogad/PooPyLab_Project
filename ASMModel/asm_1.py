@@ -19,8 +19,6 @@
 #    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#
-#
 #    This is the definition of the ASM1 model to be imported
 #    as part of the Reactor object
 #
@@ -109,15 +107,15 @@ class ASM_1():
     #====================== Public Interface ==================================
 
 
-    def update(self, Temp, DO):
+    def update(self, ww_temp, dissolved_O2):
         ''' update the ASM model with new Temperature and Bulk_DO'''
-        if Temp <= 4 or DO < 0:
+        if ww_temp <= 4 or dissolved_O2 < 0:
             print("Error: New temperature or Bulk_DO too low.", \
                     "USING PREVIOUS VALUES FOR BOTH")
             return -1
 
-        self._temperature = Temp
-        self._bulk_DO = DO
+        self._temperature = ww_temp
+        self._bulk_DO = dissolved_O2
         self._delta_t = self._temperature - 20.0
         self._param = self._set_params()
         self._stoich = self._set_stoichs()

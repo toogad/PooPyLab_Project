@@ -31,6 +31,7 @@ from unit_procs.streams import splitter
 # ----------------------------------------------------------------------------
 
 # final_clarifier class - Change Log: 
+# 20190916 KZ: updated to match asm1 matrix (component index)
 # 20190726 KZ: revised discharge() to match the add. of is_converged()
 # 20190612 KZ: migrated to new base
 # 20190715 KZ: added self._type
@@ -52,6 +53,24 @@ class final_clarifier(splitter):
 
     # By default, the mainstream and sidestream outlets are overflow and
     # underflow, respectively, of the final clarifier.
+
+    # ASM components
+    # The Components the ASM components IN THE REACTOR
+    # For ASM #1:
+    #
+    #    self._comps[0]: S_DO as COD
+    #    self._comps[1]: S_I
+    #    self._comps[2]: S_S
+    #    self._comps[3]: S_NH
+    #    self._comps[4]: S_NS
+    #    self._comps[5]: S_NO
+    #    self._comps[6]: S_ALK
+    #    self._comps[7]: X_I
+    #    self._comps[8]: X_S
+    #    self._comps[9]: X_BH
+    #    self._comps[10]: X_BA
+    #    self._comps[11]: X_D
+    #    self._comps[12]: X_NS
 
     __id = 0
     def __init__(self, active_vol=380, SWD=3.5):
@@ -94,7 +113,7 @@ class final_clarifier(splitter):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 
-        self.update_combined_input()
+        #self.update_combined_input()
 
         # for a clarifier, the main and side outlets have different solids
         # concentrations than the inlet's
@@ -117,7 +136,7 @@ class final_clarifier(splitter):
         return _in_tss <= uf_TSS <= 18000
 
 
-    def _settle_solids(self, index_list=[0, 1, 2, 3, 4, 11]):
+    def _settle_solids(self, index_list=[7,8,9,10,11]):
         if not self._valid_under_TSS(self._under_TSS):
             print('ERROR:', self.__name__, 'has invalid underflow TSS.')
             return None

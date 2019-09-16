@@ -16,25 +16,25 @@ from unit_procs.streams import influent, effluent, WAS, splitter, pipe
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
 from utils.pfd import check, show
-import MLE
+import CMAS
 import pdb
 
 
 if __name__ == "__main__":
 
-    wwtp = MLE.construct()
+    wwtp = CMAS.construct()
       
     check(wwtp)
     #pdb.set_trace()
     show(wwtp)
 
-    MLE.destroy()
+    CMAS.destroy()
     check(wwtp)
     show(wwtp)
 
     print('\n', "Reconstructing PFD...")
     #pdb.set_trace()
-    MLE.construct()
+    CMAS.construct()
     check(wwtp)
     input("press a key")
     show(wwtp)
