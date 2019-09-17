@@ -23,6 +23,7 @@
 #    as part of the Reactor object
 #
 # Change Log:
+# 2019-09-17 KZ: adjusted all kinetic/stoichs/Arrhenius to vals on IWA report
 # 2019-09-16 KZ: corrected temperature effect
 # 2019-09-15 KZ: zero-ed out S_DO's rate to simplify
 # 2019-09-11 KZ: revised _dCdt()
@@ -144,44 +145,44 @@ class ASM_1():
     def _set_params(self):
 
         # Ideal Growth Rate of Heterotrophs (u_max_H, 1/DAY)
-        self._params['u_max_H'] = 6.0 * pow(1.08, self._delta_t)
+        self._params['u_max_H'] = 6.0 * pow(1.072, self._delta_t)
 
-        # Ideal Lysis Rate of Heterotrophs (b_LH, 1/DAY)
-        self._params['b_LH'] = 0.408 * pow(1.04, self._delta_t)
+        # Lysis Rate of Heterotrophs (b_LH, 1/DAY)
+        self._params['b_LH'] = 0.62 * pow(1.12, self._delta_t)
 
         # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
-        self._params['u_max_A'] = 0.768 * pow(1.11, self._delta_t)
+        self._params['u_max_A'] = 0.8 * pow(1.103, self._delta_t)
 
-        # Ideal Growth Rate of Autotrophs (b_LA, 1/DAY)
-        self._params['b_LA'] = 0.096 * pow(1.04, self._delta_t)
+        # Lysis Rate of Autotrophs (b_LA, 1/DAY)
+        self._params['b_LA'] = 0.096 * pow(1.114, self._delta_t)
 
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
         self._params['K_S'] = 20.0
 
         # Switch Coefficient for Dissoved O2 of Hetero. (K_OH, mgO2/L)
-        self._params['K_OH'] = 0.1
+        self._params['K_OH'] = 0.2
 
         # Association Conc. for Dissoved O2 of Auto. (K_OA, mgN/L)
-        self._params['K_OA'] = 0.75
+        self._params['K_OA'] = 0.4
 
         # Association Conc. for NH3-N of Auto. (K_NH, mgN/L)
-        self._params['K_NH'] = 1.0 * pow(1.14, self._delta_t)
+        self._params['K_NH'] = 1.0
 
         # Association Conc. for NOx of Hetero. (K_NO, mgN/L)
-        self._params['K_NO'] = 0.2
+        self._params['K_NO'] = 0.5
 
         # Hydrolysis Rate (k_h, mgCOD/mgBiomassCOD-day)
-        self._params['k_h'] = 2.208 * pow(1.08, self._delta_t)
+        self._params['k_h'] = 3.0 * pow(1.116, self._delta_t)
 
         # Half Rate Conc. for Hetero. Growth on Part. COD
         # (K_X, mgCOD/mgBiomassCOD)
-        self._params['K_X'] = 0.15
+        self._params['K_X'] = 0.03 * pow(1.116, self._delta_t)
 
         # Ammonification of Org-N in biomass (k_a, L/mgBiomassCOD-day)
-        self._params['k_a'] = 0.1608 * pow(1.08, self._delta_t)
+        self._params['k_a'] = 0.08 * pow(1.072, self._delta_t)
 
         # Yield of Hetero. Growth on COD (Y_H, mgBiomassCOD/mgCODremoved)
-        self._params['Y_H'] = 0.6
+        self._params['Y_H'] = 0.67
 
         # Yield of Auto. Growth on TKN (Y_A, mgBiomassCOD/mgTKNoxidized)
         self._params['Y_A'] = 0.24
@@ -196,7 +197,7 @@ class ASM_1():
         self._params['cf_g'] = 0.8
 
         # Ratio of N in Active Biomass (i_N_XB, mgN/mgActiveBiomassCOD)
-        self._params['i_N_XB'] = 0.087
+        self._params['i_N_XB'] = 0.086
 
         # Ratio of N in Debris Biomass (i_N_XD, mgN/mgDebrisBiomassCOD)
         self._params['i_N_XD'] = 0.06
