@@ -159,7 +159,7 @@ class asm_reactor(pipe):
                             self._in_comps, 
                             self._active_vol)
 
-        print('_del_C_del_t:{}'.format(_del_C_del_t))
+        #print('_del_C_del_t:{}'.format(_del_C_del_t))
 
         _uppers_sol = []
         _uppers_part = []
@@ -180,7 +180,8 @@ class asm_reactor(pipe):
         _step_sol = f_s * _max_step_sol
         _step_part = f_s * _max_step_part
 
-        print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
+        #print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
+
         for i in range(first_index_particulate):
             self._mo_comps[i] += _del_C_del_t[i] * _step_sol
         

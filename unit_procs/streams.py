@@ -701,7 +701,7 @@ class influent(pipe):
 
 
     def blend_inlet_comps(self):
-        self._convert_to_model_comps()
+        self._in_comps = self._convert_to_model_comps()
         return None
 
 
@@ -807,11 +807,11 @@ class influent(pipe):
         
         Inf_S_DO = self._DO
         
-        self._in_comps = [Inf_S_DO, Inf_S_I, Inf_S_S, Inf_S_NH, Inf_S_NS, 
-                            Inf_S_NO, Inf_S_ALK, 
-                            Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
-                            Inf_X_NS]
-        return None
+        _inf_concs = [Inf_S_DO, Inf_S_I, Inf_S_S, Inf_S_NH, Inf_S_NS, 
+                        Inf_S_NO, Inf_S_ALK, 
+                        Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
+                        Inf_X_NS]
+        return _inf_concs[:]
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
 
