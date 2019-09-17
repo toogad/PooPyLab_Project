@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20190917 KZ: Matched ASIM results!!! - PASSED TEST!!
 # 20190916 KZ: compared results against ASIM. ASIM has additional rate
 #           adjustments including K_ALK and ammonia limitations. 
 #           But the results are comparable!!
@@ -110,7 +111,7 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
 
     round = 1
-    while round <= 300:
+    while round <= 500:
 
         for elem in wwtp:
 
