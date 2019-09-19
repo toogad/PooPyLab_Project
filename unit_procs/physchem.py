@@ -58,7 +58,7 @@ class final_clarifier(splitter):
     # The Components the ASM components IN THE REACTOR
     # For ASM #1:
     #
-    #    self._comps[0]: S_DO as COD
+    #    self._comps[0]: S_DO as DO
     #    self._comps[1]: S_I
     #    self._comps[2]: S_S
     #    self._comps[3]: S_NH
@@ -136,7 +136,7 @@ class final_clarifier(splitter):
         return _in_tss <= uf_TSS <= 18000
 
 
-    def _settle_solids(self, index_list=[7,8,9,10,11]):
+    def _settle_solids(self, particulate_index=[7,8,9,10,11,12]):
         if not self._valid_under_TSS(self._under_TSS):
             print('ERROR:', self.__name__, 'has invalid underflow TSS.')
             return None
@@ -162,7 +162,7 @@ class final_clarifier(splitter):
         # split the ASM model components associated with solids (X_*), assuming
         # each component is split into the overflow and underflow keeping its
         # fraction in clarifier inlet TSS.
-        for i in index_list:
+        for i in particulate_index:
             if _in_tss > 0:
                 _frac = self._in_comps[i] / _in_tss
             else:
