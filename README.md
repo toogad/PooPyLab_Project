@@ -25,7 +25,6 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         c)  Effluent Unit
         d)  Flow Splitter
         e)  Waste Activated Sludge (WAS) Unit
-        f)  Facility Life Cycle Assessment (LCA)
 
     3)  Steady state simulation
     
@@ -33,18 +32,20 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
     
     5)  ASM 1, 2d, and 3
 
+    6)  User defined models
+
+    7)  User defined unit processes
+
 1.2 RUNNING ENVIRONMENT:
 
     1)  Python 3
     
-    2)  SciPy & NumPy
+    2)  Matplotlib
     
-    3)  Matplotlib
-    
-    4)  PyQT4
-    
-    5)  Linux (Windows and Mac environments to be tested)
+    3)  PyQT4 or wxWidgets (I haven't decided)
 
+    4)  SciPy/NumPy/Pandas (Possible, if needed down the road)
+    
 1.3 LICENSES:
 
     Please refer to the attached License.txt document for details.
@@ -54,7 +55,7 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
     
     This Development Plan ("the Plan") is to provide general guidelines for 
     developers on the key fuctionalities, structure, and coordination
-    aspect of the project. It is not meant to provide detail instructions
+    aspects of the project. It is not meant to provide detail instructions
     on how to write the codes. Ideally, the whole PooPyLab package will
     be subdivided into smaller sections that provide their own functionalities
     and work with each other to complete the main objectives of the software.
@@ -106,22 +107,23 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         2.1.4   Validity check of the PFD.
 
     3.2 Steady State Simulation
-        The current strategy for running steady state simulation is to solve
-        the mass balance equations in each process unit, the results of the 
-        current iteration will be compared to the previous. If the two set of 
-        results are close to each other within the preset convergence
-        criteria for all the units, the current results are considered the
-        steady state. If not, the current results will be used for the down-
-        stream unit's input until the maximum number of allowed iteration is
-        reached.
+        The current strategy for running steady state simulation is to
+        integrate the differential equation system using the Euler's method for
+        each process unit, with constant influent conditions (or the average of
+        the variable flows and loads), the results of the current iteration
+        will be compared to the previous. If the two sets of results are close
+        to each other within the preset convergence criteria for all the units,
+        the current results are considered the steady state. If not, the
+        current results will be used for the downstream unit's input until
+        the maximum number of allowed iteration is reached.
 
-        Pseudo-Code:
+        Pseudo-Code for Steady State:
             IF ALL THE UNITS IN THE WWTP ARE NOT CONVERGED AND NUMBER OF
                 ITERATION IS LESS THAN THE MAXIMUM:
                 FROM THE INFLUENT OF THE WWTP:
                     LOOP:
                     GO TO THE NEXT UNIT ON THE PFD
-                    SOLVE MODEL COMPONENTS FOR THIS UNIT --> UNIT_C_CURRENT[]
+                    INTEGRATE MODEL COMPONENTS --> UNIT_C_CURRENT[]
                     IF MAX(ABS(UNIT_C_CURRENT[] - UNIT_C_PREVIOUS[])) 
                         <= CONVERGE_CRITERIA
                         MARK UNIT AS CONVERGED
@@ -135,20 +137,13 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
                 TERMINTATE THE ITERATION
 
         3.2.1   Initial Guess
-                The solver for the steady state simulation is Newton-Raphson
-                (or one of its variations), which requires initial guess to
-                begin. Good initial guess is a key for the success of the 
-                solver runs. 
+                Good initial guess is important for the success of the
+                integration.
 
-                Currently, PooPyLab is using ASM1 which doesn't deal with 
-                biological phosphorus (P) removal. Therefore, the initial 
-                guess on the first reactor (either an anoxic or aerobic) is 
-                relatively simple. When it comes to ASM2 and/or ASM3 where BPR 
-                and/or cellular storage are a part of the model, initial guess 
-                will need to be revisited and carefully developed.
+                Current initial guess strategy follows the suggestion on the
+                IWA ASM 1 report. 
 
     3.3 Dynamic Simulation
-
         The approach for the dynamic simulation is expected to take a different
         approach (Plant Wide Differential Equation System) than that of the
         steady state (Sequential Modular Approach).
@@ -170,7 +165,7 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
                 For dynamic simulation, the initial guess will be the steady 
                 state solution.
 
-    3.4 Model Modification and Extension
+    3.4 Model Modification and Extension by Users
         Not much plan has been developed for this PooPyLab functionality at 
         this point. It could make the software much more complicated if we
         want to provide a GUI for it. 
@@ -182,6 +177,11 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         probably still desirable to have extension functionality via the GUI
         that allows user to define his/her own equation systems (another reason
         to use equation system for both steady state and dynamic simulations).
+
+        Current plant is to specify all models in .csv format once ASM 1
+        testing is finished. It will allow a user to define his/her own models
+        with grid view in a spreadsheet program or text files (not as easy to
+        read or revise).
         
         ANY INPUT ON THIS TOPIC IS WELCOME!
 
@@ -191,6 +191,8 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
 
         Available packages like openPyXL can be used to pipe the output to an
         Excel spreadsheet.
+
+        Alternatively, .csv files can be used to store the results.
 
     3.6 Storage and Reloading of Simulation Results
         PooPyLab shall be able to store the simulation results, reload the 
@@ -223,24 +225,32 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         repository on github.com to see their most recent status and any
         additional files.
         
-        4.3.1   Base: Common abstract interfaces only.
-        4.3.2   Splitter: Multiple inlet, one main outlet and one side outlet;
-        4.3.3   Pipe: A Splitter without side outlet;
-        4.3.4   ASMReactor: A Pipe that has active volume and can react;
-        4.3.5   Influent: A Pipe that has no further upstream;
-        4.3.6   Effluent: A Pipe that has no further downstream;
-        4.3.7   Final_Clarifier: A Splitter that has different solids
-                concentrations at its main and side outlets;
-        4.3.8   WAS: Waste Activated Sludge unit that is a Pipe and that is
-                able to determine waste sludge flow according to the sludge
+        4.3.1   Base (poopy_lab_obj): Common abstract interfaces only.
+        4.3.2   Splitter (stream.splitter): Multiple inlet, one main outlet and
+                one side outlet;
+        4.3.3   Pipe (stream.pipe): A Splitter without side outlet;
+        4.3.4   Influent (stream.influent): A Pipe that has no further upstream;
+        4.3.5   Effluent (stream.effluent): A Pipe that has no further downstream;
+        4.3.6   WAS (stream.was): Waste Activated Sludge unit that is a Pipe and that
+                is able to determine waste sludge flow according to the sludge
                 retention time;
-
-        4.3.9   pyASM1v0_6.py: Preliminary test of the ASM1 and 
-                scipy.integrate.fsolve() on a CSTR reactor using an example
-                from Grady Jr. (1999): Biological Wastewater Treatment,
-                2nd Edition.
-
+        4.3.7   ASMReactor (bio.asm_reactor): A Pipe that has active volume and can
+                react
+        4.3.8   Final_Clarifier (phys_chem/final_clarifier): A Splitter that has
+                different solids concentrations at its main and side outlets;
+        4.3.9   ASM1 (ASMModel.asm1): ASM 1 model kinetics and stoichiometrics
+        4.3.10  pyASM1v0_6.py: "analytical" approach to generate initial guess
         4.3.11  test/: Folder for testing the defined classes
+        4.3.12  Process Flow Diagram Utilities (utils.pfd): global functions
+                that check validity of connections and unit processes
+        4.3.13  Main Loop Run Utilities (utils.run): global functions for top
+                level main loop running the simulation for the entire PFD.
+
+    4.4 Testing Done:
+        4.4.1   Connectivity
+        4.4.2   Inlet receiving and outlet discharge
+        4.4.3   ASM1 integration
+        4.4.4   PFD validation
     
 ===============================================================================
 
@@ -253,9 +263,7 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
 
     5.2 CONTINUE TO TEST THE INTERACTION OF THE PROCESS UNITS, ESPECIALLY
         5.2.1   SLUDGE WASTING AND SRT CONTROL.
-        5.2.2   RECEIVING, BLENDING, AND TRANSFERRING FLOW AND MODEL COMPONENTS
-                FROM UPSTREAM UNITS TO DOWNSTREAM ONE.
-        5.2.3   SIDESTREAM INTERACTION WITH OTHER UNITS.
+        5.2.2   FINAL CLARIFIER FUNCTIONS
     
     5.3 DEVELOP A CLASS FOR EXTERNAL CARBON ADDITION UNIT.
 
@@ -275,4 +283,4 @@ GENERAL DEVELOPMENT PLAN FOR POOPYLAB
         5.6.2   DRAG AND DROP CAPABILITY.
         5.6.3   CONNECT PROCESS FLOW DIAGRAM TO CODE
 
-LAST UPDATE: 2019-07-16 KZ
+LAST UPDATE: 2019-09-18 KZ
