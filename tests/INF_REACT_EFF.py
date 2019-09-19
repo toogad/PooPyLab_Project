@@ -20,8 +20,8 @@
 #
 # -----------------------------------------------------------------------------
 #
-#    Definition of an ASMReactor with influent connected with an effluent via
-#       pipes.
+#    Definition of a PFD with an influent, an ASMReactor, and an effluent
+#    connected via pipes.
 #
 #
 #    Process Flow Diagram:
