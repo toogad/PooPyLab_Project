@@ -25,6 +25,7 @@
 #    Author: Kai Zhang
 #
 # CHANGE LOG:
+# 20190920 KZ: moved concentration output here and added BFS traverse func
 # 20190911 KZ: eliminated divided_by_zero errors by assigning init_X_S
 # 20190903 KZ: corrected b_H & b_A in initial_guess()
 # 20190828 KZ: init
@@ -34,6 +35,18 @@
 from unit_procs.streams import pipe, influent, effluent, WAS, splitter
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
+
+
+def show_concs(wwtp):
+    for elem in wwtp:
+        print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
+            elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
+        print('     main outlet conc = {}'.format(
+            elem.get_main_outlet_concs()))
+        print('     side outlet conc = {}'.format(
+            elem.get_side_outlet_concs()))
+
+    return None
 
 
 def _wwtp_active_vol(reactors=[]):
@@ -93,7 +106,7 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
             / (params['u_max_A'] - (1.0 / SRT_OXIC + params['b_LA']))
 
     print('eff. S_S = {} (mg/L COD)'.format(init_S_S))
-    print('eff. S_NH = {} (mg/L COD)'.format(init_S_NH))
+    print('eff. S_NH = {} (mg/L N)'.format(init_S_NH))
 
     # daily active heterotrphic biomass production, unit: gCOD/day
     daily_heter_biomass_prod = inf_flow  * (inf_S_S + inf_X_S - init_S_S)\
@@ -120,7 +133,7 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
             * (params['f_D'] * params['b_LA'] * SRT_OXIC)
 
     
-    # treat the entire plant's reactor active vol as a single CSTR
+    # treat the entire plant's reactor vol. as a single hypothetical CSTR
     _hyp_cstr_vol = _wwtp_active_vol(reactors)
 
     # initial guesses of X_BH, X_BA, and X_D
@@ -151,3 +164,39 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
             init_X_I, init_X_S, init_X_BH, init_X_BA, init_X_D, init_X_NS]
 #    return [2.0, init_S_I, 1.0, 1.0, 1.0, 1.0, 5, init_X_I, 1.0, 500, 20, 1.0,
 #            1.0]
+
+
+def _BFS(_to_visit, _visited):
+    if len(_to_visit) == 0:
+        return [_u.__name__ for _u in _visited]
+
+    _next = _to_visit.pop(0)
+
+    if _next not in _visited:
+        _visited.append(_next)
+        _next.update_combined_input()
+        _next.discharge()
+        if _next.has_sidestream():
+            _next_s = _next.get_downstream_side()
+            if _next_s not in _visited:
+                _to_visit.append(_next_s)
+        _next_m = _next.get_downstream_main()
+        if _next_m not in _visited and _next_m != None:
+            _to_visit.append(_next_m)
+        return _BFS(_to_visit, _visited)
+    else:
+        return [_u.__name__ for _u in _visited]
+
+
+def traverse_plant(wwtp, plant_inf):
+    _to_visit = [plant_inf]
+    _visited = []
+    _finished = []
+
+    while len(_visited) < len(wwtp):
+        _finished = _BFS(_to_visit, _visited)
+    
+    print('Visited:', _finished)
+
+    return None
+
