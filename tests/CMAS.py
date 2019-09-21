@@ -40,6 +40,7 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
+#   2019-09-20 KZ: revised to match other testing results
 #   2019-07-24 KZ: init
 #
 
@@ -72,7 +73,7 @@ wwtp = [inlet,
         ra, fc, outlet,
         RAS, waste, splt]
 
-#SRT = 10  # day
+SRT = 10  # day
 
 def construct():
     # make an CMAS plant
@@ -90,7 +91,7 @@ def construct():
     RAS.set_downstream_main(ra)
     p5.set_downstream_main(waste)
     inlet.set_mainstream_flow(10)  # mgd
-    splt.set_sidestream_flow(0.01)
+    splt.set_sidestream_flow(0.0)
 
     print("CMAS PFD constructed.")
 
