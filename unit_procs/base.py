@@ -24,6 +24,7 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   Sep 20, 2019 KZ: added assign_initial_guess() back
 #   Jul 26, 2019 KZ: added is_converged()
 #   Jul 16, 2019 KZ: added get_type()
 #   Jun 19, 2019 KZ: improved branch flow balance
@@ -69,6 +70,14 @@ class poopy_lab_obj(object):
         helper function to calculate 1 of the 3 branches' flow based on the
         other 2.
         return True if flow balace is done, False otherwise
+        '''
+        pass
+
+
+    @abstractmethod
+    def assign_initial_guess(self, init_guess_lst):
+        '''
+        Assign the intial guess to the unit
         '''
         pass
 

@@ -102,6 +102,7 @@ class asm_reactor(pipe):
     #
     # (INSERT CODE HERE)
     #
+
     def assign_initial_guess(self, initial_guess):
         ''' 
         Assign the initial guess into _sludge.comps

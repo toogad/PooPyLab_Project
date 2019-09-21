@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20190920 KZ: added back assign_initial_guess()
 # 20190811 KZ: moved assign_initial_guess() to asm_reactor
 # 20190905 KZ: revised getTSS...to match new model component order
 # 20190814 KZ: revised timing for setting _prev_mo_comps and _prev_so_comps
@@ -179,7 +180,14 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-8):
+    def assign_initial_guess(self, init_guess_lst):
+        self._in_comps = init_guess_lst[:]
+        self._mo_comps = init_guess_lst[:]
+        self._so_comps = init_guess_lst[:]
+        return None
+
+
+    def is_converged(self, limit=1E-4):
         _mo_cnvg = [abs(self._mo_comps[i] - self._prev_mo_comps[i]) <= limit 
                 for i in range(len(self._mo_comps))]
 
@@ -616,6 +624,7 @@ class pipe(splitter):
 
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
+# 20190920 KZ: added bypass for assign_intial_guess()
 # 20190911 KZ: rearranged inf component to match model matrix
 # 20190715 KZ: added self._type
 # 20190704 KZ: corrected initiation error.
@@ -677,7 +686,7 @@ class influent(pipe):
         # Plant influent flow in M3/DAY
         # TODO: will be user-input from GUI. FROM THE GUI, USER
         #   will use MGD. DEFAULT VALUE = 10 MGD. 
-        self._design_flow = 10 * 1E3 * 3.78  # convert to M3/day
+        self._design_flow = 37800
 
         return None
     
@@ -688,6 +697,9 @@ class influent(pipe):
         self._so_flow = 0.0
         return None
 
+
+    def assign_initial_guess(self, init_guess_lst):
+        pass
 
     def add_upstream(self, discharger, branch):
         print("ERROR:", self.__name__, "has NO upstream.")
@@ -712,7 +724,7 @@ class influent(pipe):
 
     def set_mainstream_flow(self, flow=10):
         if flow > 0:
-            self._design_flow = flow
+            self._design_flow = flow * 1E3 * 3.78  # convert to M3/day
         else:
             print("ERROR:", self.__name__, "shall have design flow > 0 MGD."
                     "Design flow NOT CHANGED due to error in user input.")
