@@ -106,7 +106,7 @@ if __name__ == '__main__':
     for fc in _final_clar:
         fc.set_underflow_TSS(_uf_tss)
 
-    pdb.set_trace()
+    #pdb.set_trace()
 
     utils.run.show_concs(wwtp)
 
