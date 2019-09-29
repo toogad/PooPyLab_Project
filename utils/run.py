@@ -196,7 +196,6 @@ def traverse_plant(wwtp, plant_inf):
     while len(_visited) < len(wwtp):
         _finished = _BFS(_to_visit, _visited)
     
-    print('Visited:', _finished)
-
+    #print('Visited:', _finished)
     return None
 
