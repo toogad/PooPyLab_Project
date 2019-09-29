@@ -49,6 +49,7 @@ if __name__ == '__main__':
 
     _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
 
+    # TODO: _WAS may be an empty []
     _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
 
     _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
@@ -100,9 +101,17 @@ if __name__ == '__main__':
     for _r in wwtp:
         _r.assign_initial_guess(_seed)
 
-    _uf_tss = 10000  # mg/L
+    _uf_tss = 12000  # mg/L
     for fc in _final_clar:
         fc.set_underflow_TSS(_uf_tss)
 
     #pdb.set_trace()
-    utils.run.traverse_plant(wwtp, _inf[0])
+    
+    r = 1
+    while r <= 1000:
+        _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
+        _srt_ctrl[0].set_sidestream_flow(_WAS_flow)        
+        _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
+        utils.run.traverse_plant(wwtp, _inf[0])
+        r += 1
+    utils.run.show_concs(wwtp)

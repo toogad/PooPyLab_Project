@@ -110,8 +110,8 @@ if __name__ == '__main__':
 
     utils.run.show_concs(wwtp)
 
-    round = 1
-    while round <= 500:
+    r = 1
+    while r <= 500:
 
         for elem in wwtp:
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
         #if utils.pfd.check_global_cnvg(wwtp):
         #    break
 
-        round += 1
+        r += 1
 
     utils.run.show_concs(wwtp)
 
