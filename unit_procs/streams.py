@@ -138,9 +138,6 @@ class splitter(poopy_lab_obj):
         # convergence status for the unit itself
         self._converged = False
 
-        #self._inflow_totalized = False
-        #self._in_comps_blended = False
-
         # provision flag for loop-finding need
         self._visited = False
 
@@ -243,13 +240,10 @@ class splitter(poopy_lab_obj):
 
     def totalize_inflow(self):
         self._total_inflow = sum(self._inlet.values())
-        #self._inflow_totalized = True
         return self._total_inflow
 
 
     def blend_inlet_comps(self):
-        #if not self._inflow_totalized:
-        #self.totalize_inflow()
         if self._total_inflow:  # make sure it's not 0
             for i in range(constants._NUM_ASM1_COMPONENTS):
                 temp = 0.0
@@ -261,16 +255,13 @@ class splitter(poopy_lab_obj):
                         temp += unit.get_side_outlet_concs()[i]\
                                 * unit.get_side_outflow()
                 self._in_comps[i] = temp / self._total_inflow
-        #self._in_comps_blended = True
         return None
     
 
     def update_combined_input(self):
         ''' Combined the flows and loads into the current unit'''
 
-        #if not self._inflow_totalized:
         self.totalize_inflow()
-        #if self._inflow_totalized and not self._in_comps_blended:
         self.blend_inlet_comps()
         return None
     
@@ -282,7 +273,6 @@ class splitter(poopy_lab_obj):
                 discharger.set_downstream_main(None)
             else:
                 discharger.set_downstream_side(None)
-            #self._inflow_totalized = self._in_comps_blended = False
             self._has_discharger = len(self._inlet) > 0
         else:
             print("ERROR:", self.__name__, "inlet unit not found for removal.")
@@ -722,11 +712,11 @@ class influent(pipe):
         return None
 
 
-    def set_mainstream_flow(self, flow=10):
+    def set_mainstream_flow(self, flow=37800):
         if flow > 0:
-            self._design_flow = flow * 1E3 * 3.78  # convert to M3/day
+            self._design_flow = flow
         else:
-            print("ERROR:", self.__name__, "shall have design flow > 0 MGD."
+            print("ERROR:", self.__name__, "shall have design flow > 0 M3/d."
                     "Design flow NOT CHANGED due to error in user input.")
         return None
 
@@ -882,8 +872,8 @@ class effluent(pipe):
         if flow >= 0:
             self._mo_flow = flow
         else:
-            print("ERROR:", self.__name__, "receives flow < 10.")
-            self._mo_flow = 0
+            print("ERROR:", self.__name__, "receives flow < 0.")
+            self._mo_flow = 0.0
         return None
 
 

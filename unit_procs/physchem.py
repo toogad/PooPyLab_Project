@@ -152,7 +152,7 @@ class final_clarifier(splitter):
             _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
                             / self._mo_flow)
         else:
-            _of_tss = 30  #TODO: is this ok?
+            _of_tss = 30.0  #TODO: is this ok?
         
         # initiate _mo_comps and _so_comps so that all dissolved components
         # (S_*) are identical among the three streams
