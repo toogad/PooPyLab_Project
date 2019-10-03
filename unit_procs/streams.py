@@ -159,6 +159,9 @@ class splitter(poopy_lab_obj):
         #   2B) direct user input:
         #
         # 3) Inlet flow is dependent on the two outlet branches' settings
+        #       Back tracing will be required to make sure flows are balanced
+        #       if both main and  side outlet flows are set either by user or
+        #       run time SRT control.
         #
         if self._SRT_controller:  # i.e. _so_flow set by a WAS unit
             if self._upstream_set_mo_flow:

@@ -130,6 +130,22 @@ class final_clarifier(splitter):
     # FUNCTIONS UNIQUE TO FINAL_CLARIFIER
     #
     # (INSERT CODE HERE)
+    def set_capture_rate(self, capture_rate=0.95):
+        if 0 < capture_rate < 1:
+            self._capture_rate = capture_rate
+        else:
+            print("ERROR:", self.__name__, "given unrealistic capture rate.")
+        return None
+
+
+    def set_underflow_TSS(self, uf_TSS=15000):
+        if self._valid_under_TSS(uf_TSS):
+            self._under_TSS = uf_TSS
+        else:
+            print("ERROR:", self.__name__, "given crazy underflow TSS.")
+        return None
+
+
     def _valid_under_TSS(self, uf_TSS):
         self.update_combined_input()
         _in_tss = self.get_TSS('Inlet')
@@ -172,21 +188,5 @@ class final_clarifier(splitter):
         
         return None
              
- 
-    def set_capture_rate(self, capture_rate=0.95):
-        if 0 < capture_rate < 1:
-            self._capture_rate = capture_rate
-        else:
-            print("ERROR:", self.__name__, "given unrealistic capture rate.")
-        return None
-
-
-    def set_underflow_TSS(self, uf_TSS=15000):
-        if self._valid_under_TSS(uf_TSS):
-            self._under_TSS = uf_TSS
-        else:
-            print("ERROR:", self.__name__, "given crazy underflow TSS.")
-        return None
-
     #
     # END OF FUNCTIONS UNQIUE TO FINAL_CLARIFIER
