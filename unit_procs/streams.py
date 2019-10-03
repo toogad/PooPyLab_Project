@@ -114,19 +114,19 @@ class splitter(poopy_lab_obj):
         self._SRT_controller = False
         
         # influent/main_outlet/side_oulet model components:
-        # _comps[0]: X_I,
-        # _comps[1]: X_S,
-        # _comps[2]: X_BH,
-        # _comps[3]: X_BA,
-        # _comps[4]: X_D,
-        # _comps[5]: S_I,
-        # _comps[6]: S_S,
-        # _comps[7]: -S_DO, COD = -DO
-        # _comps[8]: S_NO,
-        # _comps[9]: S_NH,
-        # _comps[10]: S_NS,
-        # _comps[11]: X_NS,
-        # _comps[12]: S_ALK
+        #    _comps[0]: S_DO as DO
+        #    _comps[1]: S_I
+        #    _comps[2]: S_S
+        #    _comps[3]: S_NH
+        #    _comps[4]: S_NS
+        #    _comps[5]: S_NO
+        #    _comps[6]: S_ALK
+        #    _comps[7]: X_I
+        #    _comps[8]: X_S
+        #    _comps[9]: X_BH
+        #    _comps[10]: X_BA
+        #    _comps[11]: X_D
+        #    _comps[12]: X_NS
         self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
         self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
         self._so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS

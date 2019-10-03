@@ -31,6 +31,7 @@ from unit_procs.streams import splitter
 # ----------------------------------------------------------------------------
 
 # final_clarifier class - Change Log: 
+# 20191003 KZ: revised tss balance to prepare for flow balance.
 # 20190916 KZ: updated to match asm1 matrix (component index)
 # 20190726 KZ: revised discharge() to match the add. of is_converged()
 # 20190612 KZ: migrated to new base
@@ -138,12 +139,12 @@ class final_clarifier(splitter):
         return None
 
 
-    def set_underflow_TSS(self, uf_TSS=15000):
-        if self._valid_under_TSS(uf_TSS):
-            self._under_TSS = uf_TSS
-        else:
-            print("ERROR:", self.__name__, "given crazy underflow TSS.")
-        return None
+#    def set_underflow_TSS(self, uf_TSS=15000):
+#        if self._valid_under_TSS(uf_TSS):
+#            self._under_TSS = uf_TSS
+#        else:
+#            print("ERROR:", self.__name__, "given crazy underflow TSS.")
+#        return None
 
 
     def _valid_under_TSS(self, uf_TSS):
@@ -158,17 +159,25 @@ class final_clarifier(splitter):
             return None
 
         _in_tss = self.get_TSS('Inlet')
-        self._so_flow = (self._total_inflow * _in_tss * self._capture_rate
-                        / self._under_TSS)
-        self._side_flow_defined = True
-        self._mo_flow = self._total_inflow - self._so_flow
+        self._under_TSS = (self._total_inflow * _in_tss * self._capture_rate
+                        / self._mo_flow)
+
+        #self._mo_flow = (self._total_inflow * _in_tss * self._capture_rate
+        #                / self._under_TSS)
+        #TODO: do flow balance before running this function
+        #self._side_flow_defined = True
+        #self._mo_flow = self._total_inflow - self._so_flow
 
         # overflow TSS
-        if self._mo_flow > 0:
-            _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
+#        if self._mo_flow > 0:
+#            _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
+#                            / self._mo_flow)
+#        else:
+#            _of_tss = 30.0  #TODO: is this ok?
+        
+        _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
                             / self._mo_flow)
-        else:
-            _of_tss = 30.0  #TODO: is this ok?
+
         
         # initiate _mo_comps and _so_comps so that all dissolved components
         # (S_*) are identical among the three streams
