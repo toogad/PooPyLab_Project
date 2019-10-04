@@ -65,16 +65,6 @@ class poopy_lab_obj(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def _branch_flow_helper(self):
-        '''
-        helper function to calculate 1 of the 3 branches' flow based on the
-        other 2.
-        return True if flow balace is done, False otherwise
-        '''
-        pass
-
-
-    @abstractmethod
     def assign_initial_guess(self, init_guess_lst):
         '''
         Assign the intial guess to the unit
@@ -332,5 +322,15 @@ class poopy_lab_obj(object):
     @abstractmethod
     def is_visited(self):
         ''' Return True if the unit is labelled as visited, False otherwise '''
+        pass
+
+
+    @abstractmethod
+    def _branch_flow_helper(self):
+        '''
+        helper function to calculate 1 of the 3 branches' flow based on the
+        other 2.
+        return True if flow balace is done, False otherwise
+        '''
         pass
 

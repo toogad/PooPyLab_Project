@@ -25,6 +25,7 @@
 #    Author: Kai Zhang
 #
 # CHANGE LOG:
+# 20191003 KZ: added back tracing flow setting functions
 # 20190920 KZ: moved concentration output here and added BFS traverse func
 # 20190911 KZ: eliminated divided_by_zero errors by assigning init_X_S
 # 20190903 KZ: corrected b_H & b_A in initial_guess()
@@ -197,4 +198,62 @@ def traverse_plant(wwtp, plant_inf):
         _finished = _BFS(_to_visit, _visited)
     
     return None
+
+
+def _sum_of_known_inflows(me, my_inlet_of_unknown_flow):
+    _sum = 0.0
+    for _inlet in me.get_upstream():
+        if _inlet != my_inlet_of_unknown_flow:
+            if _inlet.get_downstream_main() == me:
+                _sum += _inlet.get_main_outflow()
+            else:
+                _sum += _inlet.get_side_outflow()
+    return _sum
+
+     
+def _backward(me):
+    # me: process unit whose total inlet flow is determined by
+    # its (_mo_flow + _so_flow)
+    
+    _my_inlet = me.get_upstream()
+    _my_inlet_allow = [u for u in _my_inlet 
+            if u._upstream_set_mo_flow == False]
+    
+    _freedom = len(_my_inlet_allow)
+    if _freedom == 0:  # reached a stopping point
+        return None
+    elif _freedom > 1:  # too many units for setting flows
+        print('ERROR:{} has {} upstream units 
+                with undefined flows.'.format(_s.__name__, _freedom))
+    else:
+        _target = _my_inlet_allow[0]
+        _known_sum = _sum_of_known_inflows(_s, _target) 
+        _residual = start.totalize_inflow() - _known_sum
+
+        if _target.get_downstream_main() == start:
+            _target.set_mainstream_flow_by_upstream(False)
+            _target.set_mainstream_flow(_residual)
+        else:
+            _target.set_sidestream_flow(_residual)
+
+        if _target._upstream_set_mo_flow == False:
+            _backward(_target)
+
+    return None
+
+def back_trace_set_flow(starters=[]):
+    ''' Back tracing to set the flows of the inlet units for those listed in
+        starters[].
+    '''
+    for _u in starters:
+        _backward(_u)
+    
+    return None
+
+    
+
+
+
+
+
 

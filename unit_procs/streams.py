@@ -30,6 +30,7 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 # splitter class - Change Log:
+# 20191003 KZ: revised for the run time flow balance steps
 # 20190920 KZ: added back assign_initial_guess()
 # 20190811 KZ: moved assign_initial_guess() to asm_reactor
 # 20190905 KZ: revised getTSS...to match new model component order
@@ -109,7 +110,7 @@ class splitter(poopy_lab_obj):
         # total inlet flow calculated from all dischargers
         self._total_inflow = 0.0
         # inlet flow back calculated as (_mo_flow + _so_flow)
-        self._in_flow_backcalc = 0.0
+        #self._in_flow_backcalc = 0.0
         
         self._SRT_controller = False
         
@@ -146,39 +147,6 @@ class splitter(poopy_lab_obj):
 
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
     #
-    def _branch_flow_helper(self):
-        # 1) Side outlet flow (_so_flow) can be set by
-        #   1A) either WAS (_SRT_controller) or direct user input
-        #
-        #   2A) upstream (non _SRT_controller)
-        #
-        # 2) Main outlet flow (_mo_flow) can be set by
-        #
-        #   2A) upstream automatically (default):
-        #
-        #   2B) direct user input:
-        #
-        # 3) Inlet flow is dependent on the two outlet branches' settings
-        #       Back tracing will be required to make sure flows are balanced
-        #       if both main and  side outlet flows are set either by user or
-        #       run time SRT control.
-        #
-        if self._SRT_controller:  # i.e. _so_flow set by a WAS unit
-            if self._upstream_set_mo_flow:
-                self._in_flow_backcalc = self._total_inflow
-                self._mo_flow = self._in_flow_backcalc - self._so_flow
-            else:
-                self._in_flow_backcalc = self._mo_flow + self._so_flow
-        elif self._upstream_set_mo_flow:
-            self._in_flow_backcalc = self._total_inflow
-            self._mo_flow = self._in_flow_backcalc - self._so_flow
-        else:
-            # if upstream doesn't set _mo_flow, it has to set _so_flow
-            self._in_flow_backcalc = self._total_inflow
-            self._so_flow = self._in_flow_backcalc - self._mo_flow
-            self._so_flow_defined = True
-        return None
-
 
     def assign_initial_guess(self, init_guess_lst):
         self._in_comps = init_guess_lst[:]
@@ -221,8 +189,6 @@ class splitter(poopy_lab_obj):
             self._inlet[discharger] = 0
             self._has_discharger = True
 
-            #self._inflow_totalized = self._in_comps_blended = False
-
             if upst_branch == 'Main':
                 discharger.set_downstream_main(self)
             elif upst_branch == 'Side':
@@ -242,7 +208,10 @@ class splitter(poopy_lab_obj):
 
 
     def totalize_inflow(self):
-        self._total_inflow = sum(self._inlet.values())
+        if self._upstream_set_mo_flow:
+            self._total_inflow = sum(self._inlet.values())
+        else:
+            self._total_inflow = self._mo_flow + self._so_flow
         return self._total_inflow
 
 
@@ -317,7 +286,6 @@ class splitter(poopy_lab_obj):
         else:
             print("ERROR:", self.__name__, "given flow < 0.")
             self._mo_flow = 0
-        #TODO: Need to be able to dynamically update the sidestream flow
         return None
             
 
@@ -365,7 +333,6 @@ class splitter(poopy_lab_obj):
             self._so_flow_defined = True
         else:
             self._so_flow_defined = False
-        #TODO: Need to be able to dynamically update the sidestream flow
         return None
 
 
@@ -383,15 +350,12 @@ class splitter(poopy_lab_obj):
 
 
     def get_side_outlet_concs(self):
-        #if self._in_comps_blended == False:
-        #self.blend_inlet_comps()
         return self._so_comps[:]
     
 
     def set_flow(self, dschgr, flow):
         if dschgr in self._inlet and flow >= 0:
             self._inlet[dschgr] = flow
-            #self._inflow_totalized = False
         return None
 
 
@@ -489,6 +453,45 @@ class splitter(poopy_lab_obj):
 
     def is_visited(self):
         return self._visited
+
+
+    def _branch_flow_helper(self):
+        # 1) Side outlet flow (_so_flow) can be set by
+        #   1A) either WAS (_SRT_controller) or direct user input
+        #
+        #   2A) upstream (non _SRT_controller)
+        #
+        # 2) Main outlet flow (_mo_flow) can be set by
+        #
+        #   2A) upstream automatically (default):
+        #
+        #   2B) direct user input:
+        #
+        # 3) Inlet flow is dependent on the two outlet branches' settings
+        #       Back tracing will be required to make sure flows are balanced
+        #       if both main and  side outlet flows are set either by user or
+        #       run time SRT control.
+        #
+        if self._SRT_controller:  # i.e. _so_flow set by a WAS unit
+            if self._upstream_set_mo_flow:
+                #self._in_flow_backcalc = self._total_inflow
+                #self._mo_flow = self._in_flow_backcalc - self._so_flow
+                self._mo_flow = self._total_inflow - self._so_flow
+            else:
+                #self._in_flow_backcalc = self._mo_flow + self._so_flow
+                self._total_inflow = self._mo_flow + self._so_flow
+        elif self._upstream_set_mo_flow:
+            #self._in_flow_backcalc = self._total_inflow
+            #self._mo_flow = self._in_flow_backcalc - self._so_flow
+            self._mo_flow = self._total_inflow - self._so_flow
+        else:
+            # if upstream doesn't set _mo_flow, it has to set _so_flow
+            #self._in_flow_backcalc = self._total_inflow
+            #self._so_flow = self._in_flow_backcalc - self._mo_flow
+            self._so_flow = self._total_inflow - self._mo_flow
+            self._so_flow_defined = True
+        return None
+
     #
     # END OF COMMON INTERFACE DEFINITIONS
  
@@ -522,6 +525,7 @@ class splitter(poopy_lab_obj):
 
 # ----------------------------------------------------------------------------
 # pipe class - Change Log:
+# 20191003 KZ: revised for the run time flow balance steps
 # 20190704 KZ: corrected initiation error.
 # 20190715 KZ: added self._type
 # 20190619 KZ: revised as per the splitter update.
@@ -581,18 +585,19 @@ class pipe(splitter):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
     #
     def _branch_flow_helper(self):
-        self._in_flow_backcalc = self._mo_flow = self._total_inflow
+        #self._in_flow_backcalc = self._mo_flow = self._total_inflow
+        self._mo_flow = self._total_inflow
         return None
 
 
-    def set_mainstream_flow_by_upstream(self, f):
-        print("WARN:", self.__name__, "main outlet flow source unchangeable.")
-        return None
+    #def set_mainstream_flow_by_upstream(self, f):
+    #    print("WARN:", self.__name__, "main outlet flow source unchangeable.")
+    #    return None
 
 
-    def set_mainstream_flow(self, flow):
-        print("ERROR:", self.__name__, "main outlet flow not be set by user.")
-        return None
+    #def set_mainstream_flow(self, flow):
+    #    print("ERROR:", self.__name__, "main outlet flow not be set by user.")
+    #    return None
 
 
     def set_downstream_side(self, receiver):
@@ -617,6 +622,7 @@ class pipe(splitter):
 
 # -----------------------------------------------------------------------------
 # influent class - Change Log:
+# 20191003 KZ: revised for the run time flow balance steps
 # 20190920 KZ: added bypass for assign_intial_guess()
 # 20190911 KZ: rearranged inf component to match model matrix
 # 20190715 KZ: added self._type
@@ -686,7 +692,7 @@ class influent(pipe):
     # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
     #
     def _branch_flow_helper(self):
-        self._in_flow_backcalc = self._mo_flow = self._design_flow
+        self._mo_flow = self._design_flow
         self._so_flow = 0.0
         return None
 
@@ -822,6 +828,7 @@ class influent(pipe):
 
 # -----------------------------------------------------------------------------
 # effluent class - Change Log: 
+# 20191003 KZ: revised for the run time flow balance steps
 # 20190726 KZ: added discharge() unique to effluent.
 # 20190715 KZ: added self._type
 # 20190619 KZ: revised according to the splitter update
@@ -862,7 +869,7 @@ class effluent(pipe):
 
     def _branch_flow_helper(self):
         # the _mo_flow of an effluent is set externally (global main loop)
-        self._in_flow_backcalc = self._mo_flow + self._so_flow  # _so_flow = 0
+        self._mo_flow = self._total_inflow  # _so_flow = 0
         return None
 
 
@@ -904,6 +911,7 @@ class effluent(pipe):
 
 # ------------------------------------------------------------------------------
 # WAS class - Change Log:
+# 20191003 KZ: revised for the run time flow balance steps
 # 20190809 KZ: added effluent solids in set_WAS_flow()
 # 20190726 KZ: added discharge() to match the add. of is_converged()
 # 20190715 KZ: added self._type
@@ -949,7 +957,9 @@ class WAS(pipe):
 
         self._mo_comps = self._in_comps[:]
         self._so_comps = self._in_comps[:]
+
         return None
+
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
@@ -958,6 +968,7 @@ class WAS(pipe):
     #
     # (INSERT CODE HERE)
     #
+
     def get_solids_inventory(self, reactor_list=[]):
         ''' Calculate the total solids mass in active reactors '''
         # reactor_list stores the asm_reactor units that contribute
@@ -969,12 +980,10 @@ class WAS(pipe):
 
         inventory = 0.0
         for unit in reactor_list:
-            #TODO: IMPORTANT TO CHECK ALL THE UNITS IN THE reactor_list
-            # HAD UPDATED TSS!!! THIS SHOULD BE THE CASE BECAUSE THE 
-            # WAS UNIT IS THE LAST ELEMENT IN THE ITERATION LOOP. BUT
-            # WILL NEED DOUBLE CHECK.
             inventory += unit.get_TSS() * unit.get_active_vol()
+
         inventory = inventory / 1000.0  # Convert unit to Kg
+
         return inventory
 
 
@@ -993,5 +1002,6 @@ class WAS(pipe):
         # is higher than the influent flow; The WAS flow is then passed to the
         # SRT controlling splitter by the main loop.
         return self._mo_flow
+
     #
     # END OF FUNCTIONS UNIQUE TO WAS
