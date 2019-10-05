@@ -92,7 +92,7 @@ class final_clarifier(splitter):
         # Typically, this is set to 0.95 but user can change the value.
         self._capture_rate = 0.95
 
-        # user defined underflow solids, mg/L
+        # underflow solids, mg/L
         self._under_TSS = 15000
 
         return None

@@ -25,11 +25,12 @@
 #
 #
 # Change Log:
+# 20191004 KZ: re-run test after revision on final_clarifier 
 # 20190919 KZ: init and passed
 #
 
 from unit_procs.streams import pipe, influent, effluent, splitter, WAS
-import utils.pfd
+import utils.pfd, utils.run
 import pdb
 
 if __name__ == '__main__':
@@ -78,29 +79,42 @@ if __name__ == '__main__':
     print('Effluent in the PFD: {}'.format([_u.__name__ for _u in _eff]))
 
     for fc in _final_clar:
-        fc.set_underflow_TSS(8000)
+        #fc.set_underflow_TSS(8000)
+        fc.set_capture_rate(0.92)
 
     # start the main loop
-    _WAS_flow = 0.0  # M3/d
+    _WAS_flow = 5000  # M3/d
 
     while True:
 
-        for elem in wwtp:
+#        for elem in wwtp:
+#
+#            elem.update_combined_input()
+#            elem.discharge()
+#
+#            if elem.get_type() == 'WAS':
+#                _WAS_flow = elem.get_main_outflow()
+#
+#
+#            if elem.is_SRT_controller():
+#                elem.set_sidestream_flow(_WAS_flow)
+#
+#            if elem.get_type() == 'Effluent':
+#                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
+#
+        _WAS[0].set_mainstream_flow(_WAS_flow)
+        _eff[0].set_mainstream_flow(_inf[0].totalize_inflow() - _WAS_flow)
 
-            elem.update_combined_input()
-            elem.discharge()
+        # back tracing starters
+        _bts = [k for k in wwtp 
+                if not k._upstream_set_mo_flow and not isinstance(k, influent)]
+        print('BACK TRACE STARTERS:', [n.__name__ for n in _bts])
 
-            if elem.get_type() == 'WAS':
-                _WAS_flow = elem.get_main_outflow()
+        pdb.set_trace()
+        utils.run.back_trace_set_flow(_bts)
 
+        utils.run.traverse_plant(wwtp, _inf[0])
 
-            if elem.is_SRT_controller():
-                elem.set_sidestream_flow(_WAS_flow)
-
-            if elem.get_type() == 'Effluent':
-                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-
-        #pdb.set_trace()
         if utils.pfd.check_global_cnvg(wwtp):
             break
 

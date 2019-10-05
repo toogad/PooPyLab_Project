@@ -216,21 +216,24 @@ def _backward(me):
     # its (_mo_flow + _so_flow)
     
     _my_inlet = me.get_upstream()
-    _my_inlet_allow = [u for u in _my_inlet 
-            if u._upstream_set_mo_flow == False]
+    _my_inlet_allow = []
+    if _my_inlet != None:
+        _my_inlet_allow = [u for u in _my_inlet 
+                if not u._upstream_set_mo_flow
+                    or u.get_type() == 'Pipe']
     
     _freedom = len(_my_inlet_allow)
     if _freedom == 0:  # reached a stopping point
         return None
     elif _freedom > 1:  # too many units for setting flows
-        print('ERROR:{} has {} upstream units 
-                with undefined flows.'.format(_s.__name__, _freedom))
+        print('ERROR:{} has {} upstream units' 
+                'with undefined flows.'.format(_s.__name__, _freedom))
     else:
         _target = _my_inlet_allow[0]
-        _known_sum = _sum_of_known_inflows(_s, _target) 
-        _residual = start.totalize_inflow() - _known_sum
+        _known_sum = _sum_of_known_inflows(me, _target) 
+        _residual = me.totalize_inflow() - _known_sum
 
-        if _target.get_downstream_main() == start:
+        if _target.get_downstream_main() == me:
             _target.set_mainstream_flow_by_upstream(False)
             _target.set_mainstream_flow(_residual)
         else:
