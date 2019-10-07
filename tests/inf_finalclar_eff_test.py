@@ -103,19 +103,20 @@ if __name__ == '__main__':
 #                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 #
         _WAS[0].set_mainstream_flow(_WAS_flow)
-        _eff[0].set_mainstream_flow(_inf[0].totalize_inflow() - _WAS_flow)
+        #_eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
         # back tracing starters
         _bts = [k for k in wwtp 
-                if not k._upstream_set_mo_flow and not isinstance(k, influent)]
+                if not k._upstream_set_mo_flow 
+                    and k.get_downstream_main() == None]
         print('BACK TRACE STARTERS:', [n.__name__ for n in _bts])
 
-        pdb.set_trace()
         utils.run.back_trace_set_flow(_bts)
 
+        pdb.set_trace()
         utils.run.traverse_plant(wwtp, _inf[0])
 
-        if utils.pfd.check_global_cnvg(wwtp):
+        if utils.run.check_global_cnvg(wwtp):
             break
 
     for elem in wwtp:

@@ -77,7 +77,7 @@ class final_clarifier(splitter):
     def __init__(self, active_vol=380, SWD=3.5):
         splitter.__init__(self)
         self.__class__.__id += 1
-        self.__name__ = "FinalClarifier_" + str(self.__id)
+        self.__name__ = "Final_Clarifier_" + str(self.__id)
 
         self._type = "Final_Clarifier"
 
@@ -87,6 +87,8 @@ class final_clarifier(splitter):
         self._active_vol = active_vol
         self._SWD = SWD
         self._area = self._active_vol / self._SWD
+
+        self._upstream_set_mo_flow = True
 
         # user defined solids capture rate, fraction less than 1.0;
         # Typically, this is set to 0.95 but user can change the value.
@@ -104,9 +106,9 @@ class final_clarifier(splitter):
         print("ERROR:", self.__name__, "can't be set as SRT controller")
         return None
 
-    def set_sidestream_flow(self, flow=0):
-        print("ERROR:", self.__name__, "doesn't accept sidestream flow input.")
-        return None
+#    def set_sidestream_flow(self, flow=0):
+#        print("ERROR:", self.__name__, "doesn't accept sidestream flow input.")
+#        return None
 
 
     def discharge(self):
@@ -114,7 +116,7 @@ class final_clarifier(splitter):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 
-        #self.update_combined_input()
+        self._branch_flow_helper()
 
         # for a clarifier, the main and side outlets have different solids
         # concentrations than the inlet's

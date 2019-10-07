@@ -38,6 +38,16 @@ from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
 
 
+def check_global_cnvg(wwtp):
+    _glb_cnvg = True
+    for unit in wwtp:
+        if not unit.is_converged():
+            _glb_cnvg = False
+            print(unit.__name__, 'not converged yet')
+            break
+    return _glb_cnvg
+
+
 def show_concs(wwtp):
     for elem in wwtp:
         print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
@@ -167,6 +177,15 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
 #            1.0]
 
 
+def set_flow_source(inf_unit):
+    ''' set/adjust the _upstream_set_mo_flow flag of each unit that is
+        influenced by the selected influent unit (inf_unit)
+    '''
+    # inf_unit: an influent unit (as the starting point of the tracing)
+    pass
+
+
+
 def _BFS(_to_visit, _visited):
     if len(_to_visit) == 0:
         return [_u.__name__ for _u in _visited]
@@ -196,6 +215,8 @@ def traverse_plant(wwtp, plant_inf):
 
     while len(_visited) < len(wwtp):
         _finished = _BFS(_to_visit, _visited)
+
+    print('Visited in the order:', _finished)
     
     return None
 
@@ -211,6 +232,39 @@ def _sum_of_known_inflows(me, my_inlet_of_unknown_flow):
     return _sum
 
      
+#def _backward(me):
+#    # me: process unit whose total inlet flow is determined by
+#    # its (_mo_flow + _so_flow)
+#    
+#    _my_inlet = me.get_upstream()
+#    _my_inlet_allow = []
+#    if _my_inlet != None:
+#        _my_inlet_allow = [u for u in _my_inlet 
+#                if not u._upstream_set_mo_flow
+#                    or u.get_type() == 'Pipe']
+#    
+#    _freedom = len(_my_inlet_allow)
+#    if _freedom == 0:  # reached a stopping point
+#        return None
+#    elif _freedom > 1:  # too many units for setting flows
+#        print('ERROR:{} has {} upstream units' 
+#                'with undefined flows.'.format(_s.__name__, _freedom))
+#    else:
+#        _target = _my_inlet_allow[0]
+#        _known_sum = _sum_of_known_inflows(me, _target) 
+#        _residual = me.totalize_inflow() - _known_sum
+#
+#        if _target.get_downstream_main() == me:
+#            _target.set_mainstream_flow_by_upstream(False)
+#            _target.set_mainstream_flow(_residual)
+#        else:
+#            _target.set_sidestream_flow(_residual)
+#
+#        if _target._upstream_set_mo_flow == False:
+#            _backward(_target)
+#
+#    return None
+
 def _backward(me):
     # me: process unit whose total inlet flow is determined by
     # its (_mo_flow + _so_flow)
@@ -218,9 +272,12 @@ def _backward(me):
     _my_inlet = me.get_upstream()
     _my_inlet_allow = []
     if _my_inlet != None:
+        # Final_Clarifier by defaul has the _upstream_set_mo_flow set to True
+        # It is treated as an exception here when allowing the inlets to be
+        # analyzed:
         _my_inlet_allow = [u for u in _my_inlet 
                 if not u._upstream_set_mo_flow
-                    or u.get_type() == 'Pipe']
+                    or u.get_type() == 'Final_Clarifier']
     
     _freedom = len(_my_inlet_allow)
     if _freedom == 0:  # reached a stopping point
@@ -234,7 +291,7 @@ def _backward(me):
         _residual = me.totalize_inflow() - _known_sum
 
         if _target.get_downstream_main() == me:
-            _target.set_mainstream_flow_by_upstream(False)
+            #_target.set_mainstream_flow_by_upstream(False)
             _target.set_mainstream_flow(_residual)
         else:
             _target.set_sidestream_flow(_residual)
@@ -243,6 +300,7 @@ def _backward(me):
             _backward(_target)
 
     return None
+
 
 def back_trace_set_flow(starters=[]):
     ''' Back tracing to set the flows of the inlet units for those listed in

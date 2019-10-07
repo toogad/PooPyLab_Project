@@ -71,14 +71,11 @@ class asm_reactor(pipe):
         self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
         self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
-        # make _so_comps alias of _mo_comps since there is no side stream for a
-        # bioreactor
-        #self._so_comps = self._mo_comps
-
         # results of previous round
         self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
         self._prev_so_comps = self._prev_mo_comps
 
+        self._upstream_set_mo_flow = True
         return None
 
 

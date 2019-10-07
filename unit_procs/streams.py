@@ -97,7 +97,7 @@ class splitter(poopy_lab_obj):
         self._so_connected = False
 
         # determine how to calculate branch flows
-        self._upstream_set_mo_flow = True
+        self._upstream_set_mo_flow = False
 
         # to confirm it has received _so_flow
         self._so_flow_defined = False
@@ -241,6 +241,7 @@ class splitter(poopy_lab_obj):
     def remove_upstream(self, discharger):
         if discharger in self._inlet:
             self._inlet.pop(discharger)
+            self._upstream_set_mo_flow = False
             if discharger.get_downstream_main() == self:
                 discharger.set_downstream_main(None)
             else:
@@ -586,7 +587,10 @@ class pipe(splitter):
     #
     def _branch_flow_helper(self):
         #self._in_flow_backcalc = self._mo_flow = self._total_inflow
-        self._mo_flow = self._total_inflow
+        if self._upstream_set_mo_flow:
+            self._mo_flow = self._total_inflow
+        else:
+            self._total_inflow = self._mo_flow
         return None
 
 
@@ -667,7 +671,7 @@ class influent(pipe):
         self._has_sidestream = False
 
         # defaults:
-        self._upstream_set_mo_flow = False
+        self._upstream_set_mo_flow = True
 
         # Influent characteristics from user measurements/inputs
         # Setting default values for municipal wastewater in USA
@@ -858,9 +862,8 @@ class effluent(pipe):
 
         self._type = "Effluent"
 
+        self._upstream_set_mo_flow = True
         self._mo_connected = True  # dummy
-
-        self._upstream_set_mo_flow = False  # set by plant wide flow balance
 
         return None
 
@@ -879,12 +882,13 @@ class effluent(pipe):
 
 
     def set_mainstream_flow(self, flow=0):
-        if flow >= 0:
-            self._mo_flow = flow
-        else:
-            print("ERROR:", self.__name__, "receives flow < 0.")
-            self._mo_flow = 0.0
-        return None
+#        if flow >= 0:
+#            self._mo_flow = flow
+#        else:
+#            print("ERROR:", self.__name__, "receives flow < 0.")
+#            self._mo_flow = 0.0
+#        return None
+        pass
 
 
     def discharge(self):

@@ -225,13 +225,3 @@ def show(wwtp=[]):
             print()
     return None
 
-def check_global_cnvg(wwtp):
-    _glb_cnvg = True
-    for unit in wwtp:
-        if not unit.is_converged():
-            _glb_cnvg = False
-            print(unit.__name__, 'not converged yet')
-            break
-    return _glb_cnvg
-
-
