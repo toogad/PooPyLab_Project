@@ -26,6 +26,7 @@
 
 
 from unit_procs.base import poopy_lab_obj
+from utils.datatypes import flow_data_src
 from ASMModel import constants
 
 # -----------------------------------------------------------------------------
@@ -71,6 +72,7 @@ from ASMModel import constants
 #
 
 
+
 class splitter(poopy_lab_obj):
 
     __id = 0
@@ -98,6 +100,14 @@ class splitter(poopy_lab_obj):
 
         # determine how to calculate branch flows
         self._upstream_set_mo_flow = False
+
+
+        # TODO:
+        # flow data source tags
+        self._in_flow_ds = flow_data_src.TBD
+        self._mo_flow_ds = flow_data_src.TBD
+        self._so_flow_ds = flow_data_src.TBD
+
 
         # to confirm it has received _so_flow
         self._so_flow_defined = False
@@ -148,6 +158,47 @@ class splitter(poopy_lab_obj):
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
     #
 
+    def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
+        # branch = 'Main'|'Side'|'Inlet'
+        # flow_ds: flow_data_source.TBD|.UPS|.DNS|.PRG
+        if branch == 'Main':
+            self._mo_flow_ds = flow_ds
+        elif branch == 'Side':
+            self._so_flow_ds = flow_ds
+        elif branch == 'Inlet':
+            self._in_flow_ds = flow_ds
+        else:
+            print('ERROR in {}: invalid branch selected for'
+                    'flow data source.'.format(self.__name__))
+        
+        # auto evaluate the flow data source tags after setting one
+        _so_flow_by_external = (self._so_flow_ds == flow_data_src.DNS
+                            or self._so_flow_ds == flow_data_src.PRG)
+
+        _mo_flow_by_external = (self._mo_flow_ds == flow_data_src.DNS
+                            or self._mo_flow_ds == flow_data_src.PRG)
+
+        if _so_flow_by_external and _mo_flow_by_external:
+            if _in_flow_ds == flow_data_src.TBD:
+                self._in_flow_ds = flow_data_src.DNS
+        
+        if (_so_flow_by_external 
+                and self._in_flow_ds == flow_data_src.UPS
+                and not _mo_flow_by_external):
+        #TODO: HERE
+
+
+        return [self._in_flow_ds,
+                self._mo_flow_ds,
+                self._so_flow_ds]
+
+
+    def get_flow_data_src(self):
+        return [self._in_flow_ds,
+                self._mo_flow_ds,
+                self._so_flow_ds]
+
+
     def assign_initial_guess(self, init_guess_lst):
         self._in_comps = init_guess_lst[:]
         self._mo_comps = init_guess_lst[:]
@@ -162,9 +213,13 @@ class splitter(poopy_lab_obj):
         _so_cnvg = [abs(self._so_comps[i] - self._prev_so_comps[i]) <= limit
                 for i in range(len(self._so_comps))]
 
-        self._converged = not (False in _mo_cnvg or False in _so_cnvg)
+        _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
+        _flow_cnvg = self._total_inflow == self._mo_flow + self._so_flow
 
-        print('{} cnvg: {}'.format(self.__name__, _mo_cnvg, _so_cnvg))
+        self._converged = _conc_cnvg and _flow_cnvg
+
+        print('{} cnvg: flow {}, main {}, side{}'.format(
+                self.__name__, _flow_cnvg, _mo_cnvg, _so_cnvg))
 
         return self._converged
 

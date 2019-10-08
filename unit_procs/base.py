@@ -24,6 +24,7 @@
 #   Definition of the base class for WWTP components.
 #
 #   Update Log:
+#   Oct 07, 2019 KZ: added get_flow_data_src()
 #   Sep 20, 2019 KZ: added assign_initial_guess() back
 #   Jul 26, 2019 KZ: added is_converged()
 #   Jul 16, 2019 KZ: added get_type()
@@ -54,8 +55,8 @@
 #   Dec 07, 2013 Kai Zhang (KZ)
 
 
-
 from abc import ABCMeta, abstractmethod
+
 
 class poopy_lab_obj(object):
     '''
@@ -63,6 +64,22 @@ class poopy_lab_obj(object):
     '''
 
     __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def set_flow_data_src(self, branch):
+        '''
+        Set the flow data source of the selected branch.
+        '''
+        pass
+
+
+    @abstractmethod
+    def get_flow_data_src(self):
+        '''
+        Get the flow data source tag of the unit.
+        '''
+        pass
+
 
     @abstractmethod
     def assign_initial_guess(self, init_guess_lst):
