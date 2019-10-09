@@ -1,0 +1,238 @@
+CHANGE LOGS:
+
+
+base class - Update Log:
+Oct 09, 2019 KZ: removed set_as_visited() and is_visited()
+Oct 07, 2019 KZ: added get_flow_data_src()
+Sep 20, 2019 KZ: added assign_initial_guess() back
+Jul 26, 2019 KZ: added is_converged()
+Jul 16, 2019 KZ: added get_type()
+Jun 19, 2019 KZ: improved branch flow balance
+Jun 18, 2019 KZ: added funcs to assist branch flow balance
+Jun 10, 2019 KZ: further revised to splitter-like base
+Jun 04, 2019 KZ: change the base to splitter-like.
+May 22, 2019 KZ: added options for branch in get_xxxx() functions
+Jan 12, 2019 KZ: resumed and cleaned up
+Feb 03, 2018 KZ: reviewed
+Jul 21, 2017 KZ: made it more pythonic
+Mar 21, 2017 KZ: Migrated to Python3
+Jun 16, 2015 KZ: Removed Set(Get)PreFix(), Set(Get)Group();
+                Renamed SetAs(Is)Done() to SetAs(Is)Visited()
+Mar 20, 2015 KZ: Added Set(Get)PreFix(), Set(Get)Group(), 
+                SetAs(Is)Done() for tracking status in loop finding
+Nov 20, 2014 KZ: Added UpstreamConnected() and MainOutletConnected() 
+Jun 29, 2014 KZ: Replace Interpret() with GetXXXX() functions
+Jun 28, 2014 KZ: Added GetTSS(), getTotalCOD(), and getSoluableCOD()
+Mar 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and 
+                SetDownstreamMainUnit() to Pipe()
+Mar 06, 2014 KZ: Re-wrote the common interface and change Base into an 
+                abstract class
+Dec 25, 2013 KZ: commented out the BlendComponent() function in 
+                ReceiveFrom()
+Dec 17, 2013 KZ: added _PrevComp[0:12] to store state variables from 
+                previous iteration
+Dec 07, 2013 Kai Zhang (KZ)
+
+
+splitter class - Change Log:
+20191003 KZ: revised for the run time flow balance steps
+20190920 KZ: added back assign_initial_guess()
+20190811 KZ: moved assign_initial_guess() to asm_reactor
+20190905 KZ: revised getTSS...to match new model component order
+20190814 KZ: revised timing for setting _prev_mo_comps and _prev_so_comps
+20190813 KZ: revised discharge(), removed _inflow_totalized and
+                in_comps_blended flags
+20190726 KZ: added is_converged()
+20190721 KZ: reverted to ininstance() for class type check in
+                set_downstream_main()/_side()
+20190715 KZ: added self._type and get_type()
+20190707 KZ: fixed blend_inlet_comps()
+20190619 KZ: updated branch flow balance
+20190618 KZ: further improve flow balance.
+20190617 KZ: improve flow balance.
+20190609 KZ: further revised splitter to be the "base" of stream objs.
+20190604 KZ: migrating the base to poopy_lab_obj
+20190209 KZ: standardized import
+Mar 02, 2019 KZ: added check on side flow and sidestream_flow_defined()
+Feb 09, 2019 KZ: revised set_downstream_side()
+Jul 30, 2017 KZ: pythonic style
+Mar 21, 2017 KZ: Migrated to Python3
+Jun 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
+Jun 23, 2015 KZ: Rewrote sidestream to eliminate Branch class
+Jun 18, 2015 KZ: Removed _PreFix and _Group status and 
+                Set(Get)PreFixStatus(), Set(Get)GroupStatus;
+                Renamed _Done to _Visited and SetAs(Is)Done() to
+                SetAs(Is)Visited()
+Mar 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
+                Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
+                SetAs(Is)Done().
+Nov 18, 2014 KZ: renamed "SideStream" into "Sidestream";
+                Added _SidestreamConnected and SideOutletConnected()
+Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
+Apr 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
+Apr 18, 2014 KZ: Rewrite definition based on the new class system structure
+Dec 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
+Dec 07, 2013
+
+
+pipe class - Change Log:
+20191003 KZ: revised for the run time flow balance steps
+20190704 KZ: corrected initiation error.
+20190715 KZ: added self._type
+20190619 KZ: revised as per the splitter update.
+20190618 KZ: added flow source flags defaults
+20190609 KZ: fully migrated to the new base
+20190604 KZ: migrating to the new base (poopy_lab_obj)
+20190209 KZ: standardized import
+Jan 12, 2019 KZ: resume and cleaned up
+Jul 28, 2017 KZ: made it more pythonic
+Mar 21, 2017 KZ: Migrated to Python3
+Jun 24, 2015 KZ: Updated AddUpstreamUnit() to differential main/side 
+Jun 16, 2015 KZ: Removed _PreFix, _Group status and 
+                Set(Get)PreFixStatus(), Set(Get)GroupStatus.
+                Renamed _Done to _visited, SetAs(Is)Visited() to
+                SetAs(Is)Visited()
+Mar 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
+                Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
+                SetAs(Is)Done().
+Nov 24, 2014 KZ: revised RemoveUpstreamUnit() to be able to remove units
+                with sidestream
+Nov 23, 2014 KZ: revised RemoveUpstreamUnit() to check availability to the
+                upstream unit specified
+Nov 12, 2014 KZ: added: _has_discharger and _MainOutletConnected flags;
+                UpstreamConnected() and MainOutletConnected() functions
+Sep 26, 2014 KZ: removed test code
+Jun 29, 2014 KZ: Added GetXXX() definitions for solids and COD summary. 
+Mar 15, 2014 KZ: AddUpstreamUnit(), RemoveUpstreamUnit(), and
+                SetDownstreamMainUnit() begin here
+Mar 08, 2014 KZ: Rewrite according to the new class structure
+Dec 07, 2013 Kai Zhang
+
+
+influent class - Change Log:
+20191003 KZ: revised for the run time flow balance steps
+20190920 KZ: added bypass for assign_intial_guess()
+20190911 KZ: rearranged inf component to match model matrix
+20190715 KZ: added self._type
+20190704 KZ: corrected initiation error.
+20190619 KZ: updated as per the splitter update.
+20190618 KZ: updated along with the splitter revision.
+20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent
+20190609 KZ: migrating to poopy_lab_obj as base, and pipe as parent.
+20190209 KZ: standardized import
+Mar 15, 2019 KZ: _outlet --> _main_outlet
+July 31, 2017 KZ: Made it more pythonic and changed to python3.
+June 16, 2015 KZ: Removed _prefix, _group status and 
+                Set(Get)PreFixStatus(), Set(Get)GroupStatus;
+                Renamed _Done to _visited, SetAs(Is)Done() to
+                SetAs(Is)Visited().
+March 20, 2015 KZ: Added _prefix, _group, _Done status and 
+                Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
+                SetAs(Is)Done().
+November 18, 2014 KZ: Added UpstreamConnected() and set to True
+November 12, 2014 KZ: added _main_outlet_connected flag 
+                and MainOutletConnected() function
+October 19, 2014 KZ: removed test code
+March 15, 2014: KZ: redefined for the new class structure.
+December 07, 2013 Kai Zhang: first draft
+
+
+effluent class - Change Log: 
+20191003 KZ: revised for the run time flow balance steps
+20190726 KZ: added discharge() unique to effluent.
+20190715 KZ: added self._type
+20190619 KZ: revised according to the splitter update
+20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent.
+20190209 KZ: standardized import
+Jul 30, 2017 KZ: Made it more pythonic.
+Mar 21, 2017 KZ: Migrated to Python3
+Sep 26, 2014 KZ: removed test code   
+July 2, 2014 KZ: change base class to Pipe.
+June 29, 2014 KZ: removed Convert() that converts model parameters for
+                user parameters
+December 25, 2013 KZ: commented out the BlendComponent() function in
+                ReceiveFrom()
+December 17, 2013 KZ: Added _PrevComp[0..12] to store state variables from 
+                previous iteration
+December 07, 2013 Kai Zhang
+
+
+WAS class - Change Log:
+20191003 KZ: revised for the run time flow balance steps
+20190809 KZ: added effluent solids in set_WAS_flow()
+20190726 KZ: added discharge() to match the add. of is_converged()
+20190715 KZ: added self._type
+20190629 KZ: removed inform_SRT_controller()
+20190612 KZ: migrated to using pipe as parent.
+20190209 KZ: standardized import
+Jul 30, 2017 KZ: made code more pythonic
+Mar 21, 2017 KZ: Migrated to Python3
+Sep 26, 2014 KZ: Change inheritance back from Splitter to Effluent
+Aug 25, 2014 KZ: Added InformSRTController function.
+Aug 23, 2014 KZ: Changed its inheritance to Effluent;
+                Added variables and functions for WAS Flow calculation
+December 06, 2013 Kai Zhang: Initial design
+
+
+final_clarifier class - Change Log: 
+20191003 KZ: revised tss balance to prepare for flow balance.
+20190916 KZ: updated to match asm1 matrix (component index)
+20190726 KZ: revised discharge() to match the add. of is_converged()
+20190612 KZ: migrated to new base
+20190715 KZ: added self._type
+20190209 KZ: standardized import
+July 30, 2017 KZ: made it more pythonic.
+March 21, 2017 KZ: Migrated to Python3
+May 26, 2014 KZ: Changed base class from Base to Splitter
+July 11, 2013 KZ: Initial commit
+
+
+asm_reactor class - Update Log: 
+20190915 KZ: start to get reasonable integration results. need more testing
+20190911 KZ: got results from integrate()
+20190905 KZ: started adding integrate()
+20190813 KZ: fixed discharge() side outlet; fixed flow into
+estimate_current_state()
+20190812 KZ: corrected a few params in solver func.
+20190726 KZ: revised to match the is_converged()
+20190715 KZ: added self._type
+20190612 KZ: migrated to match the new base (poopy_lab_obj) and new "pipe"
+20190209 KZ: standardized import
+July 30, 2017 KZ: more pythonic style
+March 21, 2017 KZ: Migrated to Python3
+May 26, 2014 KZ: Updated Definition
+December 17, 2013 KZ: Added/revised blend_components() definition.
+December 07, 2013 Kai Zhang
+
+
+ASM1 class - Change Log:
+2019-09-17 KZ: adjusted all kinetic/stoichs/Arrhenius to vals on IWA report
+2019-09-16 KZ: corrected temperature effect
+2019-09-15 KZ: zero-ed out S_DO's rate to simplify
+2019-09-11 KZ: revised _dCdt()
+2019-09-05 KZ: re-org model components to match .csv model template
+2019-08-27 KZ: added integrate()
+2019-02-09 KZ: standardized import
+2019-08-12 KZ: fixed typos
+Dec 13, 2017 KZ: Fixed a few mismatched parentheses 
+Jul 20, 2017 KZ: Changed to pythonic style
+Mar 21, 2017 KZ: Changed to Python3
+Jun 07, 2014 KZ: Spelling Fix
+
+
+utils\pfd.py - Change Log: 
+2019-08-08 KZ: added check_global_cnvg()
+2019-07-26 KZ: added get_all_units() to group specific types of units
+2019-07-16 KZ: replaced all isinstance() with get_type() wherever we can
+2019-03-17 KZ: revised _check_WAS()
+2019-03-17 KZ: revised _check_sidestream_flows(); _find_main_only_prefix()
+2019-03-03 KZ: added PFD checking fucntions
+2019-02-12 KZ: init
+
+utils\run.py - CHANGE LOG:
+20191003 KZ: added back tracing flow setting functions
+20190920 KZ: moved concentration output here and added BFS traverse func
+20190911 KZ: eliminated divided_by_zero errors by assigning init_X_S
+20190903 KZ: corrected b_H & b_A in initial_guess()
+20190828 KZ: init
+
