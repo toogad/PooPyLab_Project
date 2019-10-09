@@ -22,9 +22,6 @@
 #    This is the definition of some constants that will be used throughout
 #    the PooPyLab program
 #
-#    Author: Kai Zhang
-#   20190726 KZ: added convergence limit
-#   June 22, 2013 KZ: init
 # 
 
 _NUM_ASM1_COMPONENTS = 13

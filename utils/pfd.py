@@ -24,14 +24,6 @@
 #
 #    Author: Kai Zhang
 #
-# Change Log: 
-#   2019-08-08 KZ: added check_global_cnvg()
-#   2019-07-26 KZ: added get_all_units() to group specific types of units
-#   2019-07-16 KZ: replaced all isinstance() with get_type() wherever we can
-#   2019-03-17 KZ: revised _check_WAS()
-#   2019-03-17 KZ: revised _check_sidestream_flows(); _find_main_only_prefix()
-#   2019-03-03 KZ: added PFD checking fucntions
-#   2019-02-12 KZ: init
 #
 
 

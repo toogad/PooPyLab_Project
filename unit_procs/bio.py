@@ -29,22 +29,6 @@ from ASMModel import constants
 
 
 # ----------------------------------------------------------------------------
-# Update Log: 
-# 20190915 KZ: start to get reasonable integration results. need more testing
-# 20190911 KZ: got results from integrate()
-# 20190905 KZ: started adding integrate()
-# 20190813 KZ: fixed discharge() side outlet; fixed flow into
-#               estimate_current_state()
-# 20190812 KZ: corrected a few params in solver func.
-# 20190726 KZ: revised to match the is_converged()
-# 20190715 KZ: added self._type
-# 20190612 KZ: migrated to match the new base (poopy_lab_obj) and new "pipe"
-# 20190209 KZ: standardized import
-# July 30, 2017 KZ: more pythonic style
-# March 21, 2017 KZ: Migrated to Python3
-# May 26, 2014 KZ: Updated Definition
-# December 17, 2013 KZ: Added/revised blend_components() definition.
-# December 07, 2013 Kai Zhang
 
 class asm_reactor(pipe):
     __id = 0

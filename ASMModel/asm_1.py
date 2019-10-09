@@ -22,19 +22,6 @@
 #    This is the definition of the ASM1 model to be imported
 #    as part of the Reactor object
 #
-# Change Log:
-# 2019-09-17 KZ: adjusted all kinetic/stoichs/Arrhenius to vals on IWA report
-# 2019-09-16 KZ: corrected temperature effect
-# 2019-09-15 KZ: zero-ed out S_DO's rate to simplify
-# 2019-09-11 KZ: revised _dCdt()
-# 2019-09-05 KZ: re-org model components to match .csv model template
-# 2019-08-27 KZ: added integrate()
-# 2019-02-09 KZ: standardized import
-# 2019-08-12 KZ: fixed typos
-#    Dec 13, 2017 KZ: Fixed a few mismatched parentheses 
-#    Jul 20, 2017 KZ: Changed to pythonic style
-#    Mar 21, 2017 KZ: Changed to Python3
-#    Jun 07, 2014 KZ: Spelling Fix
 #
 # NOMENCLATURE:
 # rb:   readily biodegradable

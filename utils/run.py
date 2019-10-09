@@ -24,12 +24,6 @@
 #
 #    Author: Kai Zhang
 #
-# CHANGE LOG:
-# 20191003 KZ: added back tracing flow setting functions
-# 20190920 KZ: moved concentration output here and added BFS traverse func
-# 20190911 KZ: eliminated divided_by_zero errors by assigning init_X_S
-# 20190903 KZ: corrected b_H & b_A in initial_guess()
-# 20190828 KZ: init
 #
 
 

@@ -23,36 +23,6 @@
 # --------------------------------------------------------------------
 #   Definition of the base class for WWTP components.
 #
-#   Update Log:
-#   Oct 07, 2019 KZ: added get_flow_data_src()
-#   Sep 20, 2019 KZ: added assign_initial_guess() back
-#   Jul 26, 2019 KZ: added is_converged()
-#   Jul 16, 2019 KZ: added get_type()
-#   Jun 19, 2019 KZ: improved branch flow balance
-#   Jun 18, 2019 KZ: added funcs to assist branch flow balance
-#   Jun 10, 2019 KZ: further revised to splitter-like base
-#   Jun 04, 2019 KZ: change the base to splitter-like.
-#   May 22, 2019 KZ: added options for branch in get_xxxx() functions
-#   Jan 12, 2019 KZ: resumed and cleaned up
-#   Feb 03, 2018 KZ: reviewed
-#   Jul 21, 2017 KZ: made it more pythonic
-#   Mar 21, 2017 KZ: Migrated to Python3
-#   Jun 16, 2015 KZ: Removed Set(Get)PreFix(), Set(Get)Group();
-#                       Renamed SetAs(Is)Done() to SetAs(Is)Visited()
-#   Mar 20, 2015 KZ: Added Set(Get)PreFix(), Set(Get)Group(), 
-#                       SetAs(Is)Done() for tracking status in loop finding
-#   Nov 20, 2014 KZ: Added UpstreamConnected() and MainOutletConnected() 
-#   Jun 29, 2014 KZ: Replace Interpret() with GetXXXX() functions
-#   Jun 28, 2014 KZ: Added GetTSS(), getTotalCOD(), and getSoluableCOD()
-#   Mar 15, 2014 KZ: Moved AddUpstreamUnit(), RemoveUpstreamUnit(), and 
-#                       SetDownstreamMainUnit() to Pipe()
-#   Mar 06, 2014 KZ: Re-wrote the common interface and change Base into an 
-#                       abstract class
-#   Dec 25, 2013 KZ: commented out the BlendComponent() function in 
-#                       ReceiveFrom()
-#   Dec 17, 2013 KZ: added _PrevComp[0:12] to store state variables from 
-#                       previous iteration
-#   Dec 07, 2013 Kai Zhang (KZ)
 
 
 from abc import ABCMeta, abstractmethod
@@ -325,20 +295,6 @@ class poopy_lab_obj(object):
 
     @abstractmethod
     def get_sN(self, branch="Main_Out"):
-        pass
-
-
-    @abstractmethod
-    def set_as_visited(self, Status):
-        ''' Set the unit as True when done visiting it in the loop finding
-            process. Status = False by default.
-        '''
-        pass
-
-
-    @abstractmethod
-    def is_visited(self):
-        ''' Return True if the unit is labelled as visited, False otherwise '''
         pass
 
 

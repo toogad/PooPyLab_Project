@@ -30,17 +30,6 @@ from unit_procs.streams import splitter
 
 # ----------------------------------------------------------------------------
 
-# final_clarifier class - Change Log: 
-# 20191003 KZ: revised tss balance to prepare for flow balance.
-# 20190916 KZ: updated to match asm1 matrix (component index)
-# 20190726 KZ: revised discharge() to match the add. of is_converged()
-# 20190612 KZ: migrated to new base
-# 20190715 KZ: added self._type
-# 20190209 KZ: standardized import
-#   July 30, 2017 KZ: made it more pythonic.
-#   March 21, 2017 KZ: Migrated to Python3
-#   May 26, 2014 KZ: Changed base class from Base to Splitter
-#   July 11, 2013 KZ: Initial commit
 
 class final_clarifier(splitter):
     # In order to keep the PooPyLab package simple and focused on the
