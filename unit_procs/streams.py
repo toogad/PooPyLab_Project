@@ -30,48 +30,6 @@ from utils.datatypes import flow_data_src
 from ASMModel import constants
 
 # -----------------------------------------------------------------------------
-# splitter class - Change Log:
-# 20191003 KZ: revised for the run time flow balance steps
-# 20190920 KZ: added back assign_initial_guess()
-# 20190811 KZ: moved assign_initial_guess() to asm_reactor
-# 20190905 KZ: revised getTSS...to match new model component order
-# 20190814 KZ: revised timing for setting _prev_mo_comps and _prev_so_comps
-# 20190813 KZ: revised discharge(), removed _inflow_totalized and
-#               in_comps_blended flags
-# 20190726 KZ: added is_converged()
-# 20190721 KZ: reverted to ininstance() for class type check in
-#               set_downstream_main()/_side()
-# 20190715 KZ: added self._type and get_type()
-# 20190707 KZ: fixed blend_inlet_comps()
-# 20190619 KZ: updated branch flow balance
-# 20190618 KZ: further improve flow balance.
-# 20190617 KZ: improve flow balance.
-# 20190609 KZ: further revised splitter to be the "base" of stream objs.
-# 20190604 KZ: migrating the base to poopy_lab_obj
-# 20190209 KZ: standardized import
-# Mar 02, 2019 KZ: added check on side flow and sidestream_flow_defined()
-# Feb 09, 2019 KZ: revised set_downstream_side()
-# Jul 30, 2017 KZ: pythonic style
-# Mar 21, 2017 KZ: Migrated to Python3
-# Jun 24, 2015 KZ: Updated SetDownstreamSideUnit() to differential main/side
-# Jun 23, 2015 KZ: Rewrote sidestream to eliminate Branch class
-# Jun 18, 2015 KZ: Removed _PreFix and _Group status and 
-#                     Set(Get)PreFixStatus(), Set(Get)GroupStatus;
-#                     Renamed _Done to _Visited and SetAs(Is)Done() to
-#                     SetAs(Is)Visited()
-# Mar 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
-#                     Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
-#                     SetAs(Is)Done().
-# Nov 18, 2014 KZ: renamed "SideStream" into "Sidestream";
-#                         Added _SidestreamConnected and SideOutletConnected()
-# Sep 26, 2014 KZ: fixed pipe.Pipe.__init__
-# Apr 27, 2014 KZ: Change the sidestream class from Influent() to Sidestream()
-# Apr 18, 2014 KZ: Rewrite definition based on the new class system structure
-# Dec 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
-# Dec 07, 2013
-#
-
-
 
 class splitter(poopy_lab_obj):
 
@@ -101,8 +59,6 @@ class splitter(poopy_lab_obj):
         # determine how to calculate branch flows
         self._upstream_set_mo_flow = False
 
-
-        # TODO:
         # flow data source tags
         self._in_flow_ds = flow_data_src.TBD
         self._mo_flow_ds = flow_data_src.TBD
@@ -149,9 +105,6 @@ class splitter(poopy_lab_obj):
         # convergence status for the unit itself
         self._converged = False
 
-        # provision flag for loop-finding need
-        self._visited = False
-
         return None
 
 
@@ -161,42 +114,82 @@ class splitter(poopy_lab_obj):
     def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
         # branch = 'Main'|'Side'|'Inlet'
         # flow_ds: flow_data_source.TBD|.UPS|.DNS|.PRG
-        if branch == 'Main':
+
+        _in_flow_known = (self._in_flow_ds != flow_data_src.TBD)
+
+        _so_flow_known = (self._so_flow_ds != flow_data_src.TBD)
+
+        _mo_flow_known = (self._mo_flow_ds != flow_data_src.TBD)
+
+        _chngd = False
+
+        if branch == 'Main' and not _mo_flow_known:
             self._mo_flow_ds = flow_ds
-        elif branch == 'Side':
+            _chngd = True
+        elif branch == 'Side' and not _so_flow_known:
             self._so_flow_ds = flow_ds
-        elif branch == 'Inlet':
+            _chngd = True
+        elif branch == 'Inlet' and not _in_flow_known:
             self._in_flow_ds = flow_ds
+            _chngd = True
         else:
             print('ERROR in {}: invalid branch selected for'
-                    'flow data source.'.format(self.__name__))
+                    'flow data source, or the selected branch has been'
+                    'given a flow data source.'.format(self.__name__))
         
-        # auto evaluate the flow data source tags after setting one
-        _so_flow_by_external = (self._so_flow_ds == flow_data_src.DNS
-                            or self._so_flow_ds == flow_data_src.PRG)
+        if not _chngd:
+            return self._in_flow_ds, self._mo_flow_ds, self._so_flow_ds
 
-        _mo_flow_by_external = (self._mo_flow_ds == flow_data_src.DNS
-                            or self._mo_flow_ds == flow_data_src.PRG)
+        # auto evaluate the flow data source tags after setting one.
+        # first get an updated set of flags after the change:
+        _in_flow_known = (self._in_flow_ds != flow_data_src.TBD)
 
-        if _so_flow_by_external and _mo_flow_by_external:
-            if _in_flow_ds == flow_data_src.TBD:
-                self._in_flow_ds = flow_data_src.DNS
-        
-        if (_so_flow_by_external 
-                and self._in_flow_ds == flow_data_src.UPS
-                and not _mo_flow_by_external):
-        #TODO: HERE
+        _so_flow_known = (self._so_flow_ds != flow_data_src.TBD)
 
+        _mo_flow_known = (self._mo_flow_ds != flow_data_src.TBD)
 
-        return [self._in_flow_ds,
-                self._mo_flow_ds,
-                self._so_flow_ds]
+        _mo_flow_by_ext = (self._mo_flow_ds == flow_data_src.DNS
+                        or self._mo_flow_ds == flow_data_src.PRG)
+
+        _so_flow_by_ext = (self._so_flow_ds == flow_data_src.DNS
+                        or self._so_flow_ds == flow_data_src.PRG)
+
+        if _so_flow_known:
+            if _so_flow_by_ext:
+                if _mo_flow_by_ext:
+                    self._upstream_set_mo_flow = False
+                    if not _in_flow_known:
+                        self._in_flow_ds = flow_data_src.DNS
+                else:
+                    if _mo_flow_known:
+                        # i.e. _upstream_set_mo_flow = True
+                        # i.e. _mo_flow_ds = UPS
+                        self._upstream_set_mo_flow = True
+                        if not _in_flow_known:
+                            self._in_flow_ds = flow_data_src.UPS
+                        #else:
+                        #    pass
+                    else:
+                        if _in_flow_known:
+                            self._upstream_set_mo_flow = True
+                            self._mo_flow_ds = flow_data_src.UPS
+                        #else:
+                        #    pass
+            else:
+                # i.e. _so_flow set by UPS
+                # i.e. _in_flow and _mo_flow must be set somewhere else
+                self._upstream_set_mo_flow = False
+        else:
+            if _in_flow_known and _mo_flow_known:
+                self._upstream_set_mo_flow = False
+                self._mo_flow_ds = flow_data_src.UPS
+            #else:
+            #    pass
+        return None
 
 
     def get_flow_data_src(self):
-        return [self._in_flow_ds,
-                self._mo_flow_ds,
-                self._so_flow_ds]
+        return self._in_flow_ds, self._mo_flow_ds, self._so_flow_ds
 
 
     def assign_initial_guess(self, init_guess_lst):
@@ -502,26 +495,17 @@ class splitter(poopy_lab_obj):
         return self.get_TN(br) - self.get_pN(br)
 
 
-    def set_as_visited(self, status=False):
-        self._visited = status
-        return None
-
-
-    def is_visited(self):
-        return self._visited
-
-
     def _branch_flow_helper(self):
         # 1) Side outlet flow (_so_flow) can be set by
         #   1A) either WAS (_SRT_controller) or direct user input
         #
-        #   2A) upstream (non _SRT_controller)
+        #   ##2A) upstream (non _SRT_controller)##
         #
         # 2) Main outlet flow (_mo_flow) can be set by
         #
-        #   2A) upstream automatically (default):
+        #   2A) upstream automatically
         #
-        #   2B) direct user input:
+        #   2B) direct user/run_time input
         #
         # 3) Inlet flow is dependent on the two outlet branches' settings
         #       Back tracing will be required to make sure flows are balanced
@@ -540,7 +524,7 @@ class splitter(poopy_lab_obj):
             #self._in_flow_backcalc = self._total_inflow
             #self._mo_flow = self._in_flow_backcalc - self._so_flow
             self._mo_flow = self._total_inflow - self._so_flow
-        else:
+        else:  # TODO: might be troubles here
             # if upstream doesn't set _mo_flow, it has to set _so_flow
             #self._in_flow_backcalc = self._total_inflow
             #self._so_flow = self._in_flow_backcalc - self._mo_flow
@@ -580,38 +564,6 @@ class splitter(poopy_lab_obj):
     # END OF FUNCTIONS UNIQUE TO SPLITTER
 
 # ----------------------------------------------------------------------------
-# pipe class - Change Log:
-# 20191003 KZ: revised for the run time flow balance steps
-# 20190704 KZ: corrected initiation error.
-# 20190715 KZ: added self._type
-# 20190619 KZ: revised as per the splitter update.
-# 20190618 KZ: added flow source flags defaults
-# 20190609 KZ: fully migrated to the new base
-# 20190604 KZ: migrating to the new base (poopy_lab_obj)
-# 20190209 KZ: standardized import
-#   Jan 12, 2019 KZ: resume and cleaned up
-#   Jul 28, 2017 KZ: made it more pythonic
-#   Mar 21, 2017 KZ: Migrated to Python3
-#   Jun 24, 2015 KZ: Updated AddUpstreamUnit() to differential main/side 
-#   Jun 16, 2015 KZ: Removed _PreFix, _Group status and 
-#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus.
-#                       Renamed _Done to _visited, SetAs(Is)Visited() to
-#                       SetAs(Is)Visited()
-#   Mar 20, 2015 KZ: Added _PreFix, _Group, _Done status and 
-#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
-#                       SetAs(Is)Done().
-#   Nov 24, 2014 KZ: revised RemoveUpstreamUnit() to be able to remove units
-#                       with sidestream
-#   Nov 23, 2014 KZ: revised RemoveUpstreamUnit() to check availability to the
-#                       upstream unit specified
-#   Nov 12, 2014 KZ: added: _has_discharger and _MainOutletConnected flags;
-#                       UpstreamConnected() and MainOutletConnected() functions
-#   Sep 26, 2014 KZ: removed test code
-#   Jun 29, 2014 KZ: Added GetXXX() definitions for solids and COD summary. 
-#   Mar 15, 2014 KZ: AddUpstreamUnit(), RemoveUpstreamUnit(), and
-#                       SetDownstreamMainUnit() begin here
-#   Mar 08, 2014 KZ: Rewrite according to the new class structure
-#   Dec 07, 2013 Kai Zhang
 
 class pipe(splitter):
     __id = 0
@@ -625,6 +577,11 @@ class pipe(splitter):
                 
         # pipe has no sidestream
         self._has_sidestream = False
+
+        # flow data source tags
+        self._in_flow_ds = flow_data_src.TBD
+        self._mo_flow_ds = flow_data_src.TBD
+        self._so_flow_ds = flow_data_src.PRG
 
         # a pipe's sidestream flow IS DEFINED as ZERO
         self._so_flow_defined = True
@@ -680,32 +637,6 @@ class pipe(splitter):
 
 
 # -----------------------------------------------------------------------------
-# influent class - Change Log:
-# 20191003 KZ: revised for the run time flow balance steps
-# 20190920 KZ: added bypass for assign_intial_guess()
-# 20190911 KZ: rearranged inf component to match model matrix
-# 20190715 KZ: added self._type
-# 20190704 KZ: corrected initiation error.
-# 20190619 KZ: updated as per the splitter update.
-# 20190618 KZ: updated along with the splitter revision.
-# 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent
-# 20190609 KZ: migrating to poopy_lab_obj as base, and pipe as parent.
-# 20190209 KZ: standardized import
-#   Mar 15, 2019 KZ: _outlet --> _main_outlet
-#   July 31, 2017 KZ: Made it more pythonic and changed to python3.
-#   June 16, 2015 KZ: Removed _prefix, _group status and 
-#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus;
-#                       Renamed _Done to _visited, SetAs(Is)Done() to
-#                       SetAs(Is)Visited().
-#   March 20, 2015 KZ: Added _prefix, _group, _Done status and 
-#                       Set(Get)PreFixStatus(), Set(Get)GroupStatus, 
-#                       SetAs(Is)Done().
-#   November 18, 2014 KZ: Added UpstreamConnected() and set to True
-#   November 12, 2014 KZ: added _main_outlet_connected flag 
-#                           and MainOutletConnected() function
-#   October 19, 2014 KZ: removed test code
-#   March 15, 2014: KZ: redefined for the new class structure.
-#   December 07, 2013 Kai Zhang: first draft
 
 class influent(pipe):
     __id = 0
@@ -724,6 +655,11 @@ class influent(pipe):
         self._has_discharger = True
         # influent has no sidestream
         self._has_sidestream = False
+
+        # flow data source tags
+        self._in_flow_ds = flow_data_src.UPS
+        self._mo_flow_ds = flow_data_src.UPS
+        self._so_flow_ds = flow_data_src.PRG
 
         # defaults:
         self._upstream_set_mo_flow = True
@@ -886,26 +822,6 @@ class influent(pipe):
     # END OF FUNTIONS UNIQUE TO INFLUENT
 
 # -----------------------------------------------------------------------------
-# effluent class - Change Log: 
-# 20191003 KZ: revised for the run time flow balance steps
-# 20190726 KZ: added discharge() unique to effluent.
-# 20190715 KZ: added self._type
-# 20190619 KZ: revised according to the splitter update
-# 20190611 KZ: migrated to poopy_lab_obj as base and pipe as parent.
-# 20190209 KZ: standardized import
-# Jul 30, 2017 KZ: Made it more pythonic.
-# Mar 21, 2017 KZ: Migrated to Python3
-# Sep 26, 2014 KZ: removed test code   
-# July 2, 2014 KZ: change base class to Pipe.
-# June 29, 2014 KZ: removed Convert() that converts model parameters for
-#                   user parameters
-# December 25, 2013 KZ: commented out the BlendComponent() function in
-#                       ReceiveFrom()
-# December 17, 2013 KZ: Added _PrevComp[0..12] to store state variables from 
-#                       previous iteration
-#
-# December 07, 2013 Kai Zhang
-    
 
 class effluent(pipe):
     __id = 0
@@ -916,6 +832,11 @@ class effluent(pipe):
         self.__name__ = "Effluent_" + str(self.__id)
 
         self._type = "Effluent"
+
+        # flow data source tags
+        self._in_flow_ds = flow_data_src.UPS
+        self._mo_flow_ds = flow_data_src.UPS
+        self._so_flow_ds = flow_data_src.PRG
 
         self._upstream_set_mo_flow = True
         self._mo_connected = True  # dummy
@@ -969,23 +890,7 @@ class effluent(pipe):
 
 
 # ------------------------------------------------------------------------------
-# WAS class - Change Log:
-# 20191003 KZ: revised for the run time flow balance steps
-# 20190809 KZ: added effluent solids in set_WAS_flow()
-# 20190726 KZ: added discharge() to match the add. of is_converged()
-# 20190715 KZ: added self._type
-# 20190629 KZ: removed inform_SRT_controller()
-# 20190612 KZ: migrated to using pipe as parent.
-# 20190209 KZ: standardized import
-# Jul 30, 2017 KZ: made code more pythonic
-# Mar 21, 2017 KZ: Migrated to Python3
-# Sep 26, 2014 KZ: Change inheritance back from Splitter to Effluent
-# Aug 25, 2014 KZ: Added InformSRTController function.
-# Aug 23, 2014 KZ: Changed its inheritance to Effluent;
-#                  Added variables and functions for WAS Flow calculation
-# December 06, 2013 Kai Zhang: Initial design
 
-    
 class WAS(pipe):
     __id = 0
 
@@ -996,7 +901,13 @@ class WAS(pipe):
         
         self._type = "WAS"
 
-        self._mo_connected = True  # assume something always receives WAS
+        # flow data source tags
+        self._in_flow_ds = flow_data_src.DNS
+        self._mo_flow_ds = flow_data_src.PRG
+        self._so_flow_ds = flow_data_src.PRG
+
+        # assume something always receives WAS
+        self._mo_connected = True
 
         return None
 
