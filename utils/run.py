@@ -30,7 +30,7 @@
 from unit_procs.streams import pipe, influent, effluent, WAS, splitter
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
-
+from utils.datatypes import flow_data_src
 
 def check_global_cnvg(wwtp):
     _glb_cnvg = True
@@ -171,12 +171,74 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
 #            1.0]
 
 
-def set_flow_source(inf_unit):
+def _forward(me):
+    _in = me.get_upstream()
+    _mo = me.get_downstream_main()
+    _so = me.get_downstream_side()
+
+    _in_f_ds, _mo_f_ds, _so_f_ds = me.get_flow_data_src()
+
+    _in_f_known = (_in_f_ds != flow_data_src.TBD)
+
+    _mo_f_known = (_mo_f_ds != flow_data_src.TBD)
+
+    _so_f_known = (_so_f_ds != flow_data_src.TBD)
+
+    if _in_f_ds != flow_data_src.TBD:
+        if _so = None:
+            if not _mo_f_known:
+                me.set_flow_data_src('Main', flow_data_src.UPS)
+                _forward(_mo)
+            #else:
+                #pass
+        else:
+            if not _mo_f_known:
+                if _so_f_known:
+                    me.set_flow_data_src('Main', flow_data_src.UPS)
+                #else:
+                    #pass
+            else:
+                if _so_f_known:
+                    # both _mo_f_known and _so_f_known
+                    return None
+                else:
+                    me.set_flow_data_src('Side', flow_data_src.UPS)
+                    _forward(_so)
+    else:
+        # _in_flow_data_src == TBD, can it be determined?
+        _me_in_f_ds_known = True
+        for _f in _in:
+            _f_in_f_ds, _f_mo_f_ds, _f_so_f_ds = _f.get_flow_data_src()
+            if _f.get_downstream_main() == me:
+                if _f_mo_f_ds == flow_data_src.TBD:
+                    _me_in_f_ds_known = False
+                    break
+            else:
+                if _f_so_f_ds == flow_data_src.TBD:
+                    _me_in_f_ds_known = False
+                    break
+        if _me_in_f_ds_known:
+            me.set_flow_data_src('Inlet', flow_data_src.UPS)
+            _forward(me)
+    return None
+
+
+def forward_set_flow(starters, plant_inf):
     ''' set/adjust the _upstream_set_mo_flow flag of each unit that is
-        influenced by the selected influent unit (inf_unit)
+        influenced by the select units in the starters
     '''
-    # inf_unit: an influent unit (as the starting point of the tracing)
-    pass
+    # starters: a list of units as the starting point of the tracing
+    # plant_inf: plant's main influent unit
+
+    _starters_= starters[:]
+    if plant_inf in starters:
+        _starters_.remove(plant_inf)
+        _starters_.insert(0, plant_inf)
+
+    for _s in _starters_:
+        _forward(_s)
+    
+    return None
 
 
 
@@ -226,39 +288,6 @@ def _sum_of_known_inflows(me, my_inlet_of_unknown_flow):
     return _sum
 
      
-#def _backward(me):
-#    # me: process unit whose total inlet flow is determined by
-#    # its (_mo_flow + _so_flow)
-#    
-#    _my_inlet = me.get_upstream()
-#    _my_inlet_allow = []
-#    if _my_inlet != None:
-#        _my_inlet_allow = [u for u in _my_inlet 
-#                if not u._upstream_set_mo_flow
-#                    or u.get_type() == 'Pipe']
-#    
-#    _freedom = len(_my_inlet_allow)
-#    if _freedom == 0:  # reached a stopping point
-#        return None
-#    elif _freedom > 1:  # too many units for setting flows
-#        print('ERROR:{} has {} upstream units' 
-#                'with undefined flows.'.format(_s.__name__, _freedom))
-#    else:
-#        _target = _my_inlet_allow[0]
-#        _known_sum = _sum_of_known_inflows(me, _target) 
-#        _residual = me.totalize_inflow() - _known_sum
-#
-#        if _target.get_downstream_main() == me:
-#            _target.set_mainstream_flow_by_upstream(False)
-#            _target.set_mainstream_flow(_residual)
-#        else:
-#            _target.set_sidestream_flow(_residual)
-#
-#        if _target._upstream_set_mo_flow == False:
-#            _backward(_target)
-#
-#    return None
-
 def _backward(me):
     # me: process unit whose total inlet flow is determined by
     # its (_mo_flow + _so_flow)
@@ -296,7 +325,7 @@ def _backward(me):
     return None
 
 
-def back_trace_set_flow(starters=[]):
+def backward_set_flow(starters=[]):
     ''' Back tracing to set the flows of the inlet units for those listed in
         starters[].
     '''
