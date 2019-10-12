@@ -84,6 +84,7 @@ if __name__ == '__main__':
     # there is no need to seed the system in this example
 
     utils.run.forward_set_flow(wwtp, _inf[0])
+    utils.run.traverse_plant(wwtp, _inf[0])
     
     #pdb.set_trace()
 

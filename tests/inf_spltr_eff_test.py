@@ -83,6 +83,7 @@ if __name__ == '__main__':
     _WAS_flow = 0.0  # M3/d
 
     utils.run.forward_set_flow(wwtp, _inf[0])
+    utils.run.traverse_plant(wwtp, _inf[0])
     
     #pdb.set_trace()
 

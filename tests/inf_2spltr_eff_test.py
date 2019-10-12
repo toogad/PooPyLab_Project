@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20191012 KZ: passed
 # 20191011 KZ: re-tested after add. of flow data source setting funcs.
 # 20190815 KZ: init and passed
 #
@@ -80,8 +81,13 @@ if __name__ == '__main__':
 
     # start the main loop
     _WAS_flow = 0.0  # M3/d
-    pdb.set_trace()
     utils.run.forward_set_flow(wwtp, _inf[0])
+    # the first travese of the plant is a MUST so that the known forward flows
+    # are passed onto as many units as possible. This will ensure the
+    # backward_set_flow() has the correct information when setting the
+    # downstream flows for those units whose outlet flow data source tags are
+    # "DNS" (downstream)
+    utils.run.traverse_plant(wwtp, _inf[0])
 
     while True:
         _WAS_flow = 1000.0  # hardcoded for test
