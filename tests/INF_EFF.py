@@ -35,7 +35,6 @@
 #
 
 from unit_procs.streams import influent, effluent, pipe
-from utils.pfd import check, show
 
 
 inlet = influent()

@@ -74,7 +74,7 @@ def construct():
     splt_2.set_downstream_main(p5)
     splt_2.set_downstream_side(p4)
     p4.set_downstream_main(waste)
-    p5.set_downstream_side(p1)
+    p5.set_downstream_main(splt_1)
 
     splt_1.set_sidestream_flow(9500)  # random number for test
     splt_2.set_as_SRT_controller(True)

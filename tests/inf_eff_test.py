@@ -25,11 +25,13 @@
 #
 #
 # Change Log:
+# 20191011 KZ: retested after flow_data_src implementation and passed
 # 20190815 KZ: init and passed
 #
 
 from unit_procs.streams import pipe, influent, effluent
 import utils.pfd
+import utils.run
 import pdb
 
 if __name__ == '__main__':
@@ -77,31 +79,25 @@ if __name__ == '__main__':
 
     print('Effluent in the PFD: {}'.format([_u.__name__ for _u in _eff]))
 
-    for fc in _final_clar:
-        fc.set_underflow_TSS(_uf_tss)
-
     # start the main loop
     _WAS_flow = 0.0  # M3/d
+    # there is no need to seed the system in this example
+
+    utils.run.forward_set_flow(wwtp, _inf[0])
+    
+    #pdb.set_trace()
 
     while True:
 
-        for elem in wwtp:
+        utils.run.backward_set_flow(_eff)
 
-            elem.update_combined_input()
-            elem.discharge()
+        utils.run.traverse_plant(wwtp, _inf[0])
 
-            if elem.get_type() == 'WAS':
-                _WAS_flow = elem.set_WAS_flow(1, _reactors, _eff)
+        _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
-            if elem.is_SRT_controller():
-                elem.set_sidestream_flow(_WAS_flow)
-
-            if elem.get_type() == 'Effluent':
-                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-
-        #pdb.set_trace()
-        if utils.pfd.check_global_cnvg(wwtp):
+        if utils.run.check_global_cnvg(wwtp):
             break
+
 
     for elem in wwtp:
         print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(

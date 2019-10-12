@@ -38,7 +38,6 @@
 #
 
 from unit_procs.streams import influent, effluent, pipe, splitter, WAS
-from utils.pfd import check, show
 
 
 inlet = influent()

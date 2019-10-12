@@ -184,8 +184,8 @@ def _forward(me):
 
     _so_f_known = (_so_f_ds != flow_data_src.TBD)
 
-    if _in_f_ds != flow_data_src.TBD:
-        if _so = None:
+    if _in_f_known:
+        if _so == None:
             if not _mo_f_known:
                 me.set_flow_data_src('Main', flow_data_src.UPS)
                 _forward(_mo)
@@ -272,7 +272,7 @@ def traverse_plant(wwtp, plant_inf):
     while len(_visited) < len(wwtp):
         _finished = _BFS(_to_visit, _visited)
 
-    print('Visited in the order:', _finished)
+    #print('Visited in the order:', _finished)
     
     return None
 
@@ -292,34 +292,66 @@ def _backward(me):
     # me: process unit whose total inlet flow is determined by
     # its (_mo_flow + _so_flow)
     
+    _in_f_ds, _mo_f_ds, _so_f_ds = me.get_flow_data_src()
+
+    _in_f_known = (_in_f_ds != flow_data_src.TBD)
+
+    _mo_f_known = (_mo_f_ds != flow_data_src.TBD)
+
+    _so_f_known = (_so_f_ds != flow_data_src.TBD)
+
+    if _so_f_known:
+        if _mo_f_known:
+            if _in_f_known:
+                if _in_f_ds == flow_data_src.UPS:
+                    return None
+            else:
+                me.set_flow_data_src('Inlet', flow_data_src.DNS)
+        else:
+            if _in_f_known:
+                me.set_flow_data_src('Main', flow_data_src.UPS)
+                me._upstream_set_mo_flow = True
+            else:
+                return None
+    else:
+        if _mo_f_known:
+            if _in_f_known:
+                me.set_flow_data_src('Side', flow_data_src.UPS)
+            else:
+                return None
+        else:
+            return None
+     
     _my_inlet = me.get_upstream()
     _my_inlet_allow = []
     if _my_inlet != None:
-        # Final_Clarifier by defaul has the _upstream_set_mo_flow set to True
-        # It is treated as an exception here when allowing the inlets to be
-        # analyzed:
         _my_inlet_allow = [u for u in _my_inlet 
-                if not u._upstream_set_mo_flow
-                    or u.get_type() == 'Final_Clarifier']
+                if (u.get_flow_data_src()[1] == flow_data_src.TBD
+                    and u.get_downstream_main() == me) 
+                    or
+                    (u.get_flow_data_src()[2] == flow_data_src.TBD
+                    and u.get_downstream_side() == me)]
     
     _freedom = len(_my_inlet_allow)
-    if _freedom == 0:  # reached a stopping point
+    if _freedom == 0:  # all inlets have been set with flow source
         return None
     elif _freedom > 1:  # too many units for setting flows
         print('ERROR:{} has {} upstream units' 
                 'with undefined flows.'.format(_s.__name__, _freedom))
     else:
         _target = _my_inlet_allow[0]
-        _known_sum = _sum_of_known_inflows(me, _target) 
+        _known_sum = _sum_of_known_inflows(me, _target)
         _residual = me.totalize_inflow() - _known_sum
 
         if _target.get_downstream_main() == me:
             #_target.set_mainstream_flow_by_upstream(False)
+            _target.set_flow_data_src('Main', flow_data_src.DNS)
             _target.set_mainstream_flow(_residual)
         else:
+            _target.set_flow_data_src('Side', flow_data_src.DNS)
             _target.set_sidestream_flow(_residual)
 
-        if _target._upstream_set_mo_flow == False:
+        if _target.get_flow_data_src()[0] == flow_data_src.DNS:
             _backward(_target)
 
     return None

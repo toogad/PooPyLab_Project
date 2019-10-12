@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20191011 KZ: re-run test after flow data source setting funcs
 # 20191004 KZ: re-run test after revision on final_clarifier 
 # 20190919 KZ: init and passed
 #
@@ -79,41 +80,19 @@ if __name__ == '__main__':
     print('Effluent in the PFD: {}'.format([_u.__name__ for _u in _eff]))
 
     for fc in _final_clar:
-        #fc.set_underflow_TSS(8000)
         fc.set_capture_rate(0.92)
 
     # start the main loop
     _WAS_flow = 5000  # M3/d
+    utils.run.forward_set_flow(wwtp, _inf[0])
 
     while True:
 
-#        for elem in wwtp:
-#
-#            elem.update_combined_input()
-#            elem.discharge()
-#
-#            if elem.get_type() == 'WAS':
-#                _WAS_flow = elem.get_main_outflow()
-#
-#
-#            if elem.is_SRT_controller():
-#                elem.set_sidestream_flow(_WAS_flow)
-#
-#            if elem.get_type() == 'Effluent':
-#                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-#
         _WAS[0].set_mainstream_flow(_WAS_flow)
-        #_eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
+        _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
-        # back tracing starters
-        _bts = [k for k in wwtp 
-                if not k._upstream_set_mo_flow 
-                    and k.get_downstream_main() == None]
-        print('BACK TRACE STARTERS:', [n.__name__ for n in _bts])
+        utils.run.backward_set_flow([_WAS[0], _eff[0]])
 
-        utils.run.back_trace_set_flow(_bts)
-
-        pdb.set_trace()
         utils.run.traverse_plant(wwtp, _inf[0])
 
         if utils.run.check_global_cnvg(wwtp):

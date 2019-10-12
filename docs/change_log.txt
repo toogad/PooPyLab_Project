@@ -1,7 +1,8 @@
 CHANGE LOGS:
+==============================================================================
 
-
-base class - Update Log:
+base class:
+------------------------------------------------------------------------------
 Oct 09, 2019 KZ: removed set_as_visited() and is_visited()
 Oct 07, 2019 KZ: added get_flow_data_src()
 Sep 20, 2019 KZ: added assign_initial_guess() back
@@ -34,7 +35,8 @@ Dec 17, 2013 KZ: added _PrevComp[0:12] to store state variables from
 Dec 07, 2013 Kai Zhang (KZ)
 
 
-splitter class - Change Log:
+splitter class:
+------------------------------------------------------------------------------
 20191003 KZ: revised for the run time flow balance steps
 20190920 KZ: added back assign_initial_guess()
 20190811 KZ: moved assign_initial_guess() to asm_reactor
@@ -75,7 +77,8 @@ Dec 25, 2013 KZ: commented out the BlendComponent() function in ReceiveFrom()
 Dec 07, 2013
 
 
-pipe class - Change Log:
+pipe class:
+------------------------------------------------------------------------------
 20191003 KZ: revised for the run time flow balance steps
 20190704 KZ: corrected initiation error.
 20190715 KZ: added self._type
@@ -109,7 +112,9 @@ Mar 08, 2014 KZ: Rewrite according to the new class structure
 Dec 07, 2013 Kai Zhang
 
 
-influent class - Change Log:
+influent class:
+------------------------------------------------------------------------------
+20191011 KZ: set _converged to True (always), fixed flow balance bug
 20191003 KZ: revised for the run time flow balance steps
 20190920 KZ: added bypass for assign_intial_guess()
 20190911 KZ: rearranged inf component to match model matrix
@@ -137,7 +142,9 @@ March 15, 2014: KZ: redefined for the new class structure.
 December 07, 2013 Kai Zhang: first draft
 
 
-effluent class - Change Log: 
+effluent class: 
+------------------------------------------------------------------------------
+20191011 KZ: fixed flow balance bugs
 20191003 KZ: revised for the run time flow balance steps
 20190726 KZ: added discharge() unique to effluent.
 20190715 KZ: added self._type
@@ -157,7 +164,8 @@ December 17, 2013 KZ: Added _PrevComp[0..12] to store state variables from
 December 07, 2013 Kai Zhang
 
 
-WAS class - Change Log:
+WAS class:
+------------------------------------------------------------------------------
 20191003 KZ: revised for the run time flow balance steps
 20190809 KZ: added effluent solids in set_WAS_flow()
 20190726 KZ: added discharge() to match the add. of is_converged()
@@ -174,7 +182,8 @@ Aug 23, 2014 KZ: Changed its inheritance to Effluent;
 December 06, 2013 Kai Zhang: Initial design
 
 
-final_clarifier class - Change Log: 
+final_clarifier class: 
+------------------------------------------------------------------------------
 20191003 KZ: revised tss balance to prepare for flow balance.
 20190916 KZ: updated to match asm1 matrix (component index)
 20190726 KZ: revised discharge() to match the add. of is_converged()
@@ -187,7 +196,8 @@ May 26, 2014 KZ: Changed base class from Base to Splitter
 July 11, 2013 KZ: Initial commit
 
 
-asm_reactor class - Update Log: 
+asm_reactor class: 
+------------------------------------------------------------------------------
 20190915 KZ: start to get reasonable integration results. need more testing
 20190911 KZ: got results from integrate()
 20190905 KZ: started adding integrate()
@@ -205,7 +215,8 @@ December 17, 2013 KZ: Added/revised blend_components() definition.
 December 07, 2013 Kai Zhang
 
 
-ASM1 class - Change Log:
+ASM1 class:
+------------------------------------------------------------------------------
 2019-09-17 KZ: adjusted all kinetic/stoichs/Arrhenius to vals on IWA report
 2019-09-16 KZ: corrected temperature effect
 2019-09-15 KZ: zero-ed out S_DO's rate to simplify
@@ -220,7 +231,8 @@ Mar 21, 2017 KZ: Changed to Python3
 Jun 07, 2014 KZ: Spelling Fix
 
 
-utils\pfd.py - Change Log: 
+utils\pfd.py: 
+------------------------------------------------------------------------------
 2019-08-08 KZ: added check_global_cnvg()
 2019-07-26 KZ: added get_all_units() to group specific types of units
 2019-07-16 KZ: replaced all isinstance() with get_type() wherever we can
@@ -229,7 +241,9 @@ utils\pfd.py - Change Log:
 2019-03-03 KZ: added PFD checking fucntions
 2019-02-12 KZ: init
 
-utils\run.py - CHANGE LOG:
+utils\run.py:
+------------------------------------------------------------------------------
+20191011 KZ: added forward flow setting functions
 20191003 KZ: added back tracing flow setting functions
 20190920 KZ: moved concentration output here and added BFS traverse func
 20190911 KZ: eliminated divided_by_zero errors by assigning init_X_S

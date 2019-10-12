@@ -30,6 +30,7 @@
 
 from unit_procs.streams import pipe, influent, effluent, splitter, WAS
 import utils.pfd
+import utils.run
 import pdb
 
 if __name__ == '__main__':
@@ -77,31 +78,25 @@ if __name__ == '__main__':
 
     print('Effluent in the PFD: {}'.format([_u.__name__ for _u in _eff]))
 
-    for fc in _final_clar:
-        fc.set_underflow_TSS(_uf_tss)
-
     # start the main loop
+    # no need to seed the pfd in this case
     _WAS_flow = 0.0  # M3/d
+
+    utils.run.forward_set_flow(wwtp, _inf[0])
+    
+    #pdb.set_trace()
 
     while True:
 
-        for elem in wwtp:
-
-            elem.update_combined_input()
-            elem.discharge()
-
-            if elem.get_type() == 'WAS':
-                _WAS_flow = 1000.0  # hardcoded for test
-
-
-            if elem.is_SRT_controller():
-                elem.set_sidestream_flow(_WAS_flow)
-
-            if elem.get_type() == 'Effluent':
-                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
+        _WAS_flow = 1000.0  # hardcoded for test
+        _WAS[0].set_mainstream_flow(_WAS_flow)
+        _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
         #pdb.set_trace()
-        if utils.pfd.check_global_cnvg(wwtp):
+        utils.run.backward_set_flow([_WAS[0], _eff[0]])
+        utils.run.traverse_plant(wwtp, _inf[0])
+
+        if utils.run.check_global_cnvg(wwtp):
             break
 
     for elem in wwtp:

@@ -133,12 +133,12 @@ class splitter(poopy_lab_obj):
             self._in_flow_ds = flow_ds
             _chngd = True
         else:
-            print('ERROR in {}: invalid branch selected for'
+            print('ERROR in {}: invalid branch selected for '
                     'flow data source, or the selected branch has been'
-                    'given a flow data source.'.format(self.__name__))
+                    ' given a flow data source.'.format(self.__name__))
         
         if not _chngd:
-            return self._in_flow_ds, self._mo_flow_ds, self._so_flow_ds
+            return None
 
         # auto evaluate the flow data source tags after setting one.
         # first get an updated set of flags after the change:
@@ -329,11 +329,12 @@ class splitter(poopy_lab_obj):
 
 
     def set_mainstream_flow(self, flow=0):
-        self._upstream_set_mo_flow = False
         if flow >= 0:
             self._mo_flow = flow
+            self._upstream_set_mo_flow = False
+            self.set_flow_data_src('Main', flow_data_src.PRG)
         else:
-            print("ERROR:", self.__name__, "given flow < 0.")
+            print("ERROR:", self.__name__, "given main flow < 0.")
             self._mo_flow = 0
         return None
             
@@ -379,9 +380,11 @@ class splitter(poopy_lab_obj):
     def set_sidestream_flow(self, flow=0):
         if flow >= 0:
             self._so_flow = flow
+            self.set_flow_data_src('Side', flow_data_src.PRG)
             self._so_flow_defined = True
         else:
             self._so_flow_defined = False
+            print('ERROR:', self.__name__, 'given side flow < 0')
         return None
 
 
@@ -661,8 +664,10 @@ class influent(pipe):
         self._mo_flow_ds = flow_data_src.UPS
         self._so_flow_ds = flow_data_src.PRG
 
-        # defaults:
         self._upstream_set_mo_flow = True
+
+        # an influent is always "converged" within the time frame of interest
+        self._converged = True
 
         # Influent characteristics from user measurements/inputs
         # Setting default values for municipal wastewater in USA
@@ -686,6 +691,7 @@ class influent(pipe):
     
     # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
     #
+
     def _branch_flow_helper(self):
         self._mo_flow = self._design_flow
         self._so_flow = 0.0
@@ -694,6 +700,11 @@ class influent(pipe):
 
     def assign_initial_guess(self, init_guess_lst):
         pass
+
+
+    def is_converged(self, limit=1E-4):
+        return self._converged  # which is always True
+
 
     def add_upstream(self, discharger, branch):
         print("ERROR:", self.__name__, "has NO upstream.")
@@ -834,11 +845,11 @@ class effluent(pipe):
         self._type = "Effluent"
 
         # flow data source tags
-        self._in_flow_ds = flow_data_src.UPS
-        self._mo_flow_ds = flow_data_src.UPS
+        self._in_flow_ds = flow_data_src.TBD
+        self._mo_flow_ds = flow_data_src.TBD
         self._so_flow_ds = flow_data_src.PRG
 
-        self._upstream_set_mo_flow = True
+        #self._upstream_set_mo_flow = True
         self._mo_connected = True  # dummy
 
         return None
@@ -848,7 +859,8 @@ class effluent(pipe):
 
     def _branch_flow_helper(self):
         # the _mo_flow of an effluent is set externally (global main loop)
-        self._mo_flow = self._total_inflow  # _so_flow = 0
+        if self._upstream_set_mo_flow:
+            self._mo_flow = self._total_inflow  # _so_flow = 0
         return None
 
 
@@ -858,13 +870,14 @@ class effluent(pipe):
 
 
     def set_mainstream_flow(self, flow=0):
-#        if flow >= 0:
-#            self._mo_flow = flow
-#        else:
-#            print("ERROR:", self.__name__, "receives flow < 0.")
-#            self._mo_flow = 0.0
-#        return None
-        pass
+        if flow >= 0:
+            self._mo_flow = flow
+            self.set_flow_data_src('Main', flow_data_src.PRG)
+            self._upstream_set_mo_flow = False
+        else:
+            print("ERROR:", self.__name__, "receives flow < 0.")
+            self._mo_flow = 0.0
+        return None
 
 
     def discharge(self):

@@ -25,17 +25,18 @@
 #
 #
 # Change Log:
+# 20191011 KZ: re-tested after add. of flow data source setting funcs.
 # 20190815 KZ: init and passed
 #
 
 from unit_procs.streams import pipe, influent, effluent, splitter, WAS
-import utils.pfd
+import utils.pfd, utils.run
 import pdb
 
 if __name__ == '__main__':
 
     import INF_2SPLTR_EFF
-
+    
     wwtp = INF_2SPLTR_EFF.construct()
 
     utils.pfd.check(wwtp)
@@ -77,31 +78,20 @@ if __name__ == '__main__':
 
     print('Effluent in the PFD: {}'.format([_u.__name__ for _u in _eff]))
 
-    for fc in _final_clar:
-        fc.set_underflow_TSS(_uf_tss)
-
     # start the main loop
     _WAS_flow = 0.0  # M3/d
+    pdb.set_trace()
+    utils.run.forward_set_flow(wwtp, _inf[0])
 
     while True:
+        _WAS_flow = 1000.0  # hardcoded for test
+        _WAS[0].set_mainstream_flow(_WAS_flow)
+        _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
-        for elem in wwtp:
+        utils.run.backward_set_flow([_WAS[0], _eff[0]])
+        utils.run.traverse_plant(wwtp, _inf[0])
 
-            elem.update_combined_input()
-            elem.discharge()
-
-            if elem.get_type() == 'WAS':
-                _WAS_flow = 1000.0  # hardcoded for test
-
-
-            if elem.is_SRT_controller():
-                elem.set_sidestream_flow(_WAS_flow)
-
-            if elem.get_type() == 'Effluent':
-                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-
-        #pdb.set_trace()
-        if utils.pfd.check_global_cnvg(wwtp):
+        if utils.run.check_global_cnvg(wwtp):
             break
 
     for elem in wwtp:
