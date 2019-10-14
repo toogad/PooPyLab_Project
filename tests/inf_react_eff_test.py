@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20191014 KZ: re-test after flow data source tags implementation.
 # 20190917 KZ: Matched ASIM results!!! - PASSED TEST!!
 # 20190916 KZ: compared results against ASIM. ASIM has additional rate
 #           adjustments including K_ALK and ammonia limitations. 
@@ -109,37 +110,36 @@ if __name__ == '__main__':
 
     for _r in _reactors:
         _r.assign_initial_guess(_seed)
+    
+    utils.run.forward_set_flow(wwtp, _inf[0])
 
-    round = 1
-    while round <= 500:
+    max = 550
+    i = 0
+    while True:
+        #_WAS[0].set_mainstream_flow(_WAS_flow)
+        _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
-        for elem in wwtp:
+        utils.run.backward_set_flow(_eff)
 
-            elem.update_combined_input()
-            elem.discharge()
+        utils.run.traverse_plant(wwtp, _inf[0])
 
-            if elem.get_type() == 'WAS':
-                _WAS_flow = elem.set_WAS_flow(5, _reactors, _eff)
+        if utils.run.check_global_cnvg(wwtp) or i >= max:
+            break
+        
+        i += 1
 
-            if elem.is_SRT_controller():
-                elem.set_sidestream_flow(_WAS_flow)
-
-            if elem.get_type() == 'Effluent':
-                elem.set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-
-        #pdb.set_trace()
-        #if utils.pfd.check_global_cnvg(wwtp):
-        #    break
-
-        round += 1
 
     for elem in wwtp:
         print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
             elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
+        print('     main out PREV conc = {}'.format(elem._prev_mo_comps))
+        print('     side out PREV conc = {}'.format(elem._prev_so_comps))
         print('     main outlet conc = {}'.format(
             elem.get_main_outlet_concs()))
         print('     side outlet conc = {}'.format(
             elem.get_side_outlet_concs()))
+
+    print("TOTAL ITERATION = ", i)
 
     print(_reactors[0].get_active_vol())
     print(_reactors[0].get_model_params())

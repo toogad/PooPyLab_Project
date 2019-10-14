@@ -151,7 +151,7 @@ class final_clarifier(splitter):
 
         _in_tss = self.get_TSS('Inlet')
         self._under_TSS = (self._total_inflow * _in_tss * self._capture_rate
-                        / self._mo_flow)
+                        / self._so_flow)
 
         #self._mo_flow = (self._total_inflow * _in_tss * self._capture_rate
         #                / self._under_TSS)

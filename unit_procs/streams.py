@@ -94,13 +94,13 @@ class splitter(poopy_lab_obj):
         #    _comps[10]: X_BA
         #    _comps[11]: X_D
         #    _comps[12]: X_NS
-        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
-        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
-        self._so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS 
+        self._mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+        self._so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
 
         # results of previous round
-        self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
-        self._prev_so_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._prev_mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+        self._prev_so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
 
         # convergence status for the unit itself
         self._converged = False
@@ -199,15 +199,20 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-4):
+    def is_converged(self, limit=1E-3):
+        print(self.__name__)
+        print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
+            self._prev_so_comps))
+
         _mo_cnvg = [abs(self._mo_comps[i] - self._prev_mo_comps[i]) <= limit 
-                for i in range(len(self._mo_comps))]
+                    for i in range(len(self._mo_comps))]
 
         _so_cnvg = [abs(self._so_comps[i] - self._prev_so_comps[i]) <= limit
-                for i in range(len(self._so_comps))]
+                    for i in range(len(self._so_comps))]
 
         _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
-        _flow_cnvg = self._total_inflow == self._mo_flow + self._so_flow
+        _flow_cnvg = (abs(self._total_inflow - (self._mo_flow + self._so_flow))
+                        <= limit)
 
         self._converged = _conc_cnvg and _flow_cnvg
 
@@ -703,6 +708,7 @@ class influent(pipe):
 
 
     def is_converged(self, limit=1E-4):
+        print(self.__name__)
         return self._converged  # which is always True
 
 

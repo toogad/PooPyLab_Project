@@ -184,6 +184,7 @@ December 06, 2013 Kai Zhang: Initial design
 
 final_clarifier class: 
 ------------------------------------------------------------------------------
+20191013 KZ: fixed bug in solids split calc.
 20191003 KZ: revised tss balance to prepare for flow balance.
 20190916 KZ: updated to match asm1 matrix (component index)
 20190726 KZ: revised discharge() to match the add. of is_converged()

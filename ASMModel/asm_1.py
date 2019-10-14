@@ -459,10 +459,10 @@ class ASM_1():
         '''
         Defines dC/dt for the system:
         in_comps/ext_comps are lists that represent the Influent values 
-            (get them from the ASMReactor) of the ASM1 Components
+        (get them from the ASMReactor) of the ASM1 Components
             
-            0_S_DO, 1_S_I, 2_S_S, 3_S_NH, 4_S_NS, 5_S_NO, 6_S_ALK
-            7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
+        0_S_DO, 1_S_I, 2_S_S, 3_S_NH, 4_S_NS, 5_S_NO, 6_S_ALK
+        7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
         '''
         # Overall mass balance:
         # dComp/dt == InfFlow / Actvol * (InfConc - EffConc) + GrowthRate
