@@ -112,8 +112,9 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
     
     utils.run.forward_set_flow(wwtp, _inf[0])
+    utils.run.traverse_plant(wwtp, _inf[0])
 
-    max = 550
+    max = 100
     i = 0
     while True:
         #_WAS[0].set_mainstream_flow(_WAS_flow)

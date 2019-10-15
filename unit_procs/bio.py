@@ -122,7 +122,7 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
 
 
-    def integrate(self, first_index_particulate=7, f_s=0.1, f_p=2.0):
+    def integrate(self, first_index_particulate=7, f_s=0.2, f_p=2.0):
         '''
         Integrate the model forward in time.
         '''
