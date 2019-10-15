@@ -81,12 +81,13 @@ if __name__ == '__main__':
 
     # start the main loop
     _WAS_flow = 0.0  # M3/d
-    utils.run.forward_set_flow(wwtp, _inf[0])
+    utils.run.forward_set_flow(wwtp)
     # the first travese of the plant is a MUST so that the known forward flows
     # are passed onto as many units as possible. This will ensure the
     # backward_set_flow() has the correct information when setting the
     # downstream flows for those units whose outlet flow data source tags are
     # "DNS" (downstream)
+    #pdb.set_trace()
     utils.run.traverse_plant(wwtp, _inf[0])
 
     while True:

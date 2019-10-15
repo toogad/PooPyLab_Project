@@ -134,14 +134,19 @@ class ASM_1():
         # Ideal Growth Rate of Heterotrophs (u_max_H, 1/DAY)
         self._params['u_max_H'] = 6.0 * pow(1.072, self._delta_t)
 
-        # Lysis Rate of Heterotrophs (b_LH, 1/DAY)
+        # Decay Rate of Heterotrophs (b_H, 1/DAY)
         self._params['b_LH'] = 0.62 * pow(1.12, self._delta_t)
 
         # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
         self._params['u_max_A'] = 0.8 * pow(1.103, self._delta_t)
 
-        # Lysis Rate of Autotrophs (b_LA, 1/DAY)
-        self._params['b_LA'] = 0.096 * pow(1.114, self._delta_t)
+        # Decay Rate of Autotrophs (b_A, 1/DAY)
+        # A wide range exists. Table 6.3 on Grady 1999 shows 0.096 (1/d). IWA's
+        # ASM report did not even show b_A on its table for typical value. ASIM
+        # software show a value of "0.000", probably cut off by the print
+        # function. I can only assume it was < 0.0005 (1/d) at 20C.
+        #self._params['b_LA'] = 0.096 * pow(1.114, self._delta_t)
+        self._params['b_LA'] = 0.0007 * pow(1.114, self._delta_t)
 
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
         self._params['K_S'] = 20.0

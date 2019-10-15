@@ -171,7 +171,63 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
 #            1.0]
 
 
-def _forward(me):
+#def _forward(me):
+#    _in = me.get_upstream()
+#    _mo = me.get_downstream_main()
+#    _so = me.get_downstream_side()
+#
+#    _in_f_ds, _mo_f_ds, _so_f_ds = me.get_flow_data_src()
+#
+#    _in_f_known = (_in_f_ds != flow_data_src.TBD)
+#
+#    _mo_f_known = (_mo_f_ds != flow_data_src.TBD)
+#
+#    _so_f_known = (_so_f_ds != flow_data_src.TBD)
+#
+#    if _in_f_known:
+#        if _so == None:
+#            if not _mo_f_known:
+#                me.set_flow_data_src('Main', flow_data_src.UPS)
+#                _forward(_mo)
+#            #else:
+#                #pass
+#        else:
+#            if not _mo_f_known:
+#                if _so_f_known:
+#                    me.set_flow_data_src('Main', flow_data_src.UPS)
+#                #else:
+#                    #pass
+#            else:
+#                if _so_f_known:
+#                    # both _mo_f_known and _so_f_known
+#                    return None
+#                else:
+#                    me.set_flow_data_src('Side', flow_data_src.UPS)
+#                    _forward(_so)
+#    else:
+#        # _in_flow_data_src == TBD, can it be determined?
+#        _me_in_f_ds_known = True
+#        for _f in _in:
+#            _f_in_f_ds, _f_mo_f_ds, _f_so_f_ds = _f.get_flow_data_src()
+#            if _f.get_downstream_main() == me:
+#                if _f_mo_f_ds == flow_data_src.TBD:
+#                    _me_in_f_ds_known = False
+#                    break
+#            else:
+#                if _f_so_f_ds == flow_data_src.TBD:
+#                    _me_in_f_ds_known = False
+#                    break
+#        if _me_in_f_ds_known:
+#            me.set_flow_data_src('Inlet', flow_data_src.UPS)
+#            _forward(me)
+#    return None
+
+def _forward(me, visited=[]):
+    if me in visited or me == None:
+        return None
+    
+    visited.append(me)
+
     _in = me.get_upstream()
     _mo = me.get_downstream_main()
     _so = me.get_downstream_side()
@@ -188,7 +244,7 @@ def _forward(me):
         if _so == None:
             if not _mo_f_known:
                 me.set_flow_data_src('Main', flow_data_src.UPS)
-                _forward(_mo)
+                _forward(_mo, visited)
             #else:
                 #pass
         else:
@@ -203,7 +259,7 @@ def _forward(me):
                     return None
                 else:
                     me.set_flow_data_src('Side', flow_data_src.UPS)
-                    _forward(_so)
+                    _forward(_so, visited)
     else:
         # _in_flow_data_src == TBD, can it be determined?
         _me_in_f_ds_known = True
@@ -219,24 +275,37 @@ def _forward(me):
                     break
         if _me_in_f_ds_known:
             me.set_flow_data_src('Inlet', flow_data_src.UPS)
-            _forward(me)
+            _forward(me, visited)
     return None
 
 
-def forward_set_flow(starters, plant_inf):
+def forward_set_flow(wwtp):
     ''' set/adjust the _upstream_set_mo_flow flag of each unit that is
         influenced by the select units in the starters
     '''
-    # starters: a list of units as the starting point of the tracing
-    # plant_inf: plant's main influent unit
+    # wwtp: list of all units in a wwtp
 
-    _starters_= starters[:]
-    if plant_inf in starters:
-        _starters_.remove(plant_inf)
-        _starters_.insert(0, plant_inf)
+    _visited = []
+    _starters = []
 
-    for _s in _starters_:
-        _forward(_s)
+    # find potential starters
+    for _u in wwtp:
+        _in_fds, _mo_fds, _so_fds = _u.get_flow_data_src()
+        
+        _in_f_known = (_in_fds == flow_data_src.UPS 
+                        or _in_fds == flow_data_src.PRG)
+
+        _mo_f_known = (_mo_fds == flow_data_src.UPS
+                        or _mo_fds == flow_data_src.PRG)
+
+        _so_f_known = (_so_fds == flow_data_src.UPS
+                        or _so_fds == flow_data_src.PRG)
+
+        if (_in_f_known or _mo_f_known or _so_f_known):
+            _starters.append(_u)
+
+    for _s in _starters:
+        _forward(_s, _visited)
     
     return None
 
@@ -337,7 +406,7 @@ def _backward(me):
         return None
     elif _freedom > 1:  # too many units for setting flows
         print('ERROR:{} has {} upstream units' 
-                'with undefined flows.'.format(_s.__name__, _freedom))
+                'with undefined flows.'.format(me.__name__, _freedom))
     else:
         _target = _my_inlet_allow[0]
         _known_sum = _sum_of_known_inflows(me, _target)

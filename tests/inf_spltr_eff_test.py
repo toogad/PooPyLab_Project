@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # no need to seed the pfd in this case
     _WAS_flow = 0.0  # M3/d
 
-    utils.run.forward_set_flow(wwtp, _inf[0])
+    utils.run.forward_set_flow(wwtp)
     utils.run.traverse_plant(wwtp, _inf[0])
     
     #pdb.set_trace()

@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20191015 KZ: checked against ASIM results and passed.
 # 20191014 KZ: re-test after flow data source tags implementation.
 # 20190917 KZ: Matched ASIM results!!! - PASSED TEST!!
 # 20190916 KZ: compared results against ASIM. ASIM has additional rate
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     utils.run.forward_set_flow(wwtp, _inf[0])
     utils.run.traverse_plant(wwtp, _inf[0])
 
-    max = 100
+    max = 500
     i = 0
     while True:
         #_WAS[0].set_mainstream_flow(_WAS_flow)

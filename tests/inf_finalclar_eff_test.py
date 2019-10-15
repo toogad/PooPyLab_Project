@@ -84,7 +84,8 @@ if __name__ == '__main__':
 
     # start the main loop
     _WAS_flow = 5000  # M3/d
-    utils.run.forward_set_flow(wwtp, _inf[0])
+    utils.run.forward_set_flow(wwtp)
+    #utils.run.traverse_plant(wwtp, _inf[0])
 
     while True:
 

@@ -936,7 +936,7 @@ class WAS(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 
-        # the _branch_flow_helper() is not run here
+        self._branch_flow_helper()
 
         # WAS typically functions as an effluent obj. However, it can also be
         # a pipe obj. that connects to solids management process units.
@@ -971,7 +971,7 @@ class WAS(pipe):
         for unit in reactor_list:
             inventory += unit.get_TSS() * unit.get_active_vol()
 
-        inventory = inventory / 1000.0  # Convert unit to Kg
+        #inventory = inventory / 1000.0  # Convert unit to Kg
 
         return inventory
 
@@ -982,9 +982,9 @@ class WAS(pipe):
 
         _eff_solids = 0.0
         for _u in effluent_list:
-            _eff_solids += (_u.get_TSS() * _u.get_main_outflow() * 1E-3)  # KG
+            _eff_solids += _u.get_TSS() * _u.get_main_outflow()
 
-        self._mo_flow = ((self.get_solids_inventory(reactor_list) * 1E3 / SRT
+        self._mo_flow = ((self.get_solids_inventory(reactor_list) / SRT
                         - _eff_solids ) / self.get_TSS())
 
         #TODO: in MAIN function, we need to check whether the WAS flow
