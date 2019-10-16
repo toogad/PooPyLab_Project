@@ -73,7 +73,7 @@ wwtp = [inlet,
         ra, fc, outlet,
         RAS, waste, splt]
 
-SRT = 10  # day
+SRT = 15  # day
 
 def construct():
     # make an CMAS plant
@@ -93,6 +93,8 @@ def construct():
     inlet.set_mainstream_flow(37800)
     #splt.set_sidestream_flow(0.0)
     splt.set_mainstream_flow(18900) # i.e. 0.5Qi
+    
+    ra.set_active_vol(14000)
 
     print("CMAS PFD constructed.")
 

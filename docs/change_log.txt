@@ -166,6 +166,7 @@ December 07, 2013 Kai Zhang
 
 WAS class:
 ------------------------------------------------------------------------------
+20191016 KZ: screened out WAS flow < 0
 20191003 KZ: revised for the run time flow balance steps
 20190809 KZ: added effluent solids in set_WAS_flow()
 20190726 KZ: added discharge() to match the add. of is_converged()
@@ -244,6 +245,8 @@ utils\pfd.py:
 
 utils\run.py:
 ------------------------------------------------------------------------------
+20191016 KZ: fixed _backward() so that updated flows can be passed onto
+                upstream units
 20191011 KZ: added forward flow setting functions
 20191003 KZ: added back tracing flow setting functions
 20190920 KZ: moved concentration output here and added BFS traverse func

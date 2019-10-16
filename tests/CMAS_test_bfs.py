@@ -102,12 +102,11 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
 
     for fc in _final_clar:
-        fc.set_capture_rate(0.92)
+        fc.set_capture_rate(0.99)
 
     
     utils.run.forward_set_flow(wwtp)
     _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
-    #pdb.set_trace()
     _WAS[0].set_mainstream_flow(_WAS_flow)
     _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
     utils.run.backward_set_flow([_WAS[0], _eff[0]])
@@ -115,6 +114,7 @@ if __name__ == '__main__':
 
     max = 1000
     r = 1
+#    pdb.set_trace()
     while r <= max:
         _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
         _WAS[0].set_mainstream_flow(_WAS_flow)

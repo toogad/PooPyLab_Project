@@ -984,8 +984,15 @@ class WAS(pipe):
         for _u in effluent_list:
             _eff_solids += _u.get_TSS() * _u.get_main_outflow()
 
-        self._mo_flow = ((self.get_solids_inventory(reactor_list) / SRT
-                        - _eff_solids ) / self.get_TSS())
+        _wf = ((self.get_solids_inventory(reactor_list) / SRT
+                - _eff_solids ) / self.get_TSS())
+
+        # screen out the potential < 0 WAS flow
+        if _wf < 0:
+            print('WARN: SRT specified can not be achieved.')
+            self._mo_flow = 0.0
+        else:
+            self._mo_flow = _wf
 
         #TODO: in MAIN function, we need to check whether the WAS flow
         # is higher than the influent flow; The WAS flow is then passed to the

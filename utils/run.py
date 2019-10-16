@@ -395,10 +395,12 @@ def _backward(me):
     _my_inlet_allow = []
     if _my_inlet != None:
         _my_inlet_allow = [u for u in _my_inlet 
-                if (u.get_flow_data_src()[1] == flow_data_src.TBD
+                if ((u.get_flow_data_src()[1] == flow_data_src.TBD
+                    or u.get_flow_data_src()[1] == flow_data_src.DNS)
                     and u.get_downstream_main() == me) 
                     or
-                    (u.get_flow_data_src()[2] == flow_data_src.TBD
+                    ((u.get_flow_data_src()[2] == flow_data_src.TBD
+                    or u.get_flow_data_src()[2] == flow_data_src.DNS)
                     and u.get_downstream_side() == me)]
     
     _freedom = len(_my_inlet_allow)
