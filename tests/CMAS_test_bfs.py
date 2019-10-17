@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20191017 KZ: passed testing
 # 20190920 KZ: init and digressed to BFS traverse of the PFD
 #
 
@@ -83,7 +84,6 @@ if __name__ == '__main__':
     # start the main loop
     _WAS_flow = 0.0  # M3/d
     _SRT = CMAS.SRT
-    _params = _reactors[0].get_model_params()
 
     # get the influent ready
     for _u in _inf:
@@ -102,7 +102,7 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
 
     for fc in _final_clar:
-        fc.set_capture_rate(0.99)
+        fc.set_capture_rate(0.992)
 
     
     utils.run.forward_set_flow(wwtp)
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     utils.run.backward_set_flow([_WAS[0], _eff[0]])
     utils.run.traverse_plant(wwtp, _inf[0])
 
-    max = 1000
+    max = 2000
     r = 1
 #    pdb.set_trace()
     while r <= max:
