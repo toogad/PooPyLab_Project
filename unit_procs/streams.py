@@ -132,11 +132,8 @@ class splitter(poopy_lab_obj):
         elif branch == 'Inlet' and not _in_flow_known:
             self._in_flow_ds = flow_ds
             _chngd = True
-        else:
-            print('ERROR in {}: invalid branch selected for '
-                    'flow data source, or the selected branch has been'
-                    ' given a flow data source.'.format(self.__name__))
-        
+        #else: do nothing
+
         if not _chngd:
             return None
 
@@ -199,20 +196,22 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-3):
+    def is_converged(self, limit=1E-5):
         print(self.__name__)
         print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
             self._prev_so_comps))
 
-        _mo_cnvg = [abs(self._mo_comps[i] - self._prev_mo_comps[i]) <= limit 
-                    for i in range(len(self._mo_comps))]
-
-        _so_cnvg = [abs(self._so_comps[i] - self._prev_so_comps[i]) <= limit
-                    for i in range(len(self._so_comps))]
+        _mo_cnvg = self._check_conc_cnvg(self._mo_comps,
+                                        self._prev_mo_comps,
+                                        limit)
+                  
+        _so_cnvg = self._check_conc_cnvg(self._so_comps,
+                                        self._prev_so_comps,
+                                        limit)
 
         _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
-        _flow_cnvg = (abs(self._total_inflow - (self._mo_flow + self._so_flow))
-                        <= limit)
+        _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow)
+                        / self._total_inflow <= limit)
 
         self._converged = _conc_cnvg and _flow_cnvg
 
@@ -540,7 +539,25 @@ class splitter(poopy_lab_obj):
             self._so_flow_defined = True
         return None
 
-    #
+
+    def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], rel_lim=1E-3):
+        # curr_comps: current model component state/results
+        # prev_comps: previous round model component state/results
+        # rel_lim: relative limit for convergence
+        
+        _nc = len(curr_comps)
+        _cnvg = [False] * _nc
+        for i in range(_nc):
+            if prev_comps[i] == 0 and curr_comps[i] == 0:
+                _cnvg[i] = True
+            else:
+                #TODO: assuming prev_comps[i] > 0:
+                _cnvg[i] = ((abs(curr_comps[i] - prev_comps[i])
+                            / prev_comps[i]) <= rel_lim)
+        
+        return _cnvg[:]
+
+#
     # END OF COMMON INTERFACE DEFINITIONS
  
     

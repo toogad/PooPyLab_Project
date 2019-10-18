@@ -307,3 +307,12 @@ class poopy_lab_obj(object):
         '''
         pass
 
+
+    @abstractmethod
+    def _check_conc_cnvg(self, curr_comps, prev_comps, re_lim):
+        '''
+        helper function to check the convergence of model components
+        (concentrations).
+        '''
+        pass
+
