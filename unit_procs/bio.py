@@ -60,6 +60,9 @@ class asm_reactor(pipe):
         self._prev_so_comps = self._prev_mo_comps
 
         self._upstream_set_mo_flow = True
+        
+        self._int_step_sol = self._int_step_part = 1E-4
+
         return None
 
 
@@ -167,17 +170,21 @@ class asm_reactor(pipe):
         _step_sol = f_s * _max_step_sol
         _step_part = f_s * _max_step_part
 
+        #self._int_step_sol = min(self._int_step_sol, _new_step_sol)
+        #print('step_sol = ', self._int_step_sol)
+
         #print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
 
         # TODO: use the same time step before further optimization
         #for i in range(first_index_particulate):
-            #self._mo_comps[i] += _del_C_del_t[i] * _step_sol
+            #self._mo_comps[i] += _del_C_del_t[i] * self._int_step_sol
             
         #for j in range(first_index_particulate, len(self._mo_comps)):
-            #self._mo_comps[j] += _del_C_del_t[j] * _step_sol
+            #self._mo_comps[j] += _del_C_del_t[j] * self._int_step_part
 
         for i in range(len(self._mo_comps)):
             self._sludge._comps[i] += _del_C_del_t[i] * _step_sol
+
 
 
         # TODO: there may be problem with this:

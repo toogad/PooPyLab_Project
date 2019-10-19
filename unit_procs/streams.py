@@ -196,10 +196,10 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-5):
-        print(self.__name__)
-        print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
-            self._prev_so_comps))
+    def is_converged(self, limit=1E-4):
+        #print(self.__name__)
+        #print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
+        #    self._prev_so_comps))
 
         _mo_cnvg = self._check_conc_cnvg(self._mo_comps,
                                         self._prev_mo_comps,
@@ -215,8 +215,8 @@ class splitter(poopy_lab_obj):
 
         self._converged = _conc_cnvg and _flow_cnvg
 
-        print('{} cnvg: flow {}, main {}, side{}'.format(
-                self.__name__, _flow_cnvg, _mo_cnvg, _so_cnvg))
+        #print('{} cnvg: flow {}, main {}, side{}'.format(
+        #        self.__name__, _flow_cnvg, _mo_cnvg, _so_cnvg))
 
         return self._converged
 
@@ -347,8 +347,8 @@ class splitter(poopy_lab_obj):
         #if not self._inflow_totalized:
         self.totalize_inflow()
         self._branch_flow_helper()
-        if self._mo_flow <= 0:
-            print("WARN/ERROR:", self.__name__, "main outlet flow <= 0.")
+        if self._mo_flow < 0:
+            print("WARN/ERROR:", self.__name__, "main outlet flow < 0.")
         return self._mo_flow
 
 
@@ -547,13 +547,17 @@ class splitter(poopy_lab_obj):
         
         _nc = len(curr_comps)
         _cnvg = [False] * _nc
+        rel_diff = []
         for i in range(_nc):
             if prev_comps[i] == 0 and curr_comps[i] == 0:
                 _cnvg[i] = True
             else:
                 #TODO: assuming prev_comps[i] > 0:
-                _cnvg[i] = ((abs(curr_comps[i] - prev_comps[i])
-                            / prev_comps[i]) <= rel_lim)
+                _rd = abs(curr_comps[i] - prev_comps[i]) / prev_comps[i]
+                rel_diff.append(_rd)
+                _cnvg[i] = _rd <= rel_lim
+
+        #print('rel_diff:', rel_diff)
         
         return _cnvg[:]
 
@@ -725,7 +729,6 @@ class influent(pipe):
 
 
     def is_converged(self, limit=1E-4):
-        print(self.__name__)
         return self._converged  # which is always True
 
 
@@ -1001,8 +1004,10 @@ class WAS(pipe):
         for _u in effluent_list:
             _eff_solids += _u.get_TSS() * _u.get_main_outflow()
 
-        _wf = ((self.get_solids_inventory(reactor_list) / SRT
-                - _eff_solids ) / self.get_TSS())
+        _wf = 0.0
+        if self.get_TSS() != 0:
+            _wf = ((self.get_solids_inventory(reactor_list) / SRT
+                    - _eff_solids ) / self.get_TSS())
 
         # screen out the potential < 0 WAS flow
         if _wf < 0:

@@ -113,7 +113,7 @@ if __name__ == '__main__':
     utils.run.backward_set_flow([_WAS[0], _eff[0]])
     utils.run.traverse_plant(wwtp, _inf[0])
 
-    max = 1000
+    max = 2000
     r = 1
     while r <= max:
         _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
@@ -128,18 +128,8 @@ if __name__ == '__main__':
 
     utils.run.show_concs(wwtp)
 
-#    for elem in wwtp:
-#        print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
-#            elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
-#        print('     main out PREV conc = {}'.format(elem._prev_mo_comps))
-#        print('     side out PREV conc = {}'.format(elem._prev_so_comps))
-#        print('     main outlet conc = {}'.format(
-#            elem.get_main_outlet_concs()))
-#        print('     side outlet conc = {}'.format(
-#            elem.get_side_outlet_concs()))
-#
     print("TOTAL ITERATION = ", r)
 
-#    print(_reactors[0].get_active_vol())
-#    print(_reactors[0].get_model_params())
-#    print(_reactors[0].get_model_stoichs())
+    print(_reactors[0].get_active_vol())
+    print(_reactors[0].get_model_params())
+    print(_reactors[0].get_model_stoichs())
