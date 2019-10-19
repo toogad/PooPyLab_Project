@@ -37,7 +37,7 @@ def check_global_cnvg(wwtp):
     for unit in wwtp:
         if not unit.is_converged():
             _glb_cnvg = False
-            print(unit.__name__, 'not converged yet')
+            #print(unit.__name__, 'not converged yet')
             break
     return _glb_cnvg
 
@@ -48,7 +48,8 @@ def show_concs(wwtp):
             elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
         print('     main outlet conc = {}'.format(
             elem.get_main_outlet_concs()))
-        print('     side outlet conc = {}'.format(
+        if elem.has_sidestream():
+            print('     side outlet conc = {}'.format(
             elem.get_side_outlet_concs()))
 
     return None
