@@ -172,57 +172,6 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
 #            1.0]
 
 
-#def _forward(me):
-#    _in = me.get_upstream()
-#    _mo = me.get_downstream_main()
-#    _so = me.get_downstream_side()
-#
-#    _in_f_ds, _mo_f_ds, _so_f_ds = me.get_flow_data_src()
-#
-#    _in_f_known = (_in_f_ds != flow_data_src.TBD)
-#
-#    _mo_f_known = (_mo_f_ds != flow_data_src.TBD)
-#
-#    _so_f_known = (_so_f_ds != flow_data_src.TBD)
-#
-#    if _in_f_known:
-#        if _so == None:
-#            if not _mo_f_known:
-#                me.set_flow_data_src('Main', flow_data_src.UPS)
-#                _forward(_mo)
-#            #else:
-#                #pass
-#        else:
-#            if not _mo_f_known:
-#                if _so_f_known:
-#                    me.set_flow_data_src('Main', flow_data_src.UPS)
-#                #else:
-#                    #pass
-#            else:
-#                if _so_f_known:
-#                    # both _mo_f_known and _so_f_known
-#                    return None
-#                else:
-#                    me.set_flow_data_src('Side', flow_data_src.UPS)
-#                    _forward(_so)
-#    else:
-#        # _in_flow_data_src == TBD, can it be determined?
-#        _me_in_f_ds_known = True
-#        for _f in _in:
-#            _f_in_f_ds, _f_mo_f_ds, _f_so_f_ds = _f.get_flow_data_src()
-#            if _f.get_downstream_main() == me:
-#                if _f_mo_f_ds == flow_data_src.TBD:
-#                    _me_in_f_ds_known = False
-#                    break
-#            else:
-#                if _f_so_f_ds == flow_data_src.TBD:
-#                    _me_in_f_ds_known = False
-#                    break
-#        if _me_in_f_ds_known:
-#            me.set_flow_data_src('Inlet', flow_data_src.UPS)
-#            _forward(me)
-#    return None
-
 def _forward(me, visited=[]):
     if me in visited or me == None:
         return None
