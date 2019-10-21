@@ -36,7 +36,7 @@ class poopy_lab_obj(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def set_flow_data_src(self, branch):
+    def set_flow_data_src(self, branch, flow_ds):
         '''
         Set the flow data source of the selected branch.
         '''
@@ -46,7 +46,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def get_flow_data_src(self):
         '''
-        Get the flow data source tag of the unit.
+        Get the flow data source tags of the unit.
         '''
         pass
 
@@ -60,7 +60,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def is_converged(self):
+    def is_converged(self, limit):
         '''
         Return the convergence status of the unit.
         '''
@@ -309,7 +309,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def _check_conc_cnvg(self, curr_comps, prev_comps, re_lim):
+    def _check_conc_cnvg(self, curr_comps, prev_comps, rel_lim):
         '''
         helper function to check the convergence of model components
         (concentrations).
