@@ -130,14 +130,6 @@ class final_clarifier(splitter):
         return None
 
 
-#    def set_underflow_TSS(self, uf_TSS=15000):
-#        if self._valid_under_TSS(uf_TSS):
-#            self._under_TSS = uf_TSS
-#        else:
-#            print("ERROR:", self.__name__, "given crazy underflow TSS.")
-#        return None
-
-
     def _valid_under_TSS(self, uf_TSS):
         self.update_combined_input()
         _in_tss = self.get_TSS('Inlet')
@@ -146,26 +138,13 @@ class final_clarifier(splitter):
 
     def _settle_solids(self, particulate_index=[7,8,9,10,11,12]):
         if not self._valid_under_TSS(self._under_TSS):
-            print('ERROR:', self.__name__, 'has invalid underflow TSS.')
+            print('WARN:', self.__name__, 'has invalid underflow TSS.')
             return None
 
         _in_tss = self.get_TSS('Inlet')
         self._under_TSS = (self._total_inflow * _in_tss * self._capture_rate
                         / self._so_flow)
 
-        #self._mo_flow = (self._total_inflow * _in_tss * self._capture_rate
-        #                / self._under_TSS)
-        #TODO: do flow balance before running this function
-        #self._side_flow_defined = True
-        #self._mo_flow = self._total_inflow - self._so_flow
-
-        # overflow TSS
-#        if self._mo_flow > 0:
-#            _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
-#                            / self._mo_flow)
-#        else:
-#            _of_tss = 30.0  #TODO: is this ok?
-        
         _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
                             / self._mo_flow)
 
@@ -186,6 +165,14 @@ class final_clarifier(splitter):
             self._mo_comps[i] = _of_tss * _frac
             self._so_comps[i] = self._under_TSS * _frac
         
+        # arbitarily adjust the DO according to the HRT of the final clarifier
+        
+        _HRT = self._active_vol / self._total_inflow
+
+        if _HRT > 15/1440:  # 15 min HRT
+            self._mo_comps[0] = 0.0
+            self._so_comps[0] = 0.0
+
         return None
              
     #

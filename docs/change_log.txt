@@ -3,6 +3,7 @@ CHANGE LOGS:
 
 base class:
 ------------------------------------------------------------------------------
+20191021 KZ: cleaned up
 Oct 09, 2019 KZ: removed set_as_visited() and is_visited()
 Oct 07, 2019 KZ: added get_flow_data_src()
 Sep 20, 2019 KZ: added assign_initial_guess() back
@@ -185,6 +186,7 @@ December 06, 2013 Kai Zhang: Initial design
 
 final_clarifier class: 
 ------------------------------------------------------------------------------
+20191022 KZ: cleaned up
 20191013 KZ: fixed bug in solids split calc.
 20191003 KZ: revised tss balance to prepare for flow balance.
 20190916 KZ: updated to match asm1 matrix (component index)
@@ -200,11 +202,12 @@ July 11, 2013 KZ: Initial commit
 
 asm_reactor class: 
 ------------------------------------------------------------------------------
+20191022 KZ: corrected DO acceptance criteria in set_model_condition()
 20190915 KZ: start to get reasonable integration results. need more testing
 20190911 KZ: got results from integrate()
 20190905 KZ: started adding integrate()
 20190813 KZ: fixed discharge() side outlet; fixed flow into
-estimate_current_state()
+                estimate_current_state()
 20190812 KZ: corrected a few params in solver func.
 20190726 KZ: revised to match the is_converged()
 20190715 KZ: added self._type
@@ -219,14 +222,16 @@ December 07, 2013 Kai Zhang
 
 ASM1 class:
 ------------------------------------------------------------------------------
-2019-09-17 KZ: adjusted all kinetic/stoichs/Arrhenius to vals on IWA report
-2019-09-16 KZ: corrected temperature effect
-2019-09-15 KZ: zero-ed out S_DO's rate to simplify
-2019-09-11 KZ: revised _dCdt()
-2019-09-05 KZ: re-org model components to match .csv model template
-2019-08-27 KZ: added integrate()
-2019-02-09 KZ: standardized import
-2019-08-12 KZ: fixed typos
+20191022 KZ: corresponding changes to asm_reactor in its
+                set_model_condition()
+20190917 KZ: adjusted all kinetic/stoichs/Arrhenius to vals on IWA report
+20190916 KZ: corrected temperature effect
+20190915 KZ: zero-ed out S_DO's rate to simplify
+20190911 KZ: revised _dCdt()
+20190905 KZ: re-org model components to match .csv model template
+20190827 KZ: added integrate()
+20190209 KZ: standardized import
+20190812 KZ: fixed typos
 Dec 13, 2017 KZ: Fixed a few mismatched parentheses 
 Jul 20, 2017 KZ: Changed to pythonic style
 Mar 21, 2017 KZ: Changed to Python3

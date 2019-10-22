@@ -97,11 +97,6 @@ class ASM_1():
 
     def update(self, ww_temp, dissolved_O2):
         ''' update the ASM model with new Temperature and Bulk_DO'''
-        if ww_temp <= 4 or dissolved_O2 < 0:
-            print("Error: New temperature or Bulk_DO too low.", \
-                    "USING PREVIOUS VALUES FOR BOTH")
-            return -1
-
         self._temperature = ww_temp
         self._bulk_DO = dissolved_O2
         self._delta_t = self._temperature - 20.0
@@ -312,6 +307,7 @@ class ASM_1():
         self._stoichs['7_12'] = -1.0
 
         return None
+
     ##=========================== End of Stoichiometrics =====================
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):

@@ -110,7 +110,7 @@ class asm_reactor(pipe):
 
 
     def set_model_condition(self, Temperature, DO):
-        if Temperature >= 4 and DO > 0:
+        if Temperature >= 4 and DO >= 0:
             self._sludge.update(Temperature, DO)
         else:
             print("ERROR:", self.__name__, "given crazy temperature or DO.")
