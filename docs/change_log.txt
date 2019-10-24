@@ -202,6 +202,7 @@ July 11, 2013 KZ: Initial commit
 
 asm_reactor class: 
 ------------------------------------------------------------------------------
+20191024 KZ: added Runge-Kutta 4 method to integrate()
 20191022 KZ: corrected DO acceptance criteria in set_model_condition()
 20190915 KZ: start to get reasonable integration results. need more testing
 20190911 KZ: got results from integrate()
@@ -222,6 +223,7 @@ December 07, 2013 Kai Zhang
 
 ASM1 class:
 ------------------------------------------------------------------------------
+20191024 KZ: revised _dCdt() to facilitate Runge-Kutta method
 20191022 KZ: corresponding changes to asm_reactor in its
                 set_model_condition()
 20190917 KZ: adjusted all kinetic/stoichs/Arrhenius to vals on IWA report
