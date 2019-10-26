@@ -19,7 +19,7 @@
 #    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
 #
 # -----------------------------------------------------------------------------
-#    Definition of a Modified Luzak-Ettinger (MLE) Process Flow Diagram.
+#    Definition of a Modified Ludzack-Ettinger (MLE) Process Flow Diagram.
 #
 #
 #    Process Flow Diagram:
