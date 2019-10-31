@@ -61,8 +61,6 @@ class asm_reactor(pipe):
 
         self._upstream_set_mo_flow = True
         
-        self._int_step_sol = self._int_step_part = 1E-4
-
         return None
 
 
@@ -73,6 +71,7 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
+        #self.integrate(7, 'Euler', 0.05, 2.0)
         self.integrate(7, 'Euler', 0.05, 2.0)
         self._so_comps = self._mo_comps[:]
         self._discharge_main_outlet()

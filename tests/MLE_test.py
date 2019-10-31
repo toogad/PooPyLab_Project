@@ -113,7 +113,7 @@ if __name__ == '__main__':
     #pdb.set_trace()
     utils.run.traverse_plant(wwtp, _inf[0])
 
-    max = 6500
+    max = 5000
     r = 1
     while r <= max:
         _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
