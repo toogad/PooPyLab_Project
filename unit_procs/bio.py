@@ -60,6 +60,12 @@ class asm_reactor(pipe):
         self._prev_so_comps = self._prev_mo_comps
 
         self._upstream_set_mo_flow = True
+
+        # scalar used for controlling integration step size in RKF45 method
+        self._scalar = 0.5  # initial guess
+
+        # step size for RKF45 method
+        self._step = 0.00625  # aka 9/1440 day
         
         return None
 
@@ -72,7 +78,7 @@ class asm_reactor(pipe):
         self._prev_so_comps = self._mo_comps[:]
 
         #self.integrate(7, 'Euler', 0.05, 2.0)
-        self.integrate(7, 'Euler', 0.05, 2.0)
+        self.integrate(7, 'RKF45', 0.05, 2.0)
         self._so_comps = self._mo_comps[:]
         self._discharge_main_outlet()
 
@@ -137,10 +143,113 @@ class asm_reactor(pipe):
         # f_s: fraction of max step for soluble model components, typ=5%-20%
         # f_p: fraction of max step for particulate model components, typ=2.0
 
-        if method_name == 'Euler':
-            self._euler(first_index_particulate, f_s, f_p)
-        else:
+        if method_name == 'RKF45':
+            self._runge_kutta_fehlberg_45()
+        elif method_name == 'RK4':
             self._runge_kutta_4(first_index_particulate, f_s, f_p)
+        else:
+            self._euler(first_index_particulate, f_s, f_p)
+        
+        return None
+
+
+    def _runge_kutta_fehlberg_45(self, tol=1E-14):
+        '''
+        Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
+
+        tol: user defined tolerance of error
+        
+        '''
+
+        # Number of model components
+        _nc = len(self._mo_comps)
+
+        # update the step size:
+        h = self._step * self._scalar
+        self._step = h
+
+        # f1 == yk
+        yk = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                self._mo_comps)
+
+        k1 = [h * yk[j] for j in range(_nc)]
+
+
+        _w2 = [yk[j] + k1[j] / 4 for j in range(_nc)]
+
+        f2 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w2)
+
+        k2 = [h * f2[j] for j in range(_nc)]
+
+
+        # 3/32 = 0.09375; 9/32 = 0.28125
+        _w3 = [yk[j] + 0.09375 * k1[j] + 0.28125 * k2[j] for j in range(_nc)]
+
+        f3 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w3)
+
+        k3 = [h * f3[j] for j in range(_nc)]
+
+        
+        _w4 = [yk[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j]
+                + 7296/2197 * k3[j] for j in range(_nc)]
+
+        f4 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w4)
+
+        k4 = [h * f4[j] for j in range(_nc)]
+
+
+        _w5 = [yk[j] + 439/216 * k1[j] - 8 * k2[j] + 3680/513 * k3[j]
+                - 854/4104 * k4[j] for j in range(_nc)]
+
+        f5 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w5)
+
+        k5 = [h * f5[j] for j in range(_nc)]
+
+
+        _w6 = [yk[j] - 8/27 * k1[j] + 2 * k2[j] - 3544/2565 * k3[j]
+                + 1859/4104 * k4[j] - 11/40 * k5[j] for j in range(_nc)]
+
+        f6 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w6)
+
+        k6 = [h * f6[j] for j in range(_nc)]
+
+
+        # make an estimate using RK4:
+        yk_plus_1_RK4 = [yk[j] + 25/216 * k1[j] + 1408/2565 * k3[j]
+                        + 2197/4101 * k4[j] - 0.2 * k5[j]
+                        for j in range(_nc)]
+                       
+
+        # make an estimate using RK5:
+        yk_plus_1_RK5 = [yk[j] + 16/135 * k1[j] + 6656/12825 * k3[j]
+                        + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
+                        for j in range(_nc)]
+
+
+        _s = [abs(yk_plus_1_RK4[j] - yk_plus_1_RK5[j]) 
+                for j in range(_nc) if yk_plus_1_RK4[j] != yk_plus_1_RK5[j]]
+
+        # (1/2) ^ (1/4) ~= 0.8109
+        self._scalar = 0.8109 * (tol * h / max(_s)) ** 0.25
+
+        print('h = {}, s = {}'.format(h, self._scalar))
         
         return None
 

@@ -196,7 +196,7 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-3):
+    def is_converged(self, limit=1E-14):
         #print(self.__name__)
         #print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
         #    self._prev_so_comps))
