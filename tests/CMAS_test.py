@@ -113,7 +113,7 @@ if __name__ == '__main__':
     utils.run.backward_set_flow([_WAS[0], _eff[0]])
     utils.run.traverse_plant(wwtp, _inf[0])
     
-    max = 5000
+    max = 20000
     
     r = 1
     while r <= max:

@@ -62,10 +62,10 @@ class asm_reactor(pipe):
         self._upstream_set_mo_flow = True
 
         # scalar used for controlling integration step size in RKF45 method
-        self._scalar = 0.5  # initial guess
+        self._scalar = 1.0  # initial guess
 
         # step size for RKF45 method
-        self._step = 0.00625  # aka 9/1440 day
+        self._step = 1.0 / 24.0
         
         return None
 
@@ -78,6 +78,7 @@ class asm_reactor(pipe):
         self._prev_so_comps = self._mo_comps[:]
 
         #self.integrate(7, 'Euler', 0.05, 2.0)
+        #self.integrate(7, 'RK4', 0.05, 2.0)
         self.integrate(7, 'RKF45', 0.05, 2.0)
         self._so_comps = self._mo_comps[:]
         self._discharge_main_outlet()
@@ -153,7 +154,7 @@ class asm_reactor(pipe):
         return None
 
 
-    def _runge_kutta_fehlberg_45(self, tol=1E-14):
+    def _runge_kutta_fehlberg_45(self, tol=1E-8):
         '''
         Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
 
@@ -164,20 +165,22 @@ class asm_reactor(pipe):
         # Number of model components
         _nc = len(self._mo_comps)
 
-        # update the step size:
-        h = self._step * self._scalar
-        self._step = h
+        # update the step size using the current step size and the scalar from
+        # previous round of RK4 vs RK5 comparison
+        h = self._step
 
-        # f1 == yk
-        yk = self._sludge._dCdt(self._active_vol,
+        print('currently h = {}, s = {}'.format(h, self._scalar))
+
+        f1 = self._sludge._dCdt(self._active_vol,
                                 self._total_inflow,
                                 self._in_comps,
-                                self._mo_comps)
+                                self._sludge._comps)
 
-        k1 = [h * yk[j] for j in range(_nc)]
+        k1 = [h * f1[j] for j in range(_nc)]
 
 
-        _w2 = [yk[j] + k1[j] / 4 for j in range(_nc)]
+        _w2 = [self._sludge._comps[j] + k1[j] / 4
+                for j in range(_nc)]
 
         f2 = self._sludge._dCdt(self._active_vol,
                                 self._total_inflow,
@@ -188,7 +191,8 @@ class asm_reactor(pipe):
 
 
         # 3/32 = 0.09375; 9/32 = 0.28125
-        _w3 = [yk[j] + 0.09375 * k1[j] + 0.28125 * k2[j] for j in range(_nc)]
+        _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j]
+                for j in range(_nc)]
 
         f3 = self._sludge._dCdt(self._active_vol,
                                 self._total_inflow,
@@ -198,8 +202,9 @@ class asm_reactor(pipe):
         k3 = [h * f3[j] for j in range(_nc)]
 
         
-        _w4 = [yk[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j]
-                + 7296/2197 * k3[j] for j in range(_nc)]
+        _w4 = [self._sludge._comps[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j]
+                + 7296/2197 * k3[j]
+                for j in range(_nc)]
 
         f4 = self._sludge._dCdt(self._active_vol,
                                 self._total_inflow,
@@ -209,8 +214,9 @@ class asm_reactor(pipe):
         k4 = [h * f4[j] for j in range(_nc)]
 
 
-        _w5 = [yk[j] + 439/216 * k1[j] - 8 * k2[j] + 3680/513 * k3[j]
-                - 854/4104 * k4[j] for j in range(_nc)]
+        _w5 = [self._sludge._comps[j] + 439/216 * k1[j] - 8 * k2[j]
+                + 3680/513 * k3[j] - 845/4104 * k4[j]
+                for j in range(_nc)]
 
         f5 = self._sludge._dCdt(self._active_vol,
                                 self._total_inflow,
@@ -220,8 +226,9 @@ class asm_reactor(pipe):
         k5 = [h * f5[j] for j in range(_nc)]
 
 
-        _w6 = [yk[j] - 8/27 * k1[j] + 2 * k2[j] - 3544/2565 * k3[j]
-                + 1859/4104 * k4[j] - 11/40 * k5[j] for j in range(_nc)]
+        _w6 = [self._sludge._comps[j] - 8/27 * k1[j] + 2 * k2[j]
+                - 3544/2565 * k3[j] + 1859/4104 * k4[j] - 11/40 * k5[j]
+                for j in range(_nc)]
 
         f6 = self._sludge._dCdt(self._active_vol,
                                 self._total_inflow,
@@ -231,26 +238,99 @@ class asm_reactor(pipe):
         k6 = [h * f6[j] for j in range(_nc)]
 
 
-        # make an estimate using RK4:
-        yk_plus_1_RK4 = [yk[j] + 25/216 * k1[j] + 1408/2565 * k3[j]
-                        + 2197/4101 * k4[j] - 0.2 * k5[j]
-                        for j in range(_nc)]
+        # propose an estimate using RK4 with current step size, without the yk
+        # term
+        del_RK4 = [25/216 * k1[j] + 1408/2565 * k3[j]
+                    + 2197/4101 * k4[j] - 0.2 * k5[j]
+                    for j in range(_nc)]
                        
 
-        # make an estimate using RK5:
-        yk_plus_1_RK5 = [yk[j] + 16/135 * k1[j] + 6656/12825 * k3[j]
-                        + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
-                        for j in range(_nc)]
+        # propose an estimate using RK5 with current step size, without the yk
+        # term
+        del_RK5 = [16/135 * k1[j] + 6656/12825 * k3[j]
+                    + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
+                    for j in range(_nc)]
 
 
-        _s = [abs(yk_plus_1_RK4[j] - yk_plus_1_RK5[j]) 
-                for j in range(_nc) if yk_plus_1_RK4[j] != yk_plus_1_RK5[j]]
+        _err_sqr = [(del_RK4[j] - del_RK5[j]) ** 2 for j in range(_nc)]
 
-        # (1/2) ^ (1/4) ~= 0.8109
-        self._scalar = 0.8109 * (tol * h / max(_s)) ** 0.25
+        _err = sum(_err_sqr) ** 0.5
 
-        print('h = {}, s = {}'.format(h, self._scalar))
+        print('current err:', _err)
+
+        # scalar to adjust step size
+        _s = 1.0
+        if _err >= tol:
+            # (1/2) ^ (1/4) ~= 0.840896
+            #_s = 0.840896 * (tol * h / _err) ** 0.25 
+            _s = (tol * h / _err) ** 0.25 
+            self._scalar = _s
+            self._step *= self._scalar
+            
+                
+        # re-evaluate based on new step size
+        # yk does not change
+        k1 = [self._step * self._sludge._comps[j] for j in range(_nc)]
+
+
+        _w2 = [self._sludge._comps[j] + k1[j] / 4 for j in range(_nc)]
+
+        f2 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w2)
+
+        k2 = [self._step * f2[j] for j in range(_nc)]
+
+
+        # 3/32 = 0.09375; 9/32 = 0.28125
+        _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j]
+                for j in range(_nc)]
+
+        f3 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w3)
+
+        k3 = [self._step * f3[j] for j in range(_nc)]
+
         
+        _w4 = [self._sludge._comps[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j]
+                + 7296/2197 * k3[j]
+                for j in range(_nc)]
+
+        f4 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w4)
+
+        k4 = [self._step * f4[j] for j in range(_nc)]
+
+
+        _w5 = [self._sludge._comps[j] + 439/216 * k1[j] - 8 * k2[j]
+                + 3680/513 * k3[j] - 845/4104 * k4[j]
+                for j in range(_nc)]
+
+        f5 = self._sludge._dCdt(self._active_vol,
+                                self._total_inflow,
+                                self._in_comps,
+                                _w5)
+
+        k5 = [self._step * f5[j] for j in range(_nc)]
+
+        del_RK5 = [16/135 * k1[j] + 6656/12825 * k3[j]
+                    + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
+                    for j in range(_nc)]
+
+        # update estimate using RK4 with current step size:
+        #self._sludge._comps = [self._sludge._comps[j] + 25/216 * k1[j]
+        #                + 1408/2565 * k3[j] + 2197/4101 * k4[j] - 0.2 * k5[j]
+        #                for j in range(_nc)]
+        self._sludge._comps = [self._sludge._comps[j] + del_RK5[j]
+                                for j in range(_nc)]
+
+        self._mo_comps = self._so_comps = self._sludge._comps[:]
+
         return None
 
 
