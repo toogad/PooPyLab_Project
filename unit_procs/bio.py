@@ -65,7 +65,7 @@ class asm_reactor(pipe):
         self._scalar = 1.0  # initial guess
 
         # step size for RKF45 method
-        self._step = 1.0 / 24.0
+        self._step = 10/1440.0
         
         return None
 
@@ -176,6 +176,28 @@ class asm_reactor(pipe):
                                 self._in_comps,
                                 self._sludge._comps)
 
+        _uppers_sol = []
+        _uppers_part = []
+
+        for i in range(7):
+            # screen out the zero items in _del_C_del_t
+            if f1[i] != 0:
+                #_uppers_sol.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
+                _uppers_sol.append(self._sludge._comps[i] 
+                        / abs(f1[i]))
+
+        for j in range(7, _nc):
+            # screen out the zero items in _del_C_del_t
+            if f1[j] != 0:
+                #_uppers_part.append(self._mo_comps[j] / abs(_del_C_del_t[j]))
+                _uppers_part.append(self._sludge._comps[j] 
+                        / abs(f1[j]))
+
+    
+        _max_step_sol = min(_uppers_sol)
+        _max_step_part = min(_uppers_part)
+
+
         k1 = [h * f1[j] for j in range(_nc)]
 
 
@@ -265,7 +287,9 @@ class asm_reactor(pipe):
             #_s = 0.840896 * (tol * h / _err) ** 0.25 
             _s = (tol * h / _err) ** 0.25 
             self._scalar = _s
-            self._step *= self._scalar
+            print('h={}, scalar={}, h_new={}, max_h_sol={}'.format(
+                self._step, _s, self._step * _s, _max_step_sol))
+            self._step = min(self._step * self._scalar, _max_step_sol * 0.02)
             
                 
         # re-evaluate based on new step size
