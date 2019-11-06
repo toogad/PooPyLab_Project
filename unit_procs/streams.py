@@ -196,7 +196,7 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-15):
+    def is_converged(self, limit=1E-5):
         #print(self.__name__)
         #print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
         #    self._prev_so_comps))
@@ -540,7 +540,7 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], rel_lim=1E-3):
+    def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], rel_lim=1E-5):
         # curr_comps: current model component state/results
         # prev_comps: previous round model component state/results
         # rel_lim: relative limit for convergence

@@ -121,6 +121,7 @@ if __name__ == '__main__':
         _WAS[0].set_mainstream_flow(_WAS_flow)
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
         utils.run.backward_set_flow([_WAS[0], _eff[0]])
+        #pdb.set_trace()
         utils.run.traverse_plant(wwtp, _inf[0])
 
         if utils.run.check_global_cnvg(wwtp) or r == max:

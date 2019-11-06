@@ -65,7 +65,7 @@ class asm_reactor(pipe):
         self._scalar = 1.0  # initial guess
 
         # step size for RKF45 method
-        self._step = 10/1440.0
+        self._step = 0.5/24.0
         
         return None
 
@@ -154,50 +154,24 @@ class asm_reactor(pipe):
         return None
 
 
-    def _runge_kutta_fehlberg_45(self, tol=1E-8):
+    def _RKF45_ks(self):
         '''
-        Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
-
-        tol: user defined tolerance of error
-        
+        Calculate k1...k6 used in RKF45 method.
         '''
 
-        # Number of model components
+        # number of model components
         _nc = len(self._mo_comps)
 
         # update the step size using the current step size and the scalar from
         # previous round of RK4 vs RK5 comparison
         h = self._step
 
-        print('currently h = {}, s = {}'.format(h, self._scalar))
-
         f1 = self._sludge._dCdt(self._active_vol,
                                 self._total_inflow,
                                 self._in_comps,
-                                self._sludge._comps)
+                                self._mo_comps)
 
-        _uppers_sol = []
-        _uppers_part = []
-
-        for i in range(7):
-            # screen out the zero items in _del_C_del_t
-            if f1[i] != 0:
-                #_uppers_sol.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
-                _uppers_sol.append(self._sludge._comps[i] 
-                        / abs(f1[i]))
-
-        for j in range(7, _nc):
-            # screen out the zero items in _del_C_del_t
-            if f1[j] != 0:
-                #_uppers_part.append(self._mo_comps[j] / abs(_del_C_del_t[j]))
-                _uppers_part.append(self._sludge._comps[j] 
-                        / abs(f1[j]))
-
-    
-        _max_step_sol = min(_uppers_sol)
-        _max_step_part = min(_uppers_part)
-
-
+        
         k1 = [h * f1[j] for j in range(_nc)]
 
 
@@ -259,6 +233,21 @@ class asm_reactor(pipe):
 
         k6 = [h * f6[j] for j in range(_nc)]
 
+        return k1, k2, k3, k4, k5, k6
+
+    
+    def _RKF45_err(self, k1, k3, k4, k5, k6):
+        '''
+        Calculate the norm of the error vector in RKF45 method.
+        
+        Parameters:
+        k1, k3, ... ,k6: intermediate step vectors of RKF45
+
+        Return:
+        Norm of the error vector
+        '''
+
+        _nc = len(self._mo_comps)
 
         # propose an estimate using RK4 with current step size, without the yk
         # term
@@ -266,7 +255,6 @@ class asm_reactor(pipe):
                     + 2197/4101 * k4[j] - 0.2 * k5[j]
                     for j in range(_nc)]
                        
-
         # propose an estimate using RK5 with current step size, without the yk
         # term
         del_RK5 = [16/135 * k1[j] + 6656/12825 * k3[j]
@@ -274,88 +262,95 @@ class asm_reactor(pipe):
                     for j in range(_nc)]
 
 
-        _err_sqr = [(del_RK4[j] - del_RK5[j]) ** 2 for j in range(_nc)]
-
-        _err = sum(_err_sqr) ** 0.5
+        #_err_sqr = [(del_RK4[j] - del_RK5[j]) ** 2 for j in range(_nc)]
+        
+        #_err = sum(_err_sqr) ** 0.5
+        _rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
+                    - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
+                    for j in range(_nc)]
+        _err = (sum(_rk4_sqr_) / _nc) ** 0.5
 
         print('current err:', _err)
 
-        # scalar to adjust step size
-        _s = 1.0
-        if _err >= tol:
+        return _err
+
+
+    def _runge_kutta_fehlberg_45(self, tol=2E-5):
+        '''
+        Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
+
+        tol: user defined tolerance of error
+        
+        '''
+
+        _del_C_del_t = self._sludge._dCdt(
+                            self._active_vol,
+                            self._total_inflow,
+                            self._in_comps, 
+                            self._mo_comps)
+
+        #print('_del_C_del_t:{}'.format(_del_C_del_t))
+
+        _uppers_sol = []
+        _uppers_part = []
+
+        for i in range(7):
+            # screen out the zero items in _del_C_del_t
+            if _del_C_del_t[i] != 0:
+                #_uppers_sol.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
+                _uppers_sol.append(self._sludge._comps[i] 
+                        / abs(_del_C_del_t[i]))
+
+        for j in range(7, len(_del_C_del_t)):
+            # screen out the zero items in _del_C_del_t
+            if _del_C_del_t[j] != 0:
+                #_uppers_part.append(self._mo_comps[j] / abs(_del_C_del_t[j]))
+                _uppers_part.append(self._sludge._comps[j] 
+                        / abs(_del_C_del_t[j]))
+
+    
+        _max_step_sol = min(_uppers_sol)
+        _max_step_part = min(_uppers_part)
+
+        while True:
+            k1, k2, k3, k4, k5, k6 = self._RKF45_ks()
+
+            _error = self._RKF45_err(k1, k3, k4, k5, k6)
+
             # (1/2) ^ (1/4) ~= 0.840896
             #_s = 0.840896 * (tol * h / _err) ** 0.25 
-            _s = (tol * h / _err) ** 0.25 
-            self._scalar = _s
-            print('h={}, scalar={}, h_new={}, max_h_sol={}'.format(
-                self._step, _s, self._step * _s, _max_step_sol))
-            self._step = min(self._step * self._scalar, _max_step_sol * 0.02)
-            
-                
-        # re-evaluate based on new step size
-        # yk does not change
-        k1 = [self._step * self._sludge._comps[j] for j in range(_nc)]
+            _s = 0.84 * (tol * self._step / _error) ** 0.25 
+            # potential new step:
+            #h_new = min(self._step * _s, _max_step_sol)
+            if _s < 0.75:
+                self._step /= 2.0
+            elif _s > 1.5 and self._step * _s < _max_step_sol:
+                self._step *= 2.0
 
+            print('h_old={}, scalar={}'.format(self._step, _s))
 
-        _w2 = [self._sludge._comps[j] + k1[j] / 4 for j in range(_nc)]
+            if _error < tol or self._step < 1e-14:
+                # update estimate using RK5 with current step size:
+                #self._sludge._comps = [self._sludge._comps[j]
+                #            + 16/135 * k1[j] + 6656/12825 * k3[j]
+                #            + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
+                #            for j in range(len(self._mo_comps))]
+                self._sludge._comps = [self._sludge._comps[j]
+                            + 25/216 * k1[j] + 1408/2565 * k3[j]
+                            + 2197/4104 * k4[j] - 0.2 * k5[j] 
+                            for j in range(len(self._mo_comps))]
 
-        f2 = self._sludge._dCdt(self._active_vol,
-                                self._total_inflow,
-                                self._in_comps,
-                                _w2)
+                break
 
-        k2 = [self._step * f2[j] for j in range(_nc)]
+            # if the h_new offers significant speed gain, increase the
+            # step size for the next round
+            #if h_new / self._step >= 1.25 or h_new < self._step:
+            #    self._step = h_new
 
-
-        # 3/32 = 0.09375; 9/32 = 0.28125
-        _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j]
-                for j in range(_nc)]
-
-        f3 = self._sludge._dCdt(self._active_vol,
-                                self._total_inflow,
-                                self._in_comps,
-                                _w3)
-
-        k3 = [self._step * f3[j] for j in range(_nc)]
-
-        
-        _w4 = [self._sludge._comps[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j]
-                + 7296/2197 * k3[j]
-                for j in range(_nc)]
-
-        f4 = self._sludge._dCdt(self._active_vol,
-                                self._total_inflow,
-                                self._in_comps,
-                                _w4)
-
-        k4 = [self._step * f4[j] for j in range(_nc)]
-
-
-        _w5 = [self._sludge._comps[j] + 439/216 * k1[j] - 8 * k2[j]
-                + 3680/513 * k3[j] - 845/4104 * k4[j]
-                for j in range(_nc)]
-
-        f5 = self._sludge._dCdt(self._active_vol,
-                                self._total_inflow,
-                                self._in_comps,
-                                _w5)
-
-        k5 = [self._step * f5[j] for j in range(_nc)]
-
-        del_RK5 = [16/135 * k1[j] + 6656/12825 * k3[j]
-                    + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
-                    for j in range(_nc)]
-
-        # update estimate using RK4 with current step size:
-        #self._sludge._comps = [self._sludge._comps[j] + 25/216 * k1[j]
-        #                + 1408/2565 * k3[j] + 2197/4101 * k4[j] - 0.2 * k5[j]
-        #                for j in range(_nc)]
-        self._sludge._comps = [self._sludge._comps[j] + del_RK5[j]
-                                for j in range(_nc)]
 
         self._mo_comps = self._so_comps = self._sludge._comps[:]
 
-        return None
+        return self._step
 
 
     def _runge_kutta_4(self, first_index_part, f_s, f_p):
