@@ -67,8 +67,8 @@ Archive/
 PooPyLab_Project.wiki/
 #doxygen
 .dox
-./docs/html/
-./docs/latex/
-./docs/poopylab_doxygen_config
+docs/html/
+docs/latex/
+docs/poopylab_doxygen_config
 
 
