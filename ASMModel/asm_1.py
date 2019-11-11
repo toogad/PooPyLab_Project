@@ -51,6 +51,11 @@
 
 from ASMModel import constants
 
+"""@package docstring
+The ASM_1 module consists of the definition of the ASM_1 class that defines the
+kinetics and stoichiometrics of the IWA Activated Sludge Model #1.
+"""
+
 class ASM_1():
 
     def __init__(self, WWtemp=20, DO=2):
@@ -95,7 +100,7 @@ class ASM_1():
 
 
     def update(self, ww_temp, dissolved_O2):
-        ''' update the ASM model with new Temperature and Bulk_DO'''
+        """ Update the ASM model with new Temperature and Bulk_DO. """
         self._temperature = ww_temp
         self._bulk_DO = dissolved_O2
         self._delta_t = self._temperature - 20.0
