@@ -23,30 +23,6 @@
 #    as part of the Reactor object
 #
 #
-# NOMENCLATURE:
-# rb:   readily biodegradable
-# nrb:  non-readily biodegradable
-# O:    Oxygen
-# NH:   Ammonia
-# L:    Lysis
-# H:    Heterotrophs
-# h:    Hydrolysis
-# a:    Ammonification
-# i:    ratio
-# f:    fraction
-# cf:   correction factor
-# A:    Autotrophs
-# B:    Biomass (active)
-# D:    Debris
-# NO:   NOx (oxidized nitrogen)
-# I:    Inert
-# ALK:  Alkalinity
-# S:    Substrate (COD or TKN, mg/L)
-# X:    Particulate matter as COD ( mg/L)
-# S:    Soluble
-# Inf:  Influent
-# Eff:  Effluent
-# TBD:  To Be Determined by user
 
 
 from ASMModel import constants
@@ -54,6 +30,31 @@ from ASMModel import constants
 """@package docstring
 The ASM_1 module consists of the definition of the ASM_1 class that defines the
 kinetics and stoichiometrics of the IWA Activated Sludge Model #1.
+
+"SUBSCRIPTS" USED IN VARIABLE NAMES:
+ rb:   readily biodegradable
+ nrb:  non-readily biodegradable
+ O:    Oxygen
+ NH:   Ammonia
+ L:    Lysis
+ H:    Heterotrophs
+ h:    Hydrolysis
+ a:    Ammonification
+ i:    ratio
+ f:    fraction
+ cf:   correction factor
+ A:    Autotrophs
+ B:    Biomass (active)
+ D:    Debris
+ NO:   NOx (oxidized nitrogen)
+ I:    Inert
+ ALK:  Alkalinity
+ S:    Substrate (COD or TKN, mg/L)
+ X:    Particulate matter as COD ( mg/L)
+ S:    Soluble
+ Inf:  Influent
+ Eff:  Effluent
+ TBD:  To Be Determined by user
 """
 
 class ASM_1():

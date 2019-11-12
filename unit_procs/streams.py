@@ -25,11 +25,46 @@
 # ----------------------------------------------------------------------------
 
 
+"""@package docstring
+The streams module defines the following classes as the building blocks for a
+wastewater treatment plant (WWTP):
+    1) Splitter
+    2) Pipe
+    3) Influent
+    4) Effluent
+    5) Waste Activated Sludge (WAS)
+"""
+
+
 from unit_procs.base import poopy_lab_obj
 from utils.datatypes import flow_data_src
 from ASMModel import constants
 
 # -----------------------------------------------------------------------------
+
+"""
+The splitter class is essentially an implementation of the base (poopy_lab_obj)
+class. 
+
+There are three connection points for the flows to get in and out of a
+splitter: an inlet, a mainstream outlet, and a sidestream outlet.
+
+General Functions:
+
+    It is assumed that there is no significant biochemical reactions happening
+    across a splitter unit. It only maintains the flow balance around the
+    three connections. Therefore, the model components (as concentrations) are
+    identical for all the connections after proper flow and load updates.
+
+    Flow balance is maintained using the flow data source tags of two of the
+    three connection points (see below for more details).
+
+Special Functions:
+
+    When specified as an SRT (solids retention time) controller, a splitter
+    would have to be connected with a WAS (waste activated sludge) unit at its
+    sidestream.
+"""
 
 class splitter(poopy_lab_obj):
 
@@ -592,7 +627,18 @@ class splitter(poopy_lab_obj):
     #
     # END OF FUNCTIONS UNIQUE TO SPLITTER
 
+
 # ----------------------------------------------------------------------------
+
+"""
+The pipe class is derived from the splitter class with a blocked sidestream.
+
+No biochemical reactions are modelled in the pipe class. A pipe is only used to
+connect process units.
+
+A pipe can have multiple upstream dischargers but only one downstream (main)
+receiver.
+"""
 
 class pipe(splitter):
     __id = 0
@@ -666,6 +712,13 @@ class pipe(splitter):
 
 
 # -----------------------------------------------------------------------------
+
+
+"""
+The influent class is derived from the pipe class with its upstream discharger
+being None.
+
+"""
 
 class influent(pipe):
     __id = 0
