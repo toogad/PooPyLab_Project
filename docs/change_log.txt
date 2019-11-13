@@ -3,6 +3,7 @@ CHANGE LOGS:
 
 base class:
 ------------------------------------------------------------------------------
+20191112 KZ: added more documentation in code
 20191021 KZ: cleaned up
 Oct 09, 2019 KZ: removed set_as_visited() and is_visited()
 Oct 07, 2019 KZ: added get_flow_data_src()
