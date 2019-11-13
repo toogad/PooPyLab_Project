@@ -25,7 +25,8 @@
 # ----------------------------------------------------------------------------
 
 
-"""@package docstring
+"""@package streams
+
 The streams module defines the following classes as the building blocks for a
 wastewater treatment plant (WWTP):
     1) Splitter
@@ -33,6 +34,7 @@ wastewater treatment plant (WWTP):
     3) Influent
     4) Effluent
     5) Waste Activated Sludge (WAS)
+
 """
 
 
@@ -42,31 +44,35 @@ from ASMModel import constants
 
 # -----------------------------------------------------------------------------
 
-"""
-The splitter class is essentially an implementation of the base (poopy_lab_obj)
-class. 
-
-There are three connection points for the flows to get in and out of a
-splitter: an inlet, a mainstream outlet, and a sidestream outlet.
-
-General Functions:
-
-    It is assumed that there is no significant biochemical reactions happening
-    across a splitter unit. It only maintains the flow balance around the
-    three connections. Therefore, the model components (as concentrations) are
-    identical for all the connections after proper flow and load updates.
-
-    Flow balance is maintained using the flow data source tags of two of the
-    three connection points (see below for more details).
-
-Special Functions:
-
-    When specified as an SRT (solids retention time) controller, a splitter
-    would have to be connected with a WAS (waste activated sludge) unit at its
-    sidestream.
-"""
 
 class splitter(poopy_lab_obj):
+
+    """
+
+    The splitter class is essentially an implementation of the base
+    (poopy_lab_obj) class.
+
+    There are three connection points for the flows to get in and out of a
+    splitter: an inlet, a mainstream outlet, and a sidestream outlet.
+
+    General Functions:
+
+        It is assumed that there is no significant biochemical reactions
+        happening across a splitter unit. It only maintains the flow balance
+        around the three connections. Therefore, the model components (as
+        concentrations) are identical for all the connections after proper flow
+        and load updates.
+
+        Flow balance is maintained using the flow data source tags of two of
+        the three connection points (see below for more details).
+
+    Special Functions:
+
+        When specified as an SRT (solids retention time) controller, a splitter
+        would have to be connected with a WAS (waste activated sludge) unit at
+        its sidestream.
+
+    """
 
     __id = 0
 
@@ -146,9 +152,34 @@ class splitter(poopy_lab_obj):
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
     #
 
-    def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
-        # branch = 'Main'|'Side'|'Inlet'
-        # flow_ds: flow_data_source.TBD|.UPS|.DNS|.PRG
+    def set_flow_data_src(self, branch="Main", flow_ds=flow_data_src.TBD):
+
+        """
+
+        # @param branch = 'Main'|'Side'|'Inlet'
+        # @param flow_ds: flow_data_source.TBD|.UPS|.DNS|.PRG
+
+        Set the flow data source of the branch specified by the user. This
+        function helps to decide how a stream process unit (splitter, pipe,
+        influent, effluent, WAS, etc.) performs flow balance calculations.
+
+        For instance, if the user defines both the mainstream and sidestream
+        outlet flow rates, then the inlet flow rate will be calculated as the
+        sum of the two branches. As another example, if the user only defines
+        the sidestream branch flow rate, then the mainstream branch flow will
+        be determined as (total_inflow - sidestream_outflow).
+
+        When setting the flow data source of a branch, the function will check
+        to see whether the flow data sources for the other two brachnes can
+        also be determined.
+
+        See Also: 
+            _branch_flow_helper(); 
+            set_mainstream_flow_by_upstream();
+            totalize_inflow();
+            utils.flow_data_src
+
+        """
 
         _in_flow_known = (self._in_flow_ds != flow_data_src.TBD)
 
@@ -221,6 +252,14 @@ class splitter(poopy_lab_obj):
 
 
     def get_flow_data_src(self):
+
+        """
+
+        Return the flow data source tags of inlet, mainstream outlet, and
+        sidestream outlet branches.
+        
+        """
+
         return self._in_flow_ds, self._mo_flow_ds, self._so_flow_ds
 
 
@@ -264,21 +303,46 @@ class splitter(poopy_lab_obj):
         return self._has_sidestream
 
 
-    def add_upstream(self, discharger, upst_branch='Main'): 
-        #Connect current unit to the specified branch of the upstream unit
-        if discharger not in self._inlet:
-            # Setting the flow to 0 is a place-holder when setting up
-            # the Process Flow Diagram, because the actual total flow from
-            # upstream unit may not have been completely configured. The
-            # self.discharge() method of the upstream unit will totalize the
-            # flow and blend the components before passing them into the
-            # current unit.
-            self._inlet[discharger] = 0
-            self._has_discharger = True
+    def add_upstream(self, discharger, upst_branch="Main"): 
+        
+        """
 
-            if upst_branch == 'Main':
+        # @param discharger: the process unit to be added to self._inlet;
+        # @param upst_branch: branch of the discharger to get flow from.
+
+        Add an upstream unit's (discharger's) outlet, as specified by the
+        ups_branch parameter, to the current inlet.
+
+        The function first checks whether the specified discharger is already
+        in self._inlet. If so, does nothing. Otherwise, add the discharger into
+        self._inlet and put 0.0 m3/d as a place holder for the corresponding
+        flow rate.
+
+        An error message will display if upst_branch is neither "Main" nor
+        "Side". And the specified discharger will NOT be added to self._inlet
+        as a result.
+
+        After adding the discharger into self._inlet. This function calls the
+        discharger's set_downstream_main()/set_downstream_side() to connect its
+        mainstream/sidestream outlet to the current unit's inlet.
+
+        Upon sucessful addition of the specified discharger and its branch, the
+        self._has_discharger flag is set to True.
+
+        See Also:
+            set_downstream_main();
+            set_downstream_side().
+            remove_upstream();
+
+        """
+
+        if discharger not in self._inlet:
+            self._inlet[discharger] = 0.0  # place holder
+            if upst_branch == "Main":
+                self._has_discharger = True
                 discharger.set_downstream_main(self)
-            elif upst_branch == 'Side':
+            elif upst_branch == "Side":
+                self._has_discharger = True
                 discharger.set_downstream_side(self)
             else:
                 print("ERROR: UNKNOWN BRANCH SPECIFIED.")
@@ -295,10 +359,41 @@ class splitter(poopy_lab_obj):
 
 
     def totalize_inflow(self):
+
+        """
+        
+        Combine all the individual flows specified in the self._inlet into a
+        single stream. Return the totalized flow rate.
+
+        There are scenarios to be managed here:
+
+            1) When the mainstream outlet branch's flow is to be calculated
+            using the total inflow (self._upstream_set_mo_flow == True): The
+            total inflow is calculated using the individual flows specified in
+            self._inlet; and
+
+            2) When both flow rates for the mainstream and sidestream outlet
+            branches have been specified (either by user or simulation run
+            time), i.e. self._upstream_set_mo_flow == False: the total inflow
+            will be the sum of the two branches. This calculated total inflow
+            is to be passed upstream by the main loop to maintain the WWTP's
+            flow balance.
+
+        See Also:
+            utils.datatypes.flow_data_src;
+            set_flow_data_src();
+            set_mainstream_flow_by_upstream();
+            _branch_flow_helper();
+            blend_inlet_comps();
+            update_combined_input().
+
+        """
+
         if self._upstream_set_mo_flow:
             self._total_inflow = sum(self._inlet.values())
         else:
             self._total_inflow = self._mo_flow + self._so_flow
+
         return self._total_inflow
 
 
@@ -318,14 +413,38 @@ class splitter(poopy_lab_obj):
     
 
     def update_combined_input(self):
-        ''' Combined the flows and loads into the current unit'''
-
         self.totalize_inflow()
         self.blend_inlet_comps()
         return None
     
 
     def remove_upstream(self, discharger):
+
+        """
+
+        Remove an existing discharger from inlet.
+
+        # @param discharger: upstream discharger to be removed from current \
+                process unit's inlet.
+        
+        This function first checks whether the specified discharger to be
+        removed exists in self._inlet:
+
+            If so, proceed and remove it from self._inlet. Then it finds
+            out which branch of the discharger is originally connected to
+            current unit's inlet, inform the original discharger to update its
+            corresponding branch's connection. The _has_discharger flag will be
+            checked and updated when an upstream discharger is removed
+            successfully.
+
+            If not, an error message will be displayed and nothing will be
+            removed from the self._inlet.
+
+        See Also:
+            add_upstream()
+
+        """
+
         if discharger in self._inlet:
             self._inlet.pop(discharger)
             self._upstream_set_mo_flow = False
@@ -340,6 +459,31 @@ class splitter(poopy_lab_obj):
     
 
     def set_downstream_main(self, rcvr):
+
+        """
+
+        Define the downstream main outlet by specifying the receiving process
+        unit.
+
+        # @param rcvr: receiver of the current unit's mainstream outlet flow.
+
+        
+        An influent unit can not receive any flow from the current unit. An
+        error message will be displayed if the specified receiver is of the
+        influent type.
+
+        If the specified receiver is already connected to the current unit's
+        mainstream outlet branch, nothing will be done.
+
+        Successful connection of the receiver and current unit's mainstream
+        outlet will set the _mo_connected flag to True.
+
+        See Also:
+            add_upstream();
+            set_downstream_side().
+
+        """
+
         if rcvr == None:
             self._main_outlet = None
             self._mo_connected = False
@@ -368,10 +512,32 @@ class splitter(poopy_lab_obj):
 
 
     def set_mainstream_flow(self, flow=0):
+
+        """
+
+        Define the mainstream outlet flow.
+
+        # @param flow: flow rate in m3/d, shall be no less than 0.
+
+        If the specified flow is less than 0 m3/d, the current unit's
+        mainstream outlet flow will be set to 0 m3/d. An error message will
+        display.
+
+        Upon successful setting of the mainstream flow rate, the mainstream
+        outlet's flow data source will be set to flow_data_src.PRG, and the
+        _upstream_set_mo_flow flag False.
+
+        See Also:
+            set_sidestream_flow();
+            totalize_inflow();
+            set_flow_data_src().
+
+        """
+
         if flow >= 0:
             self._mo_flow = flow
             self._upstream_set_mo_flow = False
-            self.set_flow_data_src('Main', flow_data_src.PRG)
+            self.set_flow_data_src("Main", flow_data_src.PRG)
         else:
             print("ERROR:", self.__name__, "given main flow < 0.")
             self._mo_flow = 0
@@ -379,7 +545,6 @@ class splitter(poopy_lab_obj):
             
 
     def get_main_outflow(self):
-        #if not self._inflow_totalized:
         self.totalize_inflow()
         self._branch_flow_helper()
         if self._mo_flow < 0:
@@ -388,12 +553,35 @@ class splitter(poopy_lab_obj):
 
 
     def get_main_outlet_concs(self):
-        #if self._in_comps_blended == False:
-        #self.blend_inlet_comps()
         return self._mo_comps[:]
     
 
     def set_downstream_side(self, rcvr):
+
+        """
+
+        Define the downstream side outlet by specifying the receiving process
+        unit.
+
+        # @param rcvr: receiver of the current unit's sidestream outlet flow.
+
+        
+        An influent unit can not receive any flow from the current unit. An
+        error message will be displayed if the specified receiver is of the
+        influent type.
+
+        If the specified receiver is already connected to the current unit's
+        sidestream outlet branch, nothing will be done.
+
+        Successful connection of the receiver and current unit's sidestream
+        outlet will set the _so_connected flag to True.
+
+        See Also:
+            add_upstream();
+            set_downstream_main().
+
+        """
+
         if rcvr == None:
             self._side_outlet = None
             self._so_connected = False
@@ -417,13 +605,33 @@ class splitter(poopy_lab_obj):
 
 
     def set_sidestream_flow(self, flow=0):
+
+        """
+
+        Define the flow rate for the sidestream.
+
+        # @param flow: flow rate in m3/d, shall be no less than 0.
+
+        If the specified flow is less than 0 m3/d, n error message will
+        display.
+
+        Upon successful setting of the sidestream flow rate, the sidestream
+        outlet's flow data source will be set to flow_data_src.PRG.
+
+        See Also:
+            set_mainstream_flow();
+            totalize_inflow();
+            set_flow_data_src().
+
+        """
+
         if flow >= 0:
             self._so_flow = flow
-            self.set_flow_data_src('Side', flow_data_src.PRG)
+            self.set_flow_data_src("Side", flow_data_src.PRG)
             self._so_flow_defined = True
         else:
             self._so_flow_defined = False
-            print('ERROR:', self.__name__, 'given side flow < 0')
+            print("ERROR:", self.__name__, "given side flow < 0")
         return None
 
 
@@ -432,7 +640,6 @@ class splitter(poopy_lab_obj):
     
 
     def get_side_outflow(self):
-        #if not self._inflow_totalized:
         self.totalize_inflow()
         self._branch_flow_helper()
         if self._so_flow < 0:
@@ -445,6 +652,22 @@ class splitter(poopy_lab_obj):
     
 
     def set_flow(self, dschgr, flow):
+        
+        """
+
+        Specify the flow from the discharger.
+
+        # @param dschgr: discharger
+        # @param flow: flow rate in m3/d
+
+        Please see the _discharge_main_outlet() and _discharge_side_outlet()
+        for the use of this function.
+
+        See Also:
+            discharge()
+
+        """
+
         if dschgr in self._inlet and flow >= 0:
             self._inlet[dschgr] = flow
         return None
@@ -488,88 +711,92 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def get_TSS(self, br="Main_Out"):
+    def get_TSS(self, br="Main"):
         #TODO: need to make COD/TSS = 1.2 changeable for different type of
         # sludge
         index_list = [7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list) / 1.2
 
 
-    def get_VSS(self, br="Main_Out"):
+    def get_VSS(self, br="Main"):
         #TODO: need to make COD/VSS = 1.42 changeable for diff. type of sludge
         index_list = [7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list) / 1.42
     
 
-    def get_COD(self, br="Main_Out"):
+    def get_COD(self, br="Main"):
         index_list = [1, 2, 7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list)
 
 
-    def get_sCOD(self, br="Main_Out"):
+    def get_sCOD(self, br="Main"):
         index_list = [1, 2]
         return self._sum_helper(br, index_list)
 
 
-    def get_pCOD(self, br="Main_Out"):
+    def get_pCOD(self, br="Main"):
         return self.get_COD(br) - self.get_sCOD(br)
 
 
-    def get_TN(self, br="Main_Out"):
+    def get_TN(self, br="Main"):
         index_list = [3, 4, 5, 12]
         return self._sum_helper(br, index_list)
 
 
-    def get_orgN(self, br="Main_Out"):
+    def get_orgN(self, br="Main"):
         index_list = [4, 12]
         return self._sum_helper(br, index_list)
 
 
-    def get_inorgN(self, br="Main_Out"):
+    def get_inorgN(self, br="Main"):
         return self.get_TN(br) - self.get_orgN(br)
 
 
-    def get_pN(self, br="Main_Out"):
+    def get_pN(self, br="Main"):
         return self._sum_helper(br, [12])
 
 
-    def get_sN(self, br="Main_Out"):
+    def get_sN(self, br="Main"):
         return self.get_TN(br) - self.get_pN(br)
 
 
     def _branch_flow_helper(self):
-        # 1) Side outlet flow (_so_flow) can be set by
-        #   1A) either WAS (_SRT_controller) or direct user input
-        #
-        #   ##2A) upstream (non _SRT_controller)##
-        #
-        # 2) Main outlet flow (_mo_flow) can be set by
-        #
-        #   2A) upstream automatically
-        #
-        #   2B) direct user/run_time input
-        #
-        # 3) Inlet flow is dependent on the two outlet branches' settings
-        #       Back tracing will be required to make sure flows are balanced
-        #       if both main and  side outlet flows are set either by user or
-        #       run time SRT control.
-        #
+        
+        """
+
+        Helper function to determine the ways for calculating flow rates for
+        all three branches.
+
+        1) Side outlet flow (_so_flow) can be set by
+
+          1A) either WAS (_SRT_controller) or direct user input
+
+          2A) upstream (non _SRT_controller)
+
+        2) Main outlet flow (_mo_flow) can be set by
+
+          2A) upstream automatically
+
+          2B) direct user/run_time input
+
+        3) Inlet flow is dependent on the two outlet branches' settings back
+        tracing will be required to make sure flows are balanced if both main
+        and side outlet flows are set either by user or run time SRT control.
+
+        See Also:
+            set_flow_data_src();
+            discharge()
+
+        """
+
         if self._SRT_controller:  # i.e. _so_flow set by a WAS unit
             if self._upstream_set_mo_flow:
-                #self._in_flow_backcalc = self._total_inflow
-                #self._mo_flow = self._in_flow_backcalc - self._so_flow
                 self._mo_flow = self._total_inflow - self._so_flow
             else:
-                #self._in_flow_backcalc = self._mo_flow + self._so_flow
                 self._total_inflow = self._mo_flow + self._so_flow
         elif self._upstream_set_mo_flow:
-            #self._in_flow_backcalc = self._total_inflow
-            #self._mo_flow = self._in_flow_backcalc - self._so_flow
             self._mo_flow = self._total_inflow - self._so_flow
-        else:  # TODO: might be troubles here
-            # if upstream doesn't set _mo_flow, it has to set _so_flow
-            #self._in_flow_backcalc = self._total_inflow
-            #self._so_flow = self._in_flow_backcalc - self._mo_flow
+        else:
             self._so_flow = self._total_inflow - self._mo_flow
             self._so_flow_defined = True
         return None
@@ -614,14 +841,23 @@ class splitter(poopy_lab_obj):
         return self._SRT_controller
 
 
-    def _sum_helper(self, branch="Main_Out", index_list=[]):
-        ''' sum up the model components indicated by the index_list'''
+    def _sum_helper(self, branch="Main", index_list=[]):
+
+        """
+
+        Sum up the model components indicated by the index_list.
+
+        # @param branch: {"Inlet"|"Main"|"Side"}
+        # @param index_list: a list of indices for the model components to use
+
+        """ 
+
         _sum = 0.0
-        if branch == "Main_Out":
+        if branch == "Main":
             _sum = sum(self._mo_comps[i] for i in index_list)
         elif branch == "Inlet":
             _sum = sum(self._in_comps[i] for i in index_list)
-        elif branch == "Side_Out" and self.has_sidestream():
+        elif branch == "Side" and self.has_sidestream():
             _sum = sum(self._so_comps[i] for i in index_list)
         return _sum
     #
@@ -630,20 +866,38 @@ class splitter(poopy_lab_obj):
 
 # ----------------------------------------------------------------------------
 
-"""
-The pipe class is derived from the splitter class with a blocked sidestream.
-
-No biochemical reactions are modelled in the pipe class. A pipe is only used to
-connect process units.
-
-A pipe can have multiple upstream dischargers but only one downstream (main)
-receiver.
-"""
-
 class pipe(splitter):
+
+    """
+
+    The "pipe" class is derived from the "splitter" class with a blocked
+    sidestream.
+
+    No biochemical reactions are modelled in the pipe class. A pipe is only
+    used to connect process units.
+
+    A pipe can have multiple upstream dischargers but only one downstream
+    (main) receiver.
+
+    """
+
     __id = 0
 
     def __init__(self):
+
+        """
+
+        A few special steps are taken when initializing a "pipe":
+            1) Its sidestream is connected to None, with the sidestream flow is
+            fixed at 0 m3/d, and the _so_flow_defined set to True;
+
+            2) Its _has_sidestream flag is fixed to False;
+
+            3) Its sidestream flow data source (_so_flow_ds) is set to
+            flow_data_src.PRG;
+        
+        """
+        
         splitter.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'Pipe_' + str(self.__id)
@@ -673,22 +927,11 @@ class pipe(splitter):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
     #
     def _branch_flow_helper(self):
-        #self._in_flow_backcalc = self._mo_flow = self._total_inflow
         if self._upstream_set_mo_flow:
             self._mo_flow = self._total_inflow
         else:
             self._total_inflow = self._mo_flow
         return None
-
-
-    #def set_mainstream_flow_by_upstream(self, f):
-    #    print("WARN:", self.__name__, "main outlet flow source unchangeable.")
-    #    return None
-
-
-    #def set_mainstream_flow(self, flow):
-    #    print("ERROR:", self.__name__, "main outlet flow not be set by user.")
-    #    return None
 
 
     def set_downstream_side(self, receiver):
@@ -713,14 +956,15 @@ class pipe(splitter):
 
 # -----------------------------------------------------------------------------
 
-
-"""
-The influent class is derived from the pipe class with its upstream discharger
-being None.
-
-"""
-
 class influent(pipe):
+
+    """
+
+    The "influent" class is derived from the "pipe" class with its upstream
+    discharger being "None".
+
+    """
+
     __id = 0
 
     def __init__(self):
@@ -911,9 +1155,20 @@ class influent(pipe):
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
 
+
 # -----------------------------------------------------------------------------
 
+
 class effluent(pipe):
+
+    """
+
+    The "effluent" class is another form of a "pipe". It differs from a "pipe"
+    with its outlet being either "None" or another process unit, a tertiary
+    filtration system for instance.
+
+    """
+
     __id = 0
 
     def __init__(self):
@@ -983,7 +1238,26 @@ class effluent(pipe):
 
 # ------------------------------------------------------------------------------
 
+
 class WAS(pipe):
+
+    """
+
+    The WAS (waste activated sludge) class is a "pipe" with modified
+    functionality. A WAS unit has the capability of calculating its own flow
+    based on:
+
+        1) User defined solids retention time (SRT);
+        2) Solids inventory in bioreactors it sees; and
+        3) Its inlet's total suspended solids (TSS).
+
+    It also differs from a "pipe" at its (mainstream) outlet which can be set
+    as "None" or another process unit, a sludge digester for instance. The
+    outlet of a "pipe", however, shall always be connected to another process
+    unit.
+
+    """
+
     __id = 0
 
     def __init__(self):

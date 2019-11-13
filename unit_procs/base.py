@@ -25,8 +25,10 @@
 #
 
 
-"""@package docstring
+"""@package base
+
 Definitions of common interface for all PooPyLab objects.
+
 """
 
 from abc import ABCMeta, abstractmethod
@@ -126,8 +128,7 @@ class poopy_lab_obj(object):
         Calculate the average concentrations based on current total inlet flow
         and the concentrations discharged by upstream process units.
         Note: This function does not totalize inlet flow. It only uses the
-        current flow rates. It is adviced to call totalize_inflow() first
-        before hand.
+        current flow rates. It is adviced to call totalize_inflow() first.
         """
         pass
 
@@ -302,7 +303,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_TSS(self, branch="Main_Out"):
+    def get_TSS(self, branch="Main"):
         """
         Return the Total Suspended Solids of the specified branch.
         """
@@ -310,7 +311,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_VSS(self, branch="Main_Out"):
+    def get_VSS(self, branch="Main"):
         """
         Return the Volatile Suspended Solids of the specified branch.
         """
@@ -318,7 +319,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_COD(self, branch="Main_Out"):
+    def get_COD(self, branch="Main"):
         """
         Return the Chemical Oxygen Demand (total) of the specified branch.
         """
@@ -326,7 +327,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_sCOD(self, branch="Main_Out"):
+    def get_sCOD(self, branch="Main"):
         """
         Return the Chemical Oxygen Demand (total) of the specified branch.
         """
@@ -334,7 +335,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_pCOD(self, branch="Main_Out"):
+    def get_pCOD(self, branch="Main"):
         """
         Return the Particultate Chemical Oxygen Demand of 
         the specified branch.
@@ -343,7 +344,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_TN(self, branch="Main_Out"):
+    def get_TN(self, branch="Main"):
         """
         Return the total nitrogen of the specified branch.
         TN = TKN + NOx_N
@@ -352,7 +353,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_orgN(self, branch="Main_Out"):
+    def get_orgN(self, branch="Main"):
         """
         Return the organic nitrogen of the specified branch.
         """
@@ -360,7 +361,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_inorgN(self, branch="Main_Out"):
+    def get_inorgN(self, branch="Main"):
         """
         Return the inorganic nitrogen of the specified branch.
         """
@@ -368,7 +369,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_pN(self, branch="Main_Out"):
+    def get_pN(self, branch="Main"):
         """
         Return the particulate nitrogen of the specified branch.
         """
@@ -376,7 +377,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_sN(self, branch="Main_Out"):
+    def get_sN(self, branch="Main"):
         """
         Return the soluble nitrogen of the specified branch.
         """

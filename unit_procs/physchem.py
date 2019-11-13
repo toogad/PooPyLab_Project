@@ -63,6 +63,7 @@ class final_clarifier(splitter):
     #    self._comps[12]: X_NS
 
     __id = 0
+
     def __init__(self, active_vol=9500, SWD=3.5):
         splitter.__init__(self)
         self.__class__.__id += 1
