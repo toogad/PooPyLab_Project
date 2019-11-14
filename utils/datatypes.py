@@ -20,9 +20,7 @@
 #
 #
 """@package datatypes
-
 Definitions of specific data types used in the PooPyLab project.
-
 """
 
 
@@ -30,11 +28,8 @@ from enum import Enum
 
 # Flow Data Source
 class flow_data_src(Enum):
-    
     """
-
-    Data type "flow_data_src" is an enumerate consisting of four possible
-    strings:
+    Data type "flow_data_src" is an enumerate of four possible sources:
         TBD='ToBeDetermined'
         UPS='Upstream'
         DNS='Downstream'
@@ -42,7 +37,6 @@ class flow_data_src(Enum):
     
     This is mainly used to specify the controlling source of flow of a
     particular branch of a process unit. 
-
 
     TBD(ToBeDetermined):
 
@@ -99,7 +93,6 @@ class flow_data_src(Enum):
 
     See Also:
         streams.splitter.set_flow_data_src()
-
     """
 
     TBD='ToBeDetermined'

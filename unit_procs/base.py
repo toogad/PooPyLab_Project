@@ -26,9 +26,10 @@
 
 
 """@package base
-
 Definitions of common interface for all PooPyLab objects.
 
+The documentations for the abstract interface here are also abstract. Please
+see more details in specific implementations.
 """
 
 from abc import ABCMeta, abstractmethod
@@ -108,7 +109,6 @@ class poopy_lab_obj(object):
         """ 
         Get the dict that stores all the upstream units that feed into
         the current one.
-        Return Type: {poopy_lab_obj:flow_into_self}
         """
         pass
 
@@ -389,7 +389,6 @@ class poopy_lab_obj(object):
         """
         Helper function to calculate 1 of the 3 branches' flow based on the
         other 2.
-
         Return True if flow balace is done, False otherwise
         """
         pass
