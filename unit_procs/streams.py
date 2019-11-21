@@ -26,8 +26,7 @@
 
 
 """@package streams
-The streams module defines the following classes as the building blocks for a
-wastewater treatment plant (WWTP):
+Defines basic flow elements for a wastewater treatment plant (WWTP):
 
     1) Splitter
     2) Pipe
@@ -249,16 +248,27 @@ class splitter(poopy_lab_obj):
 
 
     def get_flow_data_src(self):
-
         """
-        Return the flow data source tags of inlet, mainstream outlet, and
-        sidestream outlet branches.
+        Return the flow data source tags of all three branches.
         """
 
         return self._in_flow_ds, self._mo_flow_ds, self._so_flow_ds
 
 
     def assign_initial_guess(self, init_guess_lst):
+        """
+        Assign the intial guess to the unit before simulation.
+
+        All three branches of a stream element will get the same model
+        components.
+
+        Args:
+            init_guess_lst: list of model components (concentrations)
+
+        Return:
+            None
+        """
+
         self._in_comps = init_guess_lst[:]
         self._mo_comps = init_guess_lst[:]
         self._so_comps = init_guess_lst[:]
@@ -266,6 +276,23 @@ class splitter(poopy_lab_obj):
 
 
     def is_converged(self, limit=1E-5):
+        """
+        Return the convergence status of the unit.
+
+        This function checks the changes of flows and concentrations between
+        last round of simulation and current. If all changes are within the
+        tolerance limit, it flags the self._converged True.
+
+        Args:
+            limit: Limit within which the simulation is considered converged
+
+        Return:
+            True/False
+
+        See:
+            _check_conc_cnvg()
+        """
+
         #print(self.__name__)
         #print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
         #    self._prev_so_comps))
@@ -300,9 +327,10 @@ class splitter(poopy_lab_obj):
 
     def add_upstream(self, discharger, upst_branch="Main"): 
         """
+        Add the discharger's branch to inlet.
 
-        Add an upstream unit's (discharger's) outlet, as specified by the
-        ups_branch parameter, to the current inlet.
+        This function add an upstream unit's (discharger's) outlet, as
+        specified by the ups_branch parameter, to the current inlet.
 
         The function first checks whether the specified discharger is already
         in self._inlet. If so, does nothing. Otherwise, add the discharger into
@@ -354,8 +382,7 @@ class splitter(poopy_lab_obj):
 
     def totalize_inflow(self):
         """
-        Combine all the individual flows specified in the self._inlet into a
-        single stream. Return the totalized flow rate.
+        Combine the individual flows specified in the self._inlet into one.
 
         There are scenarios to be managed here:
 
@@ -395,6 +422,16 @@ class splitter(poopy_lab_obj):
 
 
     def blend_inlet_comps(self):
+        """
+        Calculate the flow weighted average model component concentrations.
+
+        Note: This function does not totalize inlet flow. It only uses the
+        current flow rates. It is adviced to call totalize_inflow() first.
+
+        See:
+            totalize_inflow()
+        """
+
         if self._total_inflow:  # make sure it's not 0
             for i in range(constants._NUM_ASM1_COMPONENTS):
                 temp = 0.0
@@ -557,8 +594,7 @@ class splitter(poopy_lab_obj):
 
     def set_downstream_side(self, rcvr):
         """
-        Define the downstream side outlet by specifying the receiving process
-        unit.
+        Define the downstream side outlet's connection.
         
         An influent unit can not receive any flow from the current unit. An
         error message will be displayed if the specified receiver is of the
@@ -709,59 +745,58 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def get_TSS(self, br="Main"):
+    def get_TSS(self, br='Main'):
         #TODO: need to make COD/TSS = 1.2 changeable for different type of
         # sludge
         index_list = [7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list) / 1.2
 
 
-    def get_VSS(self, br="Main"):
+    def get_VSS(self, br='Main'):
         #TODO: need to make COD/VSS = 1.42 changeable for diff. type of sludge
         index_list = [7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list) / 1.42
     
 
-    def get_COD(self, br="Main"):
+    def get_COD(self, br='Main'):
         index_list = [1, 2, 7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list)
 
 
-    def get_sCOD(self, br="Main"):
+    def get_sCOD(self, br='Main'):
         index_list = [1, 2]
         return self._sum_helper(br, index_list)
 
 
-    def get_pCOD(self, br="Main"):
+    def get_pCOD(self, br='Main'):
         return self.get_COD(br) - self.get_sCOD(br)
 
 
-    def get_TN(self, br="Main"):
+    def get_TN(self, br='Main'):
         index_list = [3, 4, 5, 12]
         return self._sum_helper(br, index_list)
 
 
-    def get_orgN(self, br="Main"):
+    def get_orgN(self, br='Main'):
         index_list = [4, 12]
         return self._sum_helper(br, index_list)
 
 
-    def get_inorgN(self, br="Main"):
+    def get_inorgN(self, br='Main'):
         return self.get_TN(br) - self.get_orgN(br)
 
 
-    def get_pN(self, br="Main"):
+    def get_pN(self, br='Main'):
         return self._sum_helper(br, [12])
 
 
-    def get_sN(self, br="Main"):
+    def get_sN(self, br='Main'):
         return self.get_TN(br) - self.get_pN(br)
 
 
     def _branch_flow_helper(self):
         """
-        Helper function to determine the ways for calculating flow rates for
-        all three branches.
+        Calculate 1 of the 3 branches' flow based on the other 2.
 
         1) Side outlet flow (_so_flow) can be set by
           1A) either WAS (_SRT_controller) or direct user input
@@ -792,10 +827,21 @@ class splitter(poopy_lab_obj):
 
 
     def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], rel_lim=1E-5):
-        # curr_comps: current model component state/results
-        # prev_comps: previous round model component state/results
-        # rel_lim: relative limit for convergence
-        
+        """
+        Check the convergence of model components (concentrations).
+
+        Args:
+            curr_comps: current model components
+            prev_comps: prevous round model components
+            rel_lim: relative limit for convergence
+
+        Retrun:
+            list of bool for each model component's convergence status
+
+        See:
+            is_converged()
+        """
+
         _nc = len(curr_comps)
         _cnvg = [False] * _nc
         rel_diff = []
@@ -808,8 +854,6 @@ class splitter(poopy_lab_obj):
                 rel_diff.append(_rd)
                 _cnvg[i] = _rd <= rel_lim
 
-        #print('rel_diff:', rel_diff)
-        
         return _cnvg[:]
 
 #
@@ -819,6 +863,27 @@ class splitter(poopy_lab_obj):
     # FUNCTIONS UNIQUE TO SPLITTER
     #
     def set_as_SRT_controller(self, setting=False):
+        """
+        Set the current splitter as an Solids Retention Time controller.
+
+        There are specific rules for connected an SRT controlling splitter.
+        Once set, the splitter shall have a sidestream connected to a pipe
+        followed by a WAS (waste activated sludge) unit.
+
+        Once set True, the sidestream flow will be determined during simulation
+        by the downstream WAS unit.
+
+        Args:
+            setting: True/False
+
+        Return:
+            None
+
+        See:
+            utils.pfd.check();
+            utils.pfd._check_connection().
+        """
+
         self._SRT_controller = setting
         #TODO: add notes here
         self._so_flow_defined = setting
@@ -827,6 +892,9 @@ class splitter(poopy_lab_obj):
 
     
     def is_SRT_controller(self):
+        """
+        Return whether a splitter is an SRT controller.
+        """
         return self._SRT_controller
 
 
@@ -885,7 +953,7 @@ class pipe(splitter):
         self.__class__.__id += 1
         self.__name__ = 'Pipe_' + str(self.__id)
 
-        self._type = "Pipe"
+        self._type = 'Pipe'
                 
         # pipe has no sidestream
         self._has_sidestream = False
@@ -941,8 +1009,7 @@ class pipe(splitter):
 
 class influent(pipe):
     """
-    The "influent" class is derived from the "pipe" class with its upstream
-    discharger being "None".
+    A "pipe" class with its upstream discharger being "None".
     """
 
     __id = 0
@@ -950,9 +1017,9 @@ class influent(pipe):
     def __init__(self):
         pipe.__init__(self)
         self.__class__.__id += 1
-        self.__name__ = "Influent_" + str(self.__id)
+        self.__name__ = 'Influent_' + str(self.__id)
 
-        self._type = "Influent"
+        self._type = 'Influent'
 
         # influent has no further upstream discharger
         self._inlet = None
@@ -996,25 +1063,60 @@ class influent(pipe):
     #
 
     def _branch_flow_helper(self):
+        """
+        Calculate 1 of the 3 branches' flow based on the other 2.
+
+        For an "influent" unit, the mainstream outflow always equals to its
+        design flow.
+        """
+        
         self._mo_flow = self._design_flow
         self._so_flow = 0.0
         return None
 
 
     def assign_initial_guess(self, init_guess_lst):
+        """
+        Assign the intial guess to the unit before simulation.
+
+        There is no need for assigning any initial guesses to an "influent"
+        unit. This function is by-passed for "influent".
+        """
         pass
 
 
     def is_converged(self, limit=1E-4):
+        """
+        Return the convergence status of the unit.
+
+        The "influent" unit gets flows and loads from the user. Convergence is
+        irrelevant here. This function is by-passed for "influent" by setting
+        the _converged to True.
+        """
         return self._converged  # which is always True
 
 
     def add_upstream(self, discharger, branch):
+        """
+        Add the discharger's branch to inlet.
+
+        The "influent" has no further upstream within the context of
+        simulation. This function is by-passed with an ERROR message displayed.
+        """
         print("ERROR:", self.__name__, "has NO upstream.")
         return None
 
 
     def totalize_inflow(self):
+        """
+        Combine the individual flows specified in the self._inlet into one.
+
+        For an "influent" unit, there is no further upstream. The total inflow
+        is the design flow.
+
+        See:
+            _branch_flow_helper()
+        """
         self._branch_flow_helper()
         #self._inflow_totalized = True
         return self._design_flow

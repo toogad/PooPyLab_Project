@@ -83,6 +83,7 @@ class poopy_lab_obj(object):
     def has_sidestream(self):
         """ 
         Check if the current unit has a sidestream discharge.
+
         Default = True, i.e. splitter always has a sidestream.
         """
         pass
@@ -116,8 +117,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def totalize_inflow(self):
         """
-        Totalize the inlet flow for an object by summing all connected upstream
-        discharges.
+        Combine the individual flows specified in the self._inlet into one.
         """
         pass
 
@@ -125,8 +125,8 @@ class poopy_lab_obj(object):
     @abstractmethod
     def blend_inlet_comps(self):
         """
-        Calculate the average concentrations based on current total inlet flow
-        and the concentrations discharged by upstream process units.
+        Calculate the flow weighted average model component concentrations.
+
         Note: This function does not totalize inlet flow. It only uses the
         current flow rates. It is adviced to call totalize_inflow() first.
         """
@@ -161,8 +161,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def main_outlet_connected(self):
         """
-        Check whether the main outlet of the current process unit is defined
-        (connected).
+        Return whether the main outlet of the unit is defined (connected).
         """
         pass
 
@@ -170,8 +169,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def get_downstream_main(self):
         """
-        Return the process unit that is connected to the current unit's main
-        outlet.
+        Return the process unit that is connected to the main outlet.
         """
         pass
 
@@ -179,8 +177,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def set_mainstream_flow_by_upstream(self, flag):
         """
-        Set whether the mainstream flow rate is determined by
-        (upstream total inflow - side stream outlet flow).
+        Set whether the mainstream flow = (total inflow - side outflow).
         """
         pass
 
@@ -212,8 +209,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def set_downstream_side(self, receiver):
         """
-        Define the downstream side outlet by specifying the receiving process
-        unit.
+        Define the downstream side outlet's connection.
         """
         pass
 
@@ -221,8 +217,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def side_outlet_connected(self):
         """
-        Return True if the downstream main outlet is connected,
-        False if not.
+        Return True if the main outlet is connected, False if not.
         """
         pass
 
@@ -270,7 +265,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def set_flow(self, discharger, flow):
         """
-        specify the flow from the discharger
+        Specify the flow from the discharger.
         """
         pass
 
@@ -278,8 +273,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def _discharge_main_outlet(self):
         """
-        Pass the flow and concentrations to the downstream unit connected to
-        the mainstream.
+        Pass the flow and concentrations to the main outlet.
         """
         pass
 
@@ -287,8 +281,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def _discharge_side_outlet(self):
         """
-        Pass the flow and concentrations to the downstream unit connected to
-        the sidestream.
+        Pass the flow and concentrations to the side outlet.
         """
         pass
 
@@ -296,14 +289,13 @@ class poopy_lab_obj(object):
     @abstractmethod
     def discharge(self):
         """
-        Pass the total flow and blended components to the next units.
-        Both mainstream and sidestream outlets will discharge.
+        Pass the total flow and blended components to the downstreams.
         """
         pass
 
 
     @abstractmethod
-    def get_TSS(self, branch="Main"):
+    def get_TSS(self, branch='Main'):
         """
         Return the Total Suspended Solids of the specified branch.
         """
@@ -311,7 +303,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_VSS(self, branch="Main"):
+    def get_VSS(self, branch='Main'):
         """
         Return the Volatile Suspended Solids of the specified branch.
         """
@@ -319,7 +311,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_COD(self, branch="Main"):
+    def get_COD(self, branch='Main'):
         """
         Return the Chemical Oxygen Demand (total) of the specified branch.
         """
@@ -327,7 +319,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_sCOD(self, branch="Main"):
+    def get_sCOD(self, branch='Main'):
         """
         Return the Chemical Oxygen Demand (total) of the specified branch.
         """
@@ -335,7 +327,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_pCOD(self, branch="Main"):
+    def get_pCOD(self, branch='Main'):
         """
         Return the Particultate Chemical Oxygen Demand of 
         the specified branch.
@@ -344,7 +336,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_TN(self, branch="Main"):
+    def get_TN(self, branch='Main'):
         """
         Return the total nitrogen of the specified branch.
         TN = TKN + NOx_N
@@ -353,7 +345,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_orgN(self, branch="Main"):
+    def get_orgN(self, branch='Main'):
         """
         Return the organic nitrogen of the specified branch.
         """
@@ -361,7 +353,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_inorgN(self, branch="Main"):
+    def get_inorgN(self, branch='Main'):
         """
         Return the inorganic nitrogen of the specified branch.
         """
@@ -369,7 +361,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_pN(self, branch="Main"):
+    def get_pN(self, branch='Main'):
         """
         Return the particulate nitrogen of the specified branch.
         """
@@ -377,7 +369,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def get_sN(self, branch="Main"):
+    def get_sN(self, branch='Main'):
         """
         Return the soluble nitrogen of the specified branch.
         """
@@ -387,9 +379,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def _branch_flow_helper(self):
         """
-        Helper function to calculate 1 of the 3 branches' flow based on the
-        other 2.
-        Return True if flow balace is done, False otherwise
+        Calculate 1 of the 3 branches' flow based on the other 2.
         """
         pass
 
@@ -397,8 +387,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def _check_conc_cnvg(self, curr_comps, prev_comps, rel_lim):
         """
-        Helper function to check the convergence of model components
-        (concentrations).
+        Check the convergence of model components (concentrations).
         """
         pass
 
