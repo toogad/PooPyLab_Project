@@ -26,9 +26,11 @@
 """@package bio
 Defines classes for biological reactors used in an WWTP:
 
-    1) ASM Reactor (bioreactor using ASM models)
+    1) ASM Reactor (bioreactor using ASM models);
 
-    2) TODO: ADM Reactor (bioreactor using Anaerobic Digestion Model)
+    2) Aerobic Digester (#TODO: add);
+
+    3) ADM Reactor (bioreactor using Anaerobic Digestion Model) (#TODO: add)
 """
 
 from unit_procs.streams import pipe
@@ -53,24 +55,36 @@ class asm_reactor(pipe):
 
     __id = 0
 
-    def __init__(self, ActiveVol=38000, swd=3.5,
-                    Temperature=20, DO=2, *args, **kw):
-        # swd = side water depth in meters, default = ~12 ft
-        # ActiveVol in m^3, default value equals to 100,000 gallons
-        # Temperature = 20 C by default
-        # DO = dissolved oxygen, default = 2.0 mg/L
+    def __init__(self, act_vol=38000, swd=3.5,
+                    ww_temp=20, DO=2, *args, **kw):
+        """
+        Init w/ active volume, water depth, water temperature, & dissolved O2.
+
+
+
+        Args:
+            act_vol:    active process volume, m3
+            swd:        side water depth, m
+            ww_temp:    wastewater temperature, degC
+            DO:         dissolved oxygen, mg/L
+            *args:      (provision for other parameters for different models)
+            **kw:       (provision for other parameters)
+
+        Return:
+            None
+        """
 
         pipe.__init__(self) 
         self.__class__.__id += 1
-        self.__name__ = "ASMReactor_" + str(self.__id)
+        self.__name__ = 'ASMReactor_' + str(self.__id)
 
-        self._type = "ASMReactor"
+        self._type = 'ASMReactor'
 
-        self._active_vol = ActiveVol
+        self._active_vol = act_vol
         self._swd = swd
         self._area = self._active_vol / self._swd
 
-        self._sludge = ASM_1(Temperature, DO)
+        self._sludge = ASM_1(ww_temp, DO)
 
         self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
         self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
@@ -81,11 +95,8 @@ class asm_reactor(pipe):
 
         self._upstream_set_mo_flow = True
 
-        # scalar used for controlling integration step size in RKF45 method
-        self._scalar = 1.0  # initial guess
-
         # step size for RKF45 method
-        self._step = 0.5/24.0
+        self._step = 0.5 / 24.0  # hour
         
         return None
 
@@ -93,37 +104,69 @@ class asm_reactor(pipe):
     # ADJUSTMENTS TO COMMON INTERFACE
     #
     def discharge(self):
+        """
+        Pass the total flow and blended components to the downstreams.
+
+        This function is re-implemented for "asm_reactor". Because of the
+        biological reactions "happening" in the "asm_reactor", integration of
+        the model is carried out here before sending the results to the down
+        stream.
+
+        See:
+            _integrate().
+        """
         self._branch_flow_helper()
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        #self.integrate(7, 'Euler', 0.05, 2.0)
-        #self.integrate(7, 'RK4', 0.05, 2.0)
-        self.integrate(7, 'RKF45', 0.05, 2.0)
+        #self._integrate(7, 'Euler', 0.05, 2.0)
+        #self._integrate(7, 'RK4', 0.05, 2.0)
+        self._integrate(7, 'RKF45', 0.05, 2.0)
         self._so_comps = self._mo_comps[:]
         self._discharge_main_outlet()
 
         return None
 
+    
+    def assign_initial_guess(self, initial_guess):
+        """
+        Assign the intial guess to the unit before simulation.
+
+        This function is re-implemented for "asm_reactor" which contains the
+        "sludge" whose kinetics are described by the model. 
+
+        When passing the initial guess into an "asm_reactor", the reactor's
+        inlet, mainstream outlet, and the "sludge" in it all get the same list
+        of model component concentrations.
+
+        Args:
+            initial_guess:  list of model components
+
+        Return:
+            None
+        """
+        self._sludge._comps = initial_guess[:]
+        self._mo_comps = initial_guess[:]  # CSTR: outlet = mixed liquor
+        return None
+
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
-    
+
     # FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
     #
     # (INSERT CODE HERE)
     #
 
-    def assign_initial_guess(self, initial_guess):
-        ''' 
-        Assign the initial guess into _sludge.comps
-        '''
-        self._sludge._comps = initial_guess[:]
-        self._mo_comps = initial_guess[:]  # CSTR: outlet = mixed liquor
-        return None
-
-
     def set_active_vol(self, vol=380):
-        # vol in M3
+        """
+        Set the active process volume.
+        
+        Args:
+            vol:    active volume to be used. (m3)
+
+        Return:
+            None
+        """
         if vol > 0:
             self._active_vol = vol
         else:
@@ -132,33 +175,111 @@ class asm_reactor(pipe):
 
 
     def get_active_vol(self):
+        """
+        Return the active process volume. (m3)
+        """
         return self._active_vol
 
 
-    def set_model_condition(self, Temperature, DO):
-        if Temperature >= 4 and DO >= 0:
-            self._sludge.update(Temperature, DO)
+    def set_model_condition(self, ww_temp, DO):
+        """
+        Set the wastewater temperature and dissolved O2 for the model.
+
+        This function updates the model conditions for the "sludge" the
+        "asm_reactor" contains.
+
+        Args:
+            ww_temp:    wastewtaer temperature in degC;
+            DO:         dissolved O2 concentration in mg/L.
+        
+        Return:
+            None
+
+        See:
+            ASMModel.ASM_1.update().
+        """
+        if ww_temp >= 4 and DO >= 0:
+            self._sludge.update(ww_temp, DO)
         else:
             print("ERROR:", self.__name__, "given crazy temperature or DO.")
         return None
 
    
     def get_model_params(self):
+        """
+        Return the kinetic parameters of the applied model.
+
+        Return:
+            {param_name, param_val_adjusted}
+
+        See:
+            ASMModel.ASM_1.get_params().
+        """
         return self._sludge.get_params()
 
 
     def get_model_stoichs(self):
+        """
+        Return the stoichiometrics of the applied model.
+
+        Return:
+            {id_of_stoich, val}
+
+        See:
+            ASMModel.ASM_1.get_stoichs().
+        """
         return self._sludge.get_stoichs()
 
 
-    def integrate(self, 
+    def _integrate(self, 
             first_index_particulate=7,
-            method_name='RK4',
+            method_name='RKF45',
             f_s=0.05,
             f_p=2.0):
-        '''
+        """
         Integrate the model forward in time.
-        '''
+
+        Starting from the initial guess, this function integrates the model
+        forward in time. There are a few integration methods available in
+        PooPyLab: Euler, Runge-Kutta 4th order, and Runge-Kutta-Felhberg 4/5.
+        The default is RKF45.
+
+        Args:
+            first_index_particulate:    see Note 1 below
+            method_name:        'RKF45'|'RK4'|'Euler'
+            f_s:                see Note 2 below
+            f_p:                see Note 2 below
+
+        Notes:
+            1. It is highly recommended the model components are arranged 
+            such that all the soluble ones are ahead of the particulate ones   
+            in the array. Generally, soluble components requires smaller       
+            time steps than particulate ones. This kind of arrangement will    
+            enable quick identification of soluble/particulate components that 
+            may have very different suitable time step during integration.     
+            Using appropriate but different time steps for the soluble and     
+            particulate components is required for fast integrations with      
+            correct results.                                                   
+
+            2. The two parameters f_s and f_p came from the IWA Activated 
+            Sludge Model 1 Report where it talks about the appropriate         
+            integration step sizes for the soluble and particulate component.
+            The report suggested that the integration step sizes can be
+            determined by using the actual retention time of the constituent in
+            the reactor times f_s (factor for solubles, typ. 5% to 20%) or f_p
+            (factor for particulate, can go up to 200%). These two parameters
+            were used in the Euler and RK4 methods, but not RKF45.
+
+
+        Retrun:
+            self._step                                         
+
+        See:
+            _runge_kutta_fehlberg_45();
+            _runge_kutta_4();
+            _euler();
+            discharge().
+        """
         # first_index_particulate: first index of particulate model component 
         # method_name = 'RK4' | 'Euler'
         # f_s: fraction of max step for soluble model components, typ=5%-20%
@@ -175,9 +296,13 @@ class asm_reactor(pipe):
 
 
     def _RKF45_ks(self):
-        '''
+        """
         Calculate k1...k6 used in RKF45 method.
-        '''
+
+        See:
+            _runge_kutta_fehlberg_45();
+            _RKF45_err().
+        """
 
         # number of model components
         _nc = len(self._mo_comps)
@@ -257,15 +382,19 @@ class asm_reactor(pipe):
 
     
     def _RKF45_err(self, k1, k3, k4, k5, k6):
-        '''
+        """
         Calculate the norm of the error vector in RKF45 method.
         
-        Parameters:
-        k1, k3, ... ,k6: intermediate step vectors of RKF45
+        Args:
+            k1, k3, ... ,k6: intermediate step vectors of RKF45
 
         Return:
-        Norm of the error vector
-        '''
+            Norm of the error vector
+
+        See:
+            _runge_kutta_fehlberg_45();
+            _RKF45_ks().
+        """
 
         _nc = len(self._mo_comps)
 
@@ -296,12 +425,19 @@ class asm_reactor(pipe):
 
 
     def _runge_kutta_fehlberg_45(self, tol=2E-5):
-        '''
+        """
         Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
 
-        tol: user defined tolerance of error
+        Args:
+            tol:    user defined tolerance of error
         
-        '''
+        Return:
+            step size used
+
+        See:
+            _RKF45_ks();
+            _RKF45_err().
+        """
 
         _del_C_del_t = self._sludge._dCdt(
                             self._active_vol,
@@ -374,15 +510,21 @@ class asm_reactor(pipe):
 
 
     def _runge_kutta_4(self, first_index_part, f_s, f_p):
-        '''
+        """
         Integration by using Runge-Kutta 4th order method.
-        '''
-        # first_index_part: first index of particulate model component,
-        #   assuming all components before this index are soluble, and all
-        #   starting this index are particulate in the matrix.
-        # f_s: fraction of max step for soluble model components, typ=5%-20%
-        # f_p: fraction of max step for particulate model components, typ=2.0
+        
+        Args:
+            first_index_part:   first index of particulate model component;
+            f_s:                factor of max step for soluble components;
+            f_p:                factor of max step for particulate components.
 
+        Return:
+            step size used  # TODO: REVISE TO RETURN STEP SIZE INSTEAD OF NONE
+
+        See:
+            _runge_kutta_fehlberg_45();
+            _euler();
+        """
         # Determine the next step size based on:
         #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
         #   0 < del_t < Retention_Time_C_k, where
@@ -470,15 +612,21 @@ class asm_reactor(pipe):
 
 
     def _euler(self, first_index_part=7, f_s=0.05, f_p=2.0):
-        '''
+        """
         Integration by using Euler's method, aka RK1
-        '''
+        
+        Args:
+            first_index_part: first index of particulate component;
+            f_s:    factor of max step for soluble components;
+            f_p:    factor of max step for particulate components.
 
-        # first_index_part: first index of particulate model component,
-        #   assuming all components before this index are soluble, and all
-        #   starting this index are particulate in the matrix.
-        # f_s: fraction of max step for soluble model components, typ=5%-20%
-        # f_p: fraction of max step for particulate model components, typ=2.0
+        Return:
+            step size used  # TODO: REVISE TO RETURN STEP SIZE INSTEAD OF NONE
+            
+        See:
+            _runge_kutta_fehlberg_45();
+            _runge_kutta_4();
+        """
 
         # Determine the next step size based on:
         #   C(t + del_t) = C(t) + (dC/dt) * del_t, where

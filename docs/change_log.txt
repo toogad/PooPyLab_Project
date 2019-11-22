@@ -3,6 +3,7 @@ CHANGE LOGS:
 
 base class:
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191112 KZ: added more documentation in code
 20191021 KZ: cleaned up
 Oct 09, 2019 KZ: removed set_as_visited() and is_visited()
@@ -39,6 +40,7 @@ Dec 07, 2013 Kai Zhang (KZ)
 
 splitter class:
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191003 KZ: revised for the run time flow balance steps
 20190920 KZ: added back assign_initial_guess()
 20190811 KZ: moved assign_initial_guess() to asm_reactor
@@ -81,6 +83,7 @@ Dec 07, 2013
 
 pipe class:
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191003 KZ: revised for the run time flow balance steps
 20190704 KZ: corrected initiation error.
 20190715 KZ: added self._type
@@ -116,6 +119,7 @@ Dec 07, 2013 Kai Zhang
 
 influent class:
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191011 KZ: set _converged to True (always), fixed flow balance bug
 20191003 KZ: revised for the run time flow balance steps
 20190920 KZ: added bypass for assign_intial_guess()
@@ -146,6 +150,7 @@ December 07, 2013 Kai Zhang: first draft
 
 effluent class: 
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191011 KZ: fixed flow balance bugs
 20191003 KZ: revised for the run time flow balance steps
 20190726 KZ: added discharge() unique to effluent.
@@ -168,6 +173,7 @@ December 07, 2013 Kai Zhang
 
 WAS class:
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191016 KZ: screened out WAS flow < 0
 20191003 KZ: revised for the run time flow balance steps
 20190809 KZ: added effluent solids in set_WAS_flow()
@@ -187,6 +193,7 @@ December 06, 2013 Kai Zhang: Initial design
 
 final_clarifier class: 
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191029 KZ: revised warning message about underflow TSS
 20191022 KZ: cleaned up
 20191013 KZ: fixed bug in solids split calc.
@@ -204,6 +211,7 @@ July 11, 2013 KZ: Initial commit
 
 asm_reactor class: 
 ------------------------------------------------------------------------------
+20191122 KZ: updated documentation
 20191024 KZ: added Runge-Kutta 4 method to integrate()
 20191022 KZ: corrected DO acceptance criteria in set_model_condition()
 20190915 KZ: start to get reasonable integration results. need more testing
@@ -262,4 +270,7 @@ utils\run.py:
 20190911 KZ: eliminated divided_by_zero errors by assigning init_X_S
 20190903 KZ: corrected b_H & b_A in initial_guess()
 20190828 KZ: init
+
+utils\datatypes.py:
+20191122 KZ: updated documentation
 

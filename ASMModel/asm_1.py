@@ -27,9 +27,8 @@
 
 from ASMModel import constants
 
-"""@package docstring
-The ASM_1 module consists of the definition of the ASM_1 class that defines the
-kinetics and stoichiometrics of the IWA Activated Sludge Model #1.
+"""@package asm_1
+Definition of the IWA Activated Sludge Model #1.
 
 "SUBSCRIPTS" USED IN VARIABLE NAMES:
  rb:   readily biodegradable
@@ -386,66 +385,6 @@ class ASM_1():
         return self._r6_HydX(comps) * comps[12] / comps[8]
 
 
-#    # Aerobic Growth Rate of Heterotrophs (_r0_AerGH, mgCOD/L/day)
-#    def _r0_AerGH(self):
-#        return  self._params['u_max_H'] \
-#                * self._monod(self._comps[2], self._params['K_S']) \
-#                * self._monod(self._bulk_DO, self._params['K_OH']) \
-#                * self._comps[9]
-#
-#
-#    # Anoxic Growth Rate of Heterotrophs (_r1_AxGH, mgCOD/L/day)
-#    def _r1_AxGH(self):
-#        return  self._params['u_max_H'] \
-#                * self._monod(self._comps[2], self._params['K_S']) \
-#                * self._monod(self._params['K_OH'], self._bulk_DO) \
-#                * self._monod(self._comps[5], self._params['K_NO']) \
-#                * self._params['cf_g'] \
-#                * self._comps[9]
-#
-#
-#    # Aerobic Growth Rate of Autotrophs (_r2_AerGA, mgCOD/L/day)
-#    def _r2_AerGA(self):
-#        return  self._params['u_max_A'] \
-#                * self._monod(self._comps[3], self._params['K_NH']) \
-#                * self._monod(self._bulk_DO, self._params['K_OA']) \
-#                * self._comps[10]
-#
-#
-#    # Death and Lysis Rate of Heterotrophs (_r3_DLH, mgCOD/L/day)
-#    def _r3_DLH(self):
-#        return  self._params['b_LH'] * self._comps[9]
-#
-#
-#    # Death and Lysis Rate of Autotrophs (_r4_DLA, mgCOD/L/day)
-#    def _r4_DLA(self):
-#        return  self._params['b_LA'] * self._comps[10]
-#
-#
-#    # Ammonification Rate of Soluable Organic N (_r5_AmmSN, mgN/L/day)
-#    def _r5_AmmSN(self):
-#        return  self._params['k_a'] \
-#                * self._comps[4] \
-#                * self._comps[9]
-#
-#
-#    # Hydrolysis Rate of Particulate Organics (_r6_HydX, mgCOD/L/day)
-#    def _r6_HydX(self):
-#        return  self._params['k_h'] \
-#                * self._monod(self._comps[8] / self._comps[9], \
-#                                self._params['K_X']) \
-#                * (self._monod(self._bulk_DO, self._params['K_OH']) \
-#                    + self._params['cf_h'] \
-#                    * self._monod(self._params['K_OH'], self._bulk_DO) \
-#                    * self._monod(self._comps[5], self._params['K_NO'])) \
-#                * self._comps[9]
-#
-#
-#    # Hydrolysis Rate of Part. Organic N (_r7_HydXN, mgN/L/day)
-#    def _r7_HydXN(self):
-#        return self._r6_HydX() * self._comps[12] / self._comps[8]
-
-
     #---------Overall Process Rate Equations for Individual Components---
 
     def _rate0_S_DO(self, comps):
@@ -517,136 +456,6 @@ class ASM_1():
         return self._stoichs['3_12'] * self._r3_DLH(comps)\
                 + self._stoichs['4_12'] * self._r4_DLA(comps)\
                 + self._stoichs['7_12'] * self._r7_HydXN(comps)
-
-#    def _rate0_S_DO(self):
-#        return self._stoichs['0_0'] * self._r0_AerGH() \
-#                + self._stoichs['2_0'] * self._r2_AerGA()
-#
-#
-#    def _rate1_S_I(self):
-#        return 0
-#
-#
-#    def _rate2_S_S(self):
-#        return self._stoichs['0_2'] * self._r0_AerGH() \
-#                + self._stoichs['1_2'] * self._r1_AxGH() \
-#                + self._stoichs['6_2'] * self._r6_HydX()
-#
-#
-#    def _rate3_S_NH(self):
-#        return self._stoichs['0_3'] * self._r0_AerGH() \
-#                + self._stoichs['1_3'] * self._r1_AxGH() \
-#                + self._stoichs['2_3'] * self._r2_AerGA() \
-#                + self._stoichs['5_3'] * self._r5_AmmSN()
-#
-#
-#    def _rate4_S_NS(self):
-#        return self._stoichs['5_4'] * self._r5_AmmSN() \
-#                + self._stoichs['7_4'] * self._r7_HydXN()
-#
-#
-#    def _rate5_S_NO(self):
-#        return self._stoichs['1_5'] * self._r1_AxGH() \
-#                + self._stoichs['2_5'] * self._r2_AerGA()
-#
-#
-#    def _rate6_S_ALK(self):
-#        return self._stoichs['0_6'] * self._r0_AerGH() \
-#                + self._stoichs['1_6'] * self._r1_AxGH() \
-#                + self._stoichs['2_6'] * self._r2_AerGA() \
-#                + self._stoichs['5_6'] * self._r5_AmmSN()
-#
-#
-#    def _rate7_X_I(self):
-#        return 0
-#
-#
-#    def _rate8_X_S(self):
-#        return self._stoichs['3_8'] * self._r3_DLH() \
-#                + self._stoichs['4_8'] * self._r4_DLA() \
-#                + self._stoichs['6_8'] * self._r6_HydX()
-#
-#
-#    def _rate9_X_BH(self):
-#        return self._stoichs['0_9'] * self._r0_AerGH() \
-#                + self._stoichs['1_9'] * self._r1_AxGH() \
-#                + self._stoichs['3_9'] * self._r3_DLH()
-#
-#
-#    def _rate10_X_BA(self):
-#        return self._stoichs['2_10'] * self._r2_AerGA() \
-#                + self._stoichs['4_10'] * self._r4_DLA()
-#
-#
-#    def _rate11_X_D(self):
-#        return self._stoichs['3_11'] * self._r3_DLH() \
-#                + self._stoichs['4_11'] * self._r4_DLA()
-#
-#
-#    def _rate12_X_NS(self):
-#        return self._stoichs['3_12'] * self._r3_DLH() \
-#                + self._stoichs['4_12'] * self._r4_DLA() \
-#                + self._stoichs['7_12'] * self._r7_HydXN()
-
-
-#    def _dCdt(self, flow, in_comps, vol):
-#        '''
-#        Defines dC/dt for the system:
-#        in_comps/ext_comps are lists that represent the Influent values 
-#        (get them from the ASMReactor) of the ASM1 Components
-#            
-#        0_S_DO, 1_S_I, 2_S_S, 3_S_NH, 4_S_NS, 5_S_NO, 6_S_ALK
-#        7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
-#        '''
-#        # Overall mass balance:
-#        # dComp/dt == InfFlow / Actvol * (InfConc - EffConc) + GrowthRate
-#        #          == (InfConc - EffConc) / HRT + GrowthRate
-#
-#        _HRT = vol / flow
-#        
-#        #result = [(in_comps[0] - self._comps[0]) / _HRT 
-#        #                + self._rate0_S_DO()]
-#
-#        # set DO rate to zero since DO is set to a fix conc.
-#        result = [0.0]
-#
-#        result.append((in_comps[1] - self._comps[1]) / _HRT 
-#                        + self._rate1_S_I())
-#
-#        result.append((in_comps[2] - self._comps[2]) / _HRT
-#                        + self._rate2_S_S())
-#
-#        result.append((in_comps[3] - self._comps[3]) / _HRT
-#                        + self._rate3_S_NH())
-#
-#        result.append((in_comps[4] - self._comps[4]) / _HRT
-#                        + self._rate4_S_NS())
-#
-#        result.append((in_comps[5] - self._comps[5]) / _HRT
-#                        + self._rate5_S_NO())
-#
-#        result.append((in_comps[6] - self._comps[6]) / _HRT
-#                        + self._rate6_S_ALK())
-#
-#        result.append((in_comps[7] - self._comps[7]) / _HRT
-#                        + self._rate7_X_I())
-#
-#        result.append((in_comps[8] - self._comps[8]) / _HRT
-#                        + self._rate8_X_S())
-#
-#        result.append((in_comps[9] - self._comps[9]) / _HRT
-#                        + self._rate9_X_BH())
-#
-#        result.append((in_comps[10] - self._comps[10]) / _HRT
-#                        + self._rate10_X_BA())
-#
-#        result.append((in_comps[11] - self._comps[11]) / _HRT
-#                        + self._rate11_X_D())
-#
-#        result.append((in_comps[12] - self._comps[12]) / _HRT
-#                        + self._rate12_X_NS())
-#
-#        return result
 
 
     def _dCdt(self, vol, flow, in_comps, mo_comps):

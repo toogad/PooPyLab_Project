@@ -29,7 +29,8 @@ from enum import Enum
 # Flow Data Source
 class flow_data_src(Enum):
     """
-    Data type "flow_data_src" is an enumerate of four possible sources:
+    Data type "flow_data_src" is an enumerate of four possible sources.
+
         TBD='ToBeDetermined'
         UPS='Upstream'
         DNS='Downstream'

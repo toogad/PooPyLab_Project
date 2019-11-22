@@ -24,6 +24,19 @@
 #
 # ----------------------------------------------------------------------------
 
+"""@package physchem
+Defines classes for physical/chemical treatment processes.
+
+    1) Final Clarifier;
+
+    2) Primary Clarifier (#TODO: add);
+
+    3) Dissolved Air Flotation (#TODO: add);
+
+    4) Media Filter (#TODO: add);
+
+    5) Membrane Filtration (#TODO: add);
+"""
 
 from unit_procs.streams import splitter
 
@@ -32,17 +45,21 @@ from unit_procs.streams import splitter
 
 
 class final_clarifier(splitter):
-    # In order to keep the PooPyLab package simple and focused on the
-    # biological processes, the final clarifier is assumed to be an ideal one.
-    # No detail solids settling model is implemented, as least for now.
+    """
+    A "splitter" w/ different particulate concentrations at inlet/outlets.
 
-    # However, surface overflow rate, solids loading rate, and HRT will be
-    # checked and warnings will be given to user if they are out of normal
-    # ranges. Simulation will not proceed until all parameters are within
-    # proper ranges. TODO: Add actual solids sedimentation model.
+    In order to keep the PooPyLab package simple and focused on the biological 
+    processes, the final clarifier is assumed to be an ideal one. No detail    
+    solids settling model is implemented, as least for now.                    
 
-    # By default, the mainstream and sidestream outlets are overflow and
-    # underflow, respectively, of the final clarifier.
+    However, surface overflow rate, solids loading rate, and HRT will be       
+    checked and warnings will be given to user if they are out of normal       
+    ranges. Simulation will not proceed until all parameters are within proper 
+    ranges. TODO: Add actual solids sedimentation model.                       
+
+    By default, the mainstream and sidestream outlets are overflow and         
+    underflow, respectively, of the final clarifier.                           
+    """
 
     # ASM components
     # The Components the ASM components IN THE REACTOR
@@ -67,9 +84,9 @@ class final_clarifier(splitter):
     def __init__(self, active_vol=9500, SWD=3.5):
         splitter.__init__(self)
         self.__class__.__id += 1
-        self.__name__ = "Final_Clarifier_" + str(self.__id)
+        self.__name__ = 'Final_Clarifier_' + str(self.__id)
 
-        self._type = "Final_Clarifier"
+        self._type = 'Final_Clarifier'
 
         # SWD = side water depth in meters, default = ~12 ft
         # active_vol in m^3, default value equals to 100,000 gallons
@@ -93,15 +110,31 @@ class final_clarifier(splitter):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF FINAL_CLARIFIER
     #
     def set_as_SRT_controller(self, setting=False):
-        print("ERROR:", self.__name__, "can't be set as SRT controller")
-        return None
+        """
+        Set the current splitter as an Solids Retention Time controller.
 
-#    def set_sidestream_flow(self, flow=0):
-#        print("ERROR:", self.__name__, "doesn't accept sidestream flow input.")
-#        return None
+        This function is bypassed for "final_clarifier".
+        """
+        print('ERROR:', self.__name__, "can't be set as SRT controller")
+        return None
 
 
     def discharge(self):
+        """
+        Pass the total flow and blended components to the downstreams.
+
+        This function is re-implemented for "final_clarifier" because of the   
+        need to settle the solids (particulate) and concentrate them at the    
+        sidestream (underflow). The function first calls _branch_flow_helper() 
+        to set the flows for inlet, mainstream outlet, and sidestream outlet,  
+        then calls _settle_solids() to fractions the particulate components    
+        according to the branch flows and user set percent solids capture.     
+
+        See:
+            _settle_solids();
+            set_capture_rate();
+            _branch_flow_helper().
+        """
         # record last round's results before updating/discharging:
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
@@ -124,20 +157,88 @@ class final_clarifier(splitter):
     #
     # (INSERT CODE HERE)
     def set_capture_rate(self, capture_rate=0.95):
+        """
+        Set the percent solids capture for the final clarifier.
+
+        This function is valid only when the "final_clarifier" is treated as a
+        perfect solids-liquid separation without actual modeling of the
+        settling process (for simplicity purpose at this stage). 
+
+        Future update of PooPyLab will include settling model to determine how
+        much solids can be captured based on the configuration of the
+        clarifier.
+
+        Args:
+            capture_rate:   fraction of total inlet solids captured (< 1.0).
+
+        Return:
+            None
+
+        See:
+            _settle_solids().
+        """
         if 0 < capture_rate < 1:
             self._capture_rate = capture_rate
         else:
-            print("ERROR:", self.__name__, "given unrealistic capture rate.")
+            print('ERROR:', self.__name__, 'given unrealistic capture rate.')
         return None
 
 
     def _valid_under_TSS(self, uf_TSS):
+        """
+        Check whether the underflow TSS is realistic.
+
+        Args:
+            uf_TSS: current underflow TSS, mg/L.
+        
+        Return:
+            bool
+
+        See:    
+            update_combined_input();
+            get_TSS().
+        """
         self.update_combined_input()
         _in_tss = self.get_TSS('Inlet')
         return _in_tss <= uf_TSS <= 18000
 
 
     def _settle_solids(self, particulate_index=[7,8,9,10,11,12]):
+        """
+        Split the incoming solids into the main- and sidestream outlets.
+
+        Assumptions:
+            
+            1) All particulate model components settle in the identical fashion
+            in the clarifier.
+
+        This function first calculate the updated inlet TSS concentration.
+
+        Then based on the capture rate, split the inlet TSS to the mainstream  
+        and sidestream outlets, as if the "final_clarifier" behaved exactly    
+        like a "splitter".                                                     
+
+        The fractions of each particulate model components in inlet TSS is then
+        calculated. These fractions is then applied to the main- and sidestream
+        outlet TSS to back calculate the corresponding particulate model
+        components for that branch.
+
+        The soluble model components are identical for all three branches.
+
+        Args:
+            particulate_index:  list of index for particulate model components.
+
+        Return:
+            None
+
+        See:
+            get_TSS();
+            _branch_flow_helper();
+            totalize_inflow();
+            update_combined_input();
+        """
+
+
         if not self._valid_under_TSS(self._under_TSS):
             print('WARN:', self.__name__, 'has unrealistic underflow TSS.')
             return None

@@ -36,6 +36,9 @@ from abc import ABCMeta, abstractmethod
 
 
 class poopy_lab_obj(object):
+    """
+    Conceptual definition of common interface.
+    """
 
     __metaclass__ = ABCMeta
 
