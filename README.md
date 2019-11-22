@@ -7,5 +7,5 @@ lot of details on the wiki yet, but more than what's on here.
 Follow the project on Twitter: @poopylab .
 
 More documentation:
-[toogad.github.io/brownbook](../../toogad.github.io/brownbook/index.html)
+[toogad.github.io/brownbook](https://toogad.github.io/brownbook/index.html)
 
