@@ -26,7 +26,7 @@
 
 
 """@package streams
-Defines basic flow elements for a wastewater treatment plant (WWTP):
+Defines basic stream elements for a wastewater treatment plant (WWTP):
 
     1) Splitter
     2) Pipe
@@ -44,7 +44,7 @@ from ASMModel import constants
 
 class splitter(poopy_lab_obj):
     """
-    An implementation of the base (poopy_lab_obj) class.
+    Stream element with an inlet, a mainstream outlet, and a sidestream outlet.
 
     There are three connection points for the flows to get in and out of a
     splitter: an inlet, a mainstream outlet, and a sidestream outlet.
@@ -145,7 +145,7 @@ class splitter(poopy_lab_obj):
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
     #
 
-    def set_flow_data_src(self, branch="Main", flow_ds=flow_data_src.TBD):
+    def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
         """
         Set the flow data source of the branch specified by the user. 
 
@@ -325,7 +325,7 @@ class splitter(poopy_lab_obj):
         return self._has_sidestream
 
 
-    def add_upstream(self, discharger, upst_branch="Main"): 
+    def add_upstream(self, discharger, upst_branch='Main'): 
         """
         Add the discharger's branch to inlet.
 
@@ -337,8 +337,8 @@ class splitter(poopy_lab_obj):
         self._inlet and put 0.0 m3/d as a place holder for the corresponding
         flow rate.
 
-        An error message will display if upst_branch is neither "Main" nor
-        "Side". And the specified discharger will NOT be added to self._inlet
+        An error message will display if upst_branch is neither 'Main' nor
+        'Side'. And the specified discharger will NOT be added to self._inlet
         as a result.
 
         After adding the discharger into self._inlet. This function calls the
@@ -360,10 +360,10 @@ class splitter(poopy_lab_obj):
 
         if discharger not in self._inlet:
             self._inlet[discharger] = 0.0  # place holder
-            if upst_branch == "Main":
+            if upst_branch == 'Main':
                 self._has_discharger = True
                 discharger.set_downstream_main(self)
-            elif upst_branch == "Side":
+            elif upst_branch == 'Side':
                 self._has_discharger = True
                 discharger.set_downstream_side(self)
             else:
@@ -573,7 +573,7 @@ class splitter(poopy_lab_obj):
         if flow >= 0:
             self._mo_flow = flow
             self._upstream_set_mo_flow = False
-            self.set_flow_data_src("Main", flow_data_src.PRG)
+            self.set_flow_data_src('Main', flow_data_src.PRG)
         else:
             print("ERROR:", self.__name__, "given main flow < 0.")
             self._mo_flow = 0
@@ -621,7 +621,7 @@ class splitter(poopy_lab_obj):
             if not isinstance(rcvr, influent):
                 self._side_outlet = rcvr 
                 self._so_connected = True
-                rcvr.add_upstream(self, "Side")
+                rcvr.add_upstream(self, 'Side')
             else:
                 print("ERROR: Influent types CAN NOT be the side outlet of",
                         self.__name__)
@@ -660,7 +660,7 @@ class splitter(poopy_lab_obj):
 
         if flow >= 0:
             self._so_flow = flow
-            self.set_flow_data_src("Side", flow_data_src.PRG)
+            self.set_flow_data_src('Side', flow_data_src.PRG)
             self._so_flow_defined = True
         else:
             self._so_flow_defined = False
@@ -898,12 +898,12 @@ class splitter(poopy_lab_obj):
         return self._SRT_controller
 
 
-    def _sum_helper(self, branch="Main", index_list=[]):
+    def _sum_helper(self, branch='Main', index_list=[]):
         """
         Sum up the model components indicated by the index_list.
 
         Args:
-            branch: {"Inlet"|"Main"|"Side"}
+            branch: {'Inlet'|'Main'|'Side'}
             index_list: a list of indices for the model components to use
 
         Return:
@@ -911,11 +911,11 @@ class splitter(poopy_lab_obj):
         """ 
 
         _sum = 0.0
-        if branch == "Main":
+        if branch == 'Main':
             _sum = sum(self._mo_comps[i] for i in index_list)
-        elif branch == "Inlet":
+        elif branch == 'Inlet':
             _sum = sum(self._in_comps[i] for i in index_list)
-        elif branch == "Side" and self.has_sidestream():
+        elif branch == 'Side' and self.has_sidestream():
             _sum = sum(self._so_comps[i] for i in index_list)
         return _sum
     #
@@ -926,7 +926,7 @@ class splitter(poopy_lab_obj):
 
 class pipe(splitter):
     """
-    A "splitter" class with a blinded sidestream.
+    A derived "splitter" class with a blinded sidestream.
 
     No biochemical reactions are modelled in the pipe class. A pipe is only
     used to connect process units.
@@ -978,6 +978,12 @@ class pipe(splitter):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
     #
     def _branch_flow_helper(self):
+        """
+        Calculate 1 of the 3 branches' flow based on the other 2.
+
+        For a "pipe", the sidestream flow is set to 0 m3/d. The mainstream
+        outlet flow always equals to the total inlet flow.
+        """
         if self._upstream_set_mo_flow:
             self._mo_flow = self._total_inflow
         else:
@@ -986,11 +992,24 @@ class pipe(splitter):
 
 
     def set_downstream_side(self, receiver):
+        """
+        Define the downstream side outlet's connection.
+
+        A "pipe" has no sidestream (set to "None"). This function is
+        essentially by-passed with a warning message if called.
+        """
         print("WARN:", self.__name__, "has no sidestream.")
         return None
     
 
     def set_sidestream_flow(self, flow):
+        """
+        Define the flow rate for the sidestream.
+
+        This function is bypassed for a "pipe" whose sidestream is set to
+        "None" and sidestream flow 0 m3/d. A warning message is displayed if
+        called.
+        """
         print("WARN:", self.__name__,"has sidestream flow of ZERO.")
         return None
 
@@ -1009,12 +1028,28 @@ class pipe(splitter):
 
 class influent(pipe):
     """
-    A "pipe" class with its upstream discharger being "None".
+    A derived "pipe" class with its inlet being "None".
     """
 
     __id = 0
 
     def __init__(self):
+        """
+        Special initialization steps for "influent".
+
+        Reasons:
+
+        1) has no further inlet;
+ 
+        2) has no sidestream outlet;
+        
+        3) has no further upstream;
+
+        4) convergence is irrelevant here;
+
+        5) is the source of flow/load to the WWTP.
+        """
+
         pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'Influent_' + str(self.__id)
@@ -1118,21 +1153,51 @@ class influent(pipe):
             _branch_flow_helper()
         """
         self._branch_flow_helper()
-        #self._inflow_totalized = True
         return self._design_flow
 
 
     def blend_inlet_comps(self):
+        """
+        Calculate the flow weighted average model component concentrations.
+
+        This function is re-implemented for the "influent" who doesn't have
+        further upstream units discharging into it. Rather, this function
+        becomes a wrapper for the _convert_to_model_comps() which fractions the
+        wastewater constituents measured in BOD, TSS, VSS, TKN, NH3-N, etc.
+        into the model components such as substrate COD, slowly biodegradable
+        COD, inert suspended solids, etc.
+
+        See:
+            _convert_to_model_comps().
+        """
         self._in_comps = self._convert_to_model_comps()
         return None
 
 
     def remove_upstream(self, discharger):
+        """
+        Remove an existing discharger from inlet.
+
+        This function is bypassed for the "influent" who has no further
+        upstream. An error message displays when called.
+        """
         print("ERROR:", self.__name__, "has no upstream")
         return None
 
 
     def set_mainstream_flow(self, flow=37800):
+        """
+        Define the mainstream outlet flow.
+
+        This function is re-implemented for the "influent" and essentially
+        becomes a wrapper for setting the design flow (m3/d).
+
+        Args:
+            flow:   design flow of the influent, m3/d
+
+        Return:
+            None
+        """
         if flow > 0:
             self._design_flow = flow
         else:
@@ -1142,18 +1207,45 @@ class influent(pipe):
 
 
     def set_mainstream_flow_by_upstream(self, f):
+        """
+        Set whether the mainstream flow = (total inflow - side outflow).
+
+        This function is essentially bypassed for the "influent" since the
+        design flow (influent mainstream outflow) is directly set by the user.
+        """
         pass
 
 
     def get_main_outflow(self):
+        """
+        Return the mainstream outlet flow.
+
+        For an "influent", this function will return the design flow.
+
+        Return:
+            self._design_flow
+        """
         return self._design_flow
 
 
     def set_flow(self, discharger, flow):
+        """
+        Specify the flow from the discharger.
+
+        This function is bypassed for the "influent".
+        """
         pass
 
 
     def discharge(self):
+        """
+        Pass the total flow and blended components to the downstreams.
+
+        This function is re-implemented for the "influent". An "influent" does
+        not care the changes from the previous round to the current since it is
+        the source for the entire WWTP. Therefore, _prev_mo_comps,
+        _prev_so_comps, _mo_comps, and _so_comps all equal to _in_comps.
+        """
 
         # influent concentrations don't change for steady state simulation
         self._prev_mo_comps = self._prev_so_comps = self._in_comps[:]
@@ -1174,11 +1266,37 @@ class influent(pipe):
     # (INSERT CODE HERE)
     #
     def set_fractions(self):
+        """
+        Sets fractions for converting WW constituents into model components.
+
+        PLACE HOLDER.
+        """
+
         # TODO: set fractions for converting user measured influent
         # characteristics into ASM1 model components.
         pass
 
     def _convert_to_model_comps(self):
+        """
+        Fractions the wastewater constituents into model components.
+
+        Wastewater constituents often are measured in units such as Biochemical
+        Oxygen Demand (BOD), Total Suspended Solids (TSS), Volatile SS (VSS),
+        etc. Many mathematical models including IWA ASMs, however, measured
+        organic carbons in Chemical Oxygen Demand (COD). This applies to
+        soluble and particulate constituents. As a result, conversions between
+        the two are needed.
+
+        Currently this fuction is mainly set up to convert municipal
+        wastewater's constituents into IWA ASM1. Industrial wastewater can have
+        very different conversions coefficients. Also, the fractions will need
+        to be revised for models different from IWA ASM1.
+
+        Return:
+            list of model components for the influent characteristics user
+            defined.
+        """
+
         #TODO: the first set of conversion available here is for municipal 
         #   wastewater. Industrial wastewater may have completely different
         #   conversion factors and needs to be tested.
@@ -1233,6 +1351,7 @@ class influent(pipe):
                         Inf_S_NO, Inf_S_ALK, 
                         Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
                         Inf_X_NS]
+
         return _inf_concs[:]
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
@@ -1243,26 +1362,33 @@ class influent(pipe):
 
 class effluent(pipe):
     """
-    The "effluent" class is another form of a "pipe". It differs from a "pipe"
-    with its outlet being either "None" or another process unit, a tertiary
-    filtration system for instance.
+    A derived "pipe" class whose main outlet is "None".
+
+    The "effluent" class is another form of a "pipe". It differs from the
+    "pipe" class with its outlet being "None".
     """
 
     __id = 0
 
     def __init__(self):
+        """
+        Special initialization for the "effluent".
+
+        Reason:
+
+        1) Mainstream outlet is "None".
+        """
         pipe.__init__(self)
         self.__class__.__id += 1
-        self.__name__ = "Effluent_" + str(self.__id)
+        self.__name__ = 'Effluent_' + str(self.__id)
 
-        self._type = "Effluent"
+        self._type = 'Effluent'
 
         # flow data source tags
         self._in_flow_ds = flow_data_src.TBD
         self._mo_flow_ds = flow_data_src.TBD
         self._so_flow_ds = flow_data_src.PRG
 
-        #self._upstream_set_mo_flow = True
         self._mo_connected = True  # dummy
 
         return None
@@ -1271,29 +1397,47 @@ class effluent(pipe):
     #
 
     def _branch_flow_helper(self):
+        """
+        Calculate 1 of the 3 branches' flow based on the other 2.
+
+        This function is re-implemented for "effluent" because the actual
+        effluent flow rate of a WWTP has to do with its waste sludge flow (WAS
+        flow). The WAS flow is set during simulation by PooPyLab. As a result,
+        the effluent flow rate is the balance of the plant influent flow and
+        WAS flow.
+
+        Occasionally, there may be a WWTP without dedicated WAS unit when the
+        effluent flow rate equals to that of the influent.
+        """
+
         # the _mo_flow of an effluent is set externally (global main loop)
         if self._upstream_set_mo_flow:
             self._mo_flow = self._total_inflow  # _so_flow = 0
         return None
 
 
-    def set_downstream_main(self, rcvr):
-        print("ERROR:", self.__name__,"shall not have any receiver.")
-        return None
-
-
-    def set_mainstream_flow(self, flow=0):
-        if flow >= 0:
-            self._mo_flow = flow
-            self.set_flow_data_src('Main', flow_data_src.PRG)
-            self._upstream_set_mo_flow = False
-        else:
-            print("ERROR:", self.__name__, "receives flow < 0.")
-            self._mo_flow = 0.0
-        return None
+#    def set_mainstream_flow(self, flow=0):
+#        """
+#        Define the mainstream outlet flow.
+#
+#        """
+#        if flow >= 0:
+#            self._mo_flow = flow
+#            self.set_flow_data_src('Main', flow_data_src.PRG)
+#            self._upstream_set_mo_flow = False
+#        else:
+#            print("ERROR:", self.__name__, "receives flow < 0.")
+#            self._mo_flow = 0.0
+#        return None
 
 
     def discharge(self):
+        """
+        Pass the total flow and blended components to the downstreams.
+
+        This function is re-implemented for "effluent" because there is no
+        further downstream units on either the main or side outlet.
+        """
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 
@@ -1320,12 +1464,14 @@ class effluent(pipe):
 
 class WAS(pipe):
     """
-    The WAS (waste activated sludge) class is a "pipe" with modified
-    functionality. A WAS unit has the capability of calculating its own flow
-    based on:
+    Waste Activated Sludge, basically a "pipe" with special functionality. 
+
+    A WAS unit has the capability of calculating its own flow based on:
 
         1) User defined solids retention time (SRT);
+
         2) Solids inventory in bioreactors it sees; and
+
         3) Its inlet's total suspended solids (TSS).
 
     It also differs from a "pipe" at its (mainstream) outlet which can be set
@@ -1337,11 +1483,23 @@ class WAS(pipe):
     __id = 0
 
     def __init__(self):
+        """
+        Special initialization for "WAS".
+
+        Reasons:
+
+        1) WAS flow is determined during simulation;
+
+        2) WAS flow rate is passed onto upstream units for plant flow balance;
+
+        3) WAS mainstream outlet can be either "None" or a process unit.
+        """
+
         pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'WAS_' + str(self.__id)
         
-        self._type = "WAS"
+        self._type = 'WAS'
 
         # flow data source tags
         self._in_flow_ds = flow_data_src.DNS
@@ -1356,14 +1514,20 @@ class WAS(pipe):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
     def discharge(self):
+        """
+        Pass the total flow and blended components to the downstreams.
+
+        WAS typically functions as an effluent obj. However, it can also be
+        a pipe obj. that connects to solids management process units.
+        Therefore, the discharge function allows a None at the main outlet.
+        """
+
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 
         self._branch_flow_helper()
 
-        # WAS typically functions as an effluent obj. However, it can also be
-        # a pipe obj. that connects to solids management process units.
-        # Therefore, the discharge function allows a None at the main outlet.
+        # see doc string above
         if self._main_outlet != None:            
             self._discharge_main_outlet() 
 
@@ -1382,25 +1546,42 @@ class WAS(pipe):
     #
 
     def get_solids_inventory(self, reactor_list=[]):
-        ''' Calculate the total solids mass in active reactors '''
-        # reactor_list stores the asm_reactor units that contribute
-        # active biomass growth to the WWTP.
-        # The result of this function will be used to determine the WAS
-        # flow for the entire WWTP.
-        #TODO: In the MAIN program, we will need to maintain a list of 
-        # reactors that contribute active solids to the WWTP.
+        """
+        Calculate the total solids mass in active reactors.
+
+        Args:
+            reactor_list: list of the asm_reactors with active treatment;
+
+        Return:
+            solids inventory (float) in grams.
+
+        See:
+            set_WAS_flow().
+        """
 
         inventory = 0.0
         for unit in reactor_list:
             inventory += unit.get_TSS() * unit.get_active_vol()
 
-        #inventory = inventory / 1000.0  # Convert unit to Kg
-
         return inventory
 
 
     def set_WAS_flow(self, SRT=5, reactor_list=[], effluent_list=[]):
-        #SRT is the plant's SRT from user input. Default 5 days.
+        """
+        Set the waste sludge flow to meet the WWTP's solids retention time.
+
+        Args:
+            SRT:            WWTP's SRT in days;
+            reactor_list:   list of active asm_reactors;
+            effluent_list:  list of all effluent units in the WWTP.
+
+        Return:
+            Mainstream outflow in m3/d
+
+        See:
+            get_solids_inventory().
+        """
+
         self.update_combined_input()
 
         _eff_solids = 0.0

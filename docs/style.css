@@ -193,17 +193,17 @@ ul {
   overflow-y: hidden;
 }
 
-pre.fragment {
+pre.fragment {  /* THIS IS THE DETAILS FOLLOWING THE BRIEF DOC STRING */
         border: 1px solid #C4CFE5;
         background-color: #FBFCFD;
         padding: 4px 6px;
         margin: 4px 8px 4px 2px;
         overflow: auto;
         word-wrap: break-word;
-        font-size:  9pt;
+        font-size:  14pt;
         line-height: 125%;
-        font-family: "courier new";
-        font-size: 105%;
+        font-family: "Cousine";
+        font-size: 95%;
 }
 
 div.fragment {
@@ -643,7 +643,7 @@ table.memberdecls {
 
 .overload {
         font-family: "courier new";
-	font-size: 65%;
+	    font-size: 65%;
 }
 
 .memdoc, dl.reflist dd {
@@ -1281,21 +1281,21 @@ dl.section dd {
 
 #projectname
 {
-	font: 300% Monaco;
+	font: 300% Monospace;
 	margin: 0px;
 	padding: 2px 0px;
 }
     
 #projectbrief
 {
-	font: 120% Monaco;
+	font: 120% Monospace;
 	margin: 0px;
 	padding: 0px;
 }
 
 #projectnumber
 {
-	font: 50% Monaco;
+	font: 50% Monospace;
 	margin: 0px;
 	padding: 0px;
 }
@@ -1378,7 +1378,7 @@ div.toc {
 
 div.toc li {
         background: url("bdwn.png") no-repeat scroll 0 5px transparent;
-        font: 10px/1.2 Courier New
+        font: 11px/1.2 Courier New
         margin-top: 5px;
         padding-left: 10px;
         padding-top: 2px;
@@ -1507,7 +1507,7 @@ tr.heading h2 {
 #powerTip div {
         margin: 0px;
         padding: 0px;
-        font: 12px/16px Cousine;
+        font: 14px/16px Cousine;
 }
 
 #powerTip:before, #powerTip:after {

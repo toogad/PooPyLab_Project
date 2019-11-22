@@ -152,8 +152,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def set_downstream_main(self, receiver):
         """
-        Define the downstream main outlet by specifying the receiving process
-        unit.
+        Define the main outlet by specifying the receiving process unit.
         """
         pass
 
@@ -321,7 +320,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def get_sCOD(self, branch='Main'):
         """
-        Return the Chemical Oxygen Demand (total) of the specified branch.
+        Return the soluble COD of the specified branch.
         """
         pass
 
@@ -329,8 +328,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def get_pCOD(self, branch='Main'):
         """
-        Return the Particultate Chemical Oxygen Demand of 
-        the specified branch.
+        Return the particultate COD of the specified branch.
         """
         pass
 

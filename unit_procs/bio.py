@@ -23,6 +23,14 @@
 # ----------------------------------------------------------------------------
 
 
+"""@package bio
+Defines classes for biological reactors used in an WWTP:
+
+    1) ASM Reactor (bioreactor using ASM models)
+
+    2) TODO: ADM Reactor (bioreactor using Anaerobic Digestion Model)
+"""
+
 from unit_procs.streams import pipe
 from ASMModel.asm_1 import ASM_1
 from ASMModel import constants
@@ -31,6 +39,18 @@ from ASMModel import constants
 # ----------------------------------------------------------------------------
 
 class asm_reactor(pipe):
+    """
+    Bioreactor using ASM kinetics, derived as a "pipe" w/ active volume.
+
+    Current design only uses ASM 1 model. Will need to add flexibility for
+    using ASM 2d, ASM 3, and user revised versions of them.
+
+    The "asm_reactor" contain sludge mixed liquor of a certain kinetics
+    described by the chosen model.
+
+    The integration of the model is also done by the "asm_reactor".
+    """
+
     __id = 0
 
     def __init__(self, ActiveVol=38000, swd=3.5,
