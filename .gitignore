@@ -70,7 +70,6 @@ PooPyLab_Project.wiki/
 toogad.github.io/
 
 #doxygen
-*.dox
 docs/html/
 docs/latex/
 docs/poopylab_doxygen_config
