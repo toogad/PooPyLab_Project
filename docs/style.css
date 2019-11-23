@@ -202,7 +202,7 @@ pre.fragment {  /* THIS IS THE DETAILS FOLLOWING THE BRIEF DOC STRING */
         word-wrap: break-word;
         font-size:  14pt;
         line-height: 125%;
-        font-family: "Cousine";
+        font-family: "Courier New";
         font-size: 95%;
 }
 
@@ -692,7 +692,7 @@ dl.reflist dd {
 	white-space: nowrap;
 }
 .paramname em {
-	font-style: Cousine;
+	font-style: Courier New;
 }
 .paramname code {
         line-height: 14px;
@@ -1281,21 +1281,21 @@ dl.section dd {
 
 #projectname
 {
-	font: 300% Monospace;
+	font: 300% Cousine;
 	margin: 0px;
 	padding: 2px 0px;
 }
     
 #projectbrief
 {
-	font: 120% Monospace;
+	font: 120% Cousine;
 	margin: 0px;
 	padding: 0px;
 }
 
 #projectnumber
 {
-	font: 50% Monospace;
+	font: 50% Courier New;
 	margin: 0px;
 	padding: 0px;
 }
@@ -1507,7 +1507,7 @@ tr.heading h2 {
 #powerTip div {
         margin: 0px;
         padding: 0px;
-        font: 14px/16px Cousine;
+        font: 14px/16px Courier New;
 }
 
 #powerTip:before, #powerTip:after {
