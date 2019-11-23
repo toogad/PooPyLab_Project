@@ -26,6 +26,9 @@
 #
 #
 
+"""Global functions for process flow diagram related operations.
+"""
+## @namespace pfd
 
 from unit_procs.streams import influent, effluent, WAS, pipe, splitter
 from unit_procs.bio import asm_reactor

@@ -23,8 +23,7 @@
 # ----------------------------------------------------------------------------
 
 
-"""@package bio
-Defines classes for biological reactors used in an WWTP:
+"""Defines classes for biological reactors used in an WWTP.
 
     1) ASM Reactor (bioreactor using ASM models);
 
@@ -32,6 +31,7 @@ Defines classes for biological reactors used in an WWTP:
 
     3) ADM Reactor (bioreactor using Anaerobic Digestion Model) (#TODO: add)
 """
+## @namespace bio
 
 from unit_procs.streams import pipe
 from ASMModel.asm_1 import ASM_1

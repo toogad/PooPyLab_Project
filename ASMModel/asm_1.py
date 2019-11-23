@@ -25,12 +25,9 @@
 #
 
 
-from ASMModel import constants
+"""Definition of the IWA Activated Sludge Model #1.
 
-"""@package asm_1
-Definition of the IWA Activated Sludge Model #1.
-
-"SUBSCRIPTS" USED IN VARIABLE NAMES:
+SUBSCRIPTS USED IN VARIABLE NAMES:
  rb:   readily biodegradable
  nrb:  non-readily biodegradable
  O:    Oxygen
@@ -55,6 +52,10 @@ Definition of the IWA Activated Sludge Model #1.
  Eff:  Effluent
  TBD:  To Be Determined by user
 """
+## @namespace asm_1
+
+
+from ASMModel import constants
 
 class ASM_1():
 

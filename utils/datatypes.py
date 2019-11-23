@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-"""@package datatypes
-Definitions of specific data types used in the PooPyLab project.
+"""Definitions of specific data types used in the PooPyLab project.
 """
+## @namespace datatypes
 
 
 from enum import Enum

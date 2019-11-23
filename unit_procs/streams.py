@@ -25,8 +25,7 @@
 # ----------------------------------------------------------------------------
 
 
-"""@package streams
-Defines basic stream elements for a wastewater treatment plant (WWTP):
+"""Defines basic stream elements for a wastewater treatment plant (WWTP):
 
     1) Splitter
     2) Pipe
@@ -34,6 +33,7 @@ Defines basic stream elements for a wastewater treatment plant (WWTP):
     4) Effluent
     5) Waste Activated Sludge (WAS)
 """
+## @namespace streams
 
 from unit_procs.base import poopy_lab_obj
 from utils.datatypes import flow_data_src

@@ -24,6 +24,11 @@
 #
 # 
 
+"""Definitions of some constants.
+"""
+## @namespace constants
+
+
 _NUM_ASM1_COMPONENTS = 13
 _NUM_ASM3_COMPONENTS = 13
 _NUM_ASM2d_COMPONENTS = 21

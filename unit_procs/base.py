@@ -25,12 +25,12 @@
 #
 
 
-"""@package base
-Definitions of common interface for all PooPyLab objects.
+""" Definitions of common interface for all PooPyLab objects.
 
 The documentations for the abstract interface here are also abstract. Please
 see more details in specific implementations.
 """
+## @namespace base
 
 from abc import ABCMeta, abstractmethod
 

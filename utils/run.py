@@ -26,6 +26,9 @@
 #
 #
 
+"""Global functions for running simulation.
+"""
+## @namespace run
 
 from unit_procs.streams import pipe, influent, effluent, WAS, splitter
 from unit_procs.bio import asm_reactor

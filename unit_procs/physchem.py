@@ -24,8 +24,7 @@
 #
 # ----------------------------------------------------------------------------
 
-"""@package physchem
-Defines classes for physical/chemical treatment processes.
+"""Defines classes for physical/chemical treatment processes.
 
     1) Final Clarifier;
 
@@ -37,6 +36,8 @@ Defines classes for physical/chemical treatment processes.
 
     5) Membrane Filtration (#TODO: add);
 """
+## @namespace physchem
+
 
 from unit_procs.streams import splitter
 
