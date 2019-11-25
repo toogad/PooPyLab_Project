@@ -28,9 +28,13 @@
 """Defines basic stream elements for a wastewater treatment plant (WWTP):
 
     1) Splitter
+
     2) Pipe
+
     3) Influent
+
     4) Effluent
+
     5) Waste Activated Sludge (WAS)
 """
 ## @namespace streams
@@ -488,7 +492,7 @@ class splitter(poopy_lab_obj):
                 discharger.set_downstream_side(None)
             self._has_discharger = len(self._inlet) > 0
         else:
-            print("ERROR:", self.__name__, "inlet unit not found for removal.")
+            print('ERROR:', self.__name__, 'inlet unit not found for removal.')
         return None
     
 
@@ -527,7 +531,7 @@ class splitter(poopy_lab_obj):
                 self._mo_connected = True
                 rcvr.add_upstream(self)
             else:
-                print("ERROR: Influent types CAN NOT be the main outlet of",
+                print('ERROR: Influent types CAN NOT be the main outlet of',
                     self.__name__)
         return None
     
@@ -575,7 +579,7 @@ class splitter(poopy_lab_obj):
             self._upstream_set_mo_flow = False
             self.set_flow_data_src('Main', flow_data_src.PRG)
         else:
-            print("ERROR:", self.__name__, "given main flow < 0.")
+            print('ERROR:', self.__name__, 'given main flow < 0.')
             self._mo_flow = 0
         return None
             
