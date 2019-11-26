@@ -26,9 +26,10 @@
 #
 #
 
-"""Global functions for running simulation.
+"""Global functions for running simulations.
 """
 ## @namespace run
+## @file run.py
 
 from unit_procs.streams import pipe, influent, effluent, WAS, splitter
 from unit_procs.bio import asm_reactor
@@ -36,6 +37,16 @@ from unit_procs.physchem import final_clarifier
 from utils.datatypes import flow_data_src
 
 def check_global_cnvg(wwtp):
+    """
+    Check global convergence of the WWTP PFD.
+
+    Args:
+        wwtp:   list of process units in a WWTP's PFD
+
+    Return:
+        bool
+    """
+
     _glb_cnvg = True
     for unit in wwtp:
         if not unit.is_converged():
@@ -46,6 +57,16 @@ def check_global_cnvg(wwtp):
 
 
 def show_concs(wwtp):
+    """
+    Print the concentrations of the branches of each unit in the WWTP's PFD.
+
+    Args:
+        wwtp:   list of process units in a WWTP's PFD
+
+    Return:
+        None
+    """
+
     for elem in wwtp:
         print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
             elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
@@ -59,24 +80,34 @@ def show_concs(wwtp):
 
 
 def _wwtp_active_vol(reactors=[]):
-    ''' 
-    get the sum of asm reactors' active volume.
-    '''
+    """
+    Return the sum of asm reactors' active volume.
+
+    Args:
+        reactors:   list of reactors whose active volumes are of interest.
+
+    Return:
+        total active volume (float), m3
+    """
     return sum([r.get_active_vol() for r in reactors])
 
 
 def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
-    '''
-    Generate the initial guess to be used for the starting point of model
-    integration towards a steady state solution.
+    """
+    Return the initial guess as the start of integration towards steady state.
 
     The approach here is similar to that outlined in the IWA ASM1 report, where
     the total volume of all the reactors is treated as one CSTR.
-    '''
-    # params: model parameters adjusted to the project temperature
-    # reactors: asm_reactors whose volume will be used
-    # inf_flow: wwtp's influent flow rate, m3/d
-    # plant_inf: model components for the entire wwtp's influent
+
+    Args:
+        params:     model parameters adjusted to the project temperature;
+        reactors:   reactors whose volume will be used;
+        inf_flow:   wwtp's influent flow rate, m3/d;
+        plant_inf:  model components for the entire wwtp's influent.
+
+    Return:
+        list of ASM 1 component concentrations [float]    
+    """
     
     inf_S_S = plant_inf[2]
     inf_S_NH = plant_inf[3]
@@ -176,6 +207,23 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
 
 
 def _forward(me, visited=[]):
+    """
+    Set the flow data source by visiting process units along the flow paths.
+
+    This function is to be called by forward_set_flow(). It follows the flow
+    paths and decide whether additional flow data sources can be decided based
+    on what's known.
+
+    Args:
+        me:         current process unit under analysis;
+        visisted:   list of process units visited already.
+
+    Return:
+        None
+
+    See:
+        forward_set_flow().
+    """
     if me in visited or me == None:
         return None
     
@@ -233,10 +281,21 @@ def _forward(me, visited=[]):
 
 
 def forward_set_flow(wwtp):
-    ''' set/adjust the _upstream_set_mo_flow flag of each unit that is
-        influenced by the select units in the starters
-    '''
-    # wwtp: list of all units in a wwtp
+    """
+    Set the _upstream_set_mo_flow flag of those influenced by the starters.
+
+    Args:
+        wwtp:   list of all units in a wwtp.
+
+    Return:
+        None
+
+    See:
+        _forward().
+        backward_set_flow();
+        _backward();
+        _sum_of_known_inflows().
+    """
 
     _visited = []
     _starters = []
@@ -265,6 +324,17 @@ def forward_set_flow(wwtp):
 
 
 def _BFS(_to_visit, _visited):
+    """
+    Breadth First Search type of traverse.
+
+    Args:
+        _to_visit:      list of process units to be visited;
+        _visited:       list of process units visited.
+
+    Return:
+        list of process units in their visited order.
+    """
+
     if len(_to_visit) == 0:
         return [_u.__name__ for _u in _visited]
 
@@ -287,6 +357,20 @@ def _BFS(_to_visit, _visited):
 
 
 def traverse_plant(wwtp, plant_inf):
+    """
+    Visit every process units on the PFD starting from the influent.
+
+    Args:
+        wwtp:       list of all process units on the WWTP's PFD;
+        plant_inf:  plant influent unit.
+
+    Return:
+        None
+
+    See:
+        _BFS();
+    """
+
     _to_visit = [plant_inf]
     _visited = []
     _finished = []
@@ -299,6 +383,17 @@ def traverse_plant(wwtp, plant_inf):
 
 
 def _sum_of_known_inflows(me, my_inlet_of_unknown_flow):
+    """
+    Return the sum of all known flow rates of the inlet of a process unit.
+
+    Args:
+        me:                         current process unit;
+        my_inlet_of_unknown_flow:   discharger w/ flow into "me" unknown.
+
+    Return:
+        float, m3/d
+    """
+
     _sum = 0.0
     for _inlet in me.get_upstream():
         if _inlet != my_inlet_of_unknown_flow:
@@ -310,9 +405,26 @@ def _sum_of_known_inflows(me, my_inlet_of_unknown_flow):
 
      
 def _backward(me):
-    # me: process unit whose total inlet flow is determined by
-    # its (_mo_flow + _so_flow)
-    
+    """
+    Set the flow data source by visiting process units against the flow paths.
+
+    This function is to be called by backward_set_flow(). It decide whether
+    additional flow data sources can be decided based on (_mo_flow + _so_flow).
+    If so, proceed and set the inflow and trace further upstream of "me".
+
+    Args:
+        me:         current process unit under analysis;
+        visisted:   list of process units visited already.
+
+    Return:
+        None
+
+    See:
+        backward_set_flow();
+        forward_set_flow();
+        _forward().
+    """
+
     _in_f_ds, _mo_f_ds, _so_f_ds = me.get_flow_data_src()
 
     _in_f_known = (_in_f_ds != flow_data_src.TBD)
@@ -380,19 +492,24 @@ def _backward(me):
     return None
 
 
-def backward_set_flow(starters=[]):
-    ''' Back tracing to set the flows of the inlet units for those listed in
-        starters[].
-    '''
-    for _u in starters:
+def backward_set_flow(start=[]):
+    """
+    Back tracing to set the flows of the inlet units for those in starters.
+
+    Args:
+        start: list of units whose inflow = mainstream flow + sidestream flow.
+
+    Return:
+        None
+
+    See:
+        _backward();
+        forward_set_flow();
+        _forward();
+        _sum_of_known_inflows().
+    """
+    for _u in start:
         _backward(_u)
     
     return None
-
-    
-
-
-
-
-
 

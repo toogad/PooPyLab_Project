@@ -22,6 +22,7 @@
 """Definitions of specific data types used in the PooPyLab project.
 """
 ## @namespace datatypes
+## @file datatype.py
 
 
 from enum import Enum

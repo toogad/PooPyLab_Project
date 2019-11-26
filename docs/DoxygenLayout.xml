@@ -42,7 +42,7 @@
     <includes visible="$SHOW_INCLUDE_FILES"/>
     <inheritancegraph visible="$CLASS_GRAPH"/>
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
-  <memberdecl>
+    <memberdecl>
       <nestedclasses visible="yes" title=""/>
       <publictypes title=""/>
       <services title=""/>
@@ -74,7 +74,7 @@
       <privatestaticattributes title=""/>
       <friends title=""/>
       <related title="" subtitle=""/>
-      <membergroups visible="no"/>
+      <membergroups visible="yes"/>
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>

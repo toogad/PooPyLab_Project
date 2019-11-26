@@ -29,6 +29,7 @@
 """Global functions for process flow diagram related operations.
 """
 ## @namespace pfd
+## @file pfd.py
 
 from unit_procs.streams import influent, effluent, WAS, pipe, splitter
 from unit_procs.bio import asm_reactor
@@ -36,6 +37,20 @@ from unit_procs.physchem import final_clarifier
 
 
 def _check_connection(pfd=[]):
+    """
+    Check the validity of connections on the process flow diagram.
+
+    All units are connected for their main- and sidestream outlets other
+    than the exceptions made in initializations. This function checks and count
+    the loose ends found in the PFD.
+
+    Args:
+        pfd:    Process Flow Diagram (list of all unit processes in the WWTP);
+
+    Return:
+        # of loose ends (int)
+    """
+
     loose_end = 0
     for unit in pfd:
         if not unit.has_discharger():
@@ -56,9 +71,18 @@ def _check_connection(pfd=[]):
 
 
 def _id_upstream_type(me, upds):
-    # identify the type of an upstream discharger (upds) of (me)
-    # me: a process unit
-    # upds: an upstream discharger of 'me'
+    """
+    Identify the type of a discharger connected to the inlet.
+
+    This function identifies the type of an upstream discharger (upds) of (me)
+
+    Args:
+        me:     a process unit
+        upds:   an upstream discharger of "me"
+
+    Return:
+        strings such as {'VOID'|'INFLUENT'|'SPLITTER_MAIN'|'SPLITTER_SIDE'}
+    """
 
     if me.get_type() == 'Influent':
         return 'VOID'
@@ -74,14 +98,22 @@ def _id_upstream_type(me, upds):
     
  
 def _check_WAS(mywas):
-    # Check the validity of the WAS units in the pfd. 
-    #   1) All WAS units shall be connected to side streams of splitters via
-    #   ONE pipe;
-    #   2) There can only be 0 or 1 SRT controlling WAS (via its upstream
-    #   splitter side);
-    # Satisfying the above requirements will allow the SRT controlling splitter
-    # to be moved to the front of the pfd.
+    """
+    Check the validity of the WAS units in the pfd. 
+    
+    Rules:
+        1) A WAS unit shall connect w/ a splitter's sidestream via ONE pipe;
 
+        2) Only 0 or 1 WAS can connect to an SRT controlling splitter;
+    
+    Args:
+        mywas:  the WAS unit under analysis
+
+    Return:
+        Whether the WAS connection is valid (bool),
+
+        The SRT controlling splitter connected to this WAS unit
+    """        
 
     # SRT Controlling splitter to be found:
     _srt_ctrl_splt = None  
@@ -113,12 +145,24 @@ def _check_WAS(mywas):
 
 
 def _check_sidestream_flows(mysplitters):
-    # Check the validity of the sidestreams of all splitter types
-    # All side stream flows shall be defined by user except for the
-    # SRT_Controller's or the final_clarifier's.
-    # The sidestream flow of a final clarifier is determined during runtime.
-    # The main loop shall update its side outlet or main outlet flows.
+    """
+    Check the validity of the sidestreams of all splitter types.
 
+    Rules:
+        1) Sidestream flows shall be defined by user;
+
+        2) SRT controlling splitters or final_clarifiers are exempted from 1);
+
+        3) A final clarifier's sidestream flow is determined during runtime;
+        
+        4) The main loop shall update its side outlet or main outlet flows.
+
+    Args:
+        mysplitters:    Splitters to be checked;
+
+    Return:
+        total # of sidestreams with undefined flow rates (int)
+    """
     _undefined = 0
     for _u in mysplitters:
         if not _u.sidestream_flow_defined():
@@ -129,6 +173,22 @@ def _check_sidestream_flows(mysplitters):
             
 
 def _find_main_only_prefix(cur, pms):
+    """
+    Find the mainstream only loop in the PFD.
+
+    Rules:
+        1) A recycle/recirculation (loop) shall be via a splitter sidestream;
+
+    Args:
+        cur:    current process unit;
+        pms:    list of mainstream units (prefixes) leading to "cur".
+
+    Return:
+        bool
+
+    See:
+        _has_main_only_loops().
+    """
     if cur in pms:
         # found a mainstream-only loop
         return True
@@ -151,8 +211,21 @@ def _find_main_only_prefix(cur, pms):
 
 
 def _has_main_only_loops(pfd):
-    # Loops with mainstreams only are not allowed in the PFD
+    """
+    Analyze a PFD and see whether it has a loop only via mainstream outlets.
 
+    Rule:
+        1) Loops with mainstreams only are not allowed in the PFD
+
+    Args:
+        pfd:    Process Flow Diagram (list of process units in the WWTP);
+
+    Return:
+        bool
+
+    See:
+        _find_main_only_prefix().
+    """
     for _u in pfd:
         prefix_ms = []         
         if _find_main_only_prefix(_u, prefix_ms):
@@ -164,10 +237,34 @@ def _has_main_only_loops(pfd):
 
 
 def get_all_units(wwtp, type='ASMReactor'):
+    """
+    Return all the units of a specific type in a treatment plant PFD.
+
+    Args:
+        wwtp:   a collection (list) of process units;
+        type:   type of process units of interest.
+
+    Return:
+        a list of process units
+    """
     return [w for w in wwtp if w.get_type() == type]
 
 
 def check(wwtp):
+    """
+    Check the validity of the PFD against the rules.
+
+    Args:
+        wwtp:   a collection (list) of process units;
+
+    Return:
+        bool
+
+    See:
+        _check_connection();
+        _check_WAS();
+        _check_sidestream_flows();
+    """
 
     _all_WAS = get_all_units(wwtp, 'WAS')
 
@@ -183,13 +280,23 @@ def check(wwtp):
         wwtp.remove(_srt_ctrl_)
         wwtp.append(_srt_ctrl_)
         print('PFD READY')
+        return True
     else:
         print('FIXED PFD ERRORS BEFORE PROCEEDING')
-
-    return None
+        return False
 
 
 def show(wwtp=[]):
+    """
+    Show the verbal description of the PFD.
+
+    Args:
+        wwtp:   a collection (list) of process units;
+
+    Return:
+        None
+    """
+
     print('Current PFD Configuration:')
     for unit in wwtp:
         print(unit.__name__, ': receives from:', end=' ')

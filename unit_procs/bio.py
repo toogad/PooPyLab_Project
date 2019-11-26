@@ -32,6 +32,7 @@
     3) ADM Reactor (bioreactor using Anaerobic Digestion Model) (#TODO: add)
 """
 ## @namespace bio
+## @file bio.py
 
 from unit_procs.streams import pipe
 from ASMModel.asm_1 import ASM_1
@@ -60,15 +61,13 @@ class asm_reactor(pipe):
         """
         Init w/ active volume, water depth, water temperature, & dissolved O2.
 
-
-
         Args:
             act_vol:    active process volume, m3
             swd:        side water depth, m
             ww_temp:    wastewater temperature, degC
             DO:         dissolved oxygen, mg/L
-            *args:      (provision for other parameters for different models)
-            **kw:       (provision for other parameters)
+            args:       (provision for other parameters for different models)
+            kw:         (provision for other parameters)
 
         Return:
             None

@@ -31,6 +31,7 @@ The documentations for the abstract interface here are also abstract. Please
 see more details in specific implementations.
 """
 ## @namespace base
+## @file base.py
 
 from abc import ABCMeta, abstractmethod
 
