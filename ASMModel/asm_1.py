@@ -35,6 +35,7 @@ Reference:
     Sludge Models ASM1, ASM2, ASM2d, and ASM 3.
 """
 ## @namespace asm_1
+## @file asm_1.py
 
 
 from ASMModel import constants
@@ -60,20 +61,26 @@ class ASM_1():
             _set_stoichs();
         """
 
+        ## wastewater temperature used in the model, degC
         self._temperature = ww_temp
+        ## mixed liquor bulk dissolved oxygen, mg/L
         self._bulk_DO = DO 
         
         # define the model parameters and stochoimetrics as dict() so that it
         # is easier to keep track of names and values
+
+        ## kinetic constants
         self._params = {}
+
+        ## stoichiometrics
         self._stoichs = {}
+
+        ## temperature difference b/t what's used and baseline (20C), degC
         self._delta_t = 20.0 - self._temperature
         
         self._set_params()
-        
         self._set_stoichs()
         
-        # ASM components
         # The Components the ASM components IN THE REACTOR
         # For ASM #1:
         #
@@ -91,6 +98,7 @@ class ASM_1():
         #    self._comps[11]: X_D
         #    self._comps[12]: X_NS
         #
+        ## ASM model components
         self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
         return None
@@ -149,7 +157,7 @@ class ASM_1():
 
     def _set_params(self):
         """
-        Set the kinetic parameters/constants for the ASM 1 model.
+        Set the kinetic parameters/constants @ 20C for the ASM 1 model.
 
         This function updates the self._param based on the model temperature
         and DO.
@@ -227,7 +235,7 @@ class ASM_1():
     # STOCHIOMETRIC MATRIX 
     def _set_stoichs(self):
         """
-        Set the stoichiometrics for the ASM 1 model.
+        Set the stoichiometrics @ 20C for the ASM 1 model.
 
         Note:
             Make sure to match the .csv model template file in the

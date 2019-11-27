@@ -84,26 +84,44 @@ class final_clarifier(splitter):
     __id = 0
 
     def __init__(self, active_vol=9500, SWD=3.5):
+        """
+        Constructor for final_clarifier.
+        
+        The "final_clarifier" is modeled as an ideal solids-liquid separation
+        process that capture the solids from the inlet into the underflow as
+        per the user given capture rate. 
+
+        Essentially, the "final_clarifier" is a "splitter" with different
+        particulate concentrations among its three branches, while those
+        concentrations will be identical for all the branches of an ideal
+        "splitter".
+
+        Args:
+            active_vol:     active clarifier volume excluding storage cone, m3;
+            SWD:            side water depth, m.
+
+        Return:
+            None
+        """
         splitter.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'Final_Clarifier_' + str(self.__id)
 
         self._type = 'Final_Clarifier'
 
-        # SWD = side water depth in meters, default = ~12 ft
-        # active_vol in m^3, default value equals to 100,000 gallons
-        # active_vol assumed not to include bottom cone
+        ## clarifier active volume, bottom cone volume excluded, m3
         self._active_vol = active_vol
-        self._SWD = SWD
-        self._area = self._active_vol / self._SWD
+        ## side water depth of the active volume, m
+        self._swd = SWD
+        ## plan section area, m2
+        self._area = self._active_vol / self._swd
 
         self._upstream_set_mo_flow = True
 
-        # user defined solids capture rate, fraction less than 1.0;
-        # Typically, this is set to 0.95 but user can change the value.
+        ## user defined solids capture rate, fraction less than 1.0;
         self._capture_rate = 0.95
 
-        # underflow solids, mg/L
+        ## underflow solids, mg/L
         self._under_TSS = 15000
 
         return None

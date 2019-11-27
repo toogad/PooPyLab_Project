@@ -79,10 +79,14 @@ class asm_reactor(pipe):
 
         self._type = 'ASMReactor'
 
+        ## active volume, m3
         self._active_vol = act_vol
+        ## side water depth, m
         self._swd = swd
+        ## plan section area, m2
         self._area = self._active_vol / self._swd
 
+        ## sludge mixed liquor contained in the reactor
         self._sludge = ASM_1(ww_temp, DO)
 
         self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
@@ -94,8 +98,8 @@ class asm_reactor(pipe):
 
         self._upstream_set_mo_flow = True
 
-        # step size for RKF45 method
-        self._step = 0.5 / 24.0  # hour
+        ## step size for model integration, hr
+        self._step = 0.5 / 24.0
         
         return None
 

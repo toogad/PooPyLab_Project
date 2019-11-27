@@ -75,48 +75,54 @@ class splitter(poopy_lab_obj):
     __id = 0
 
     def __init__(self):
+        """
+        Constructor for "splitter"
+        """
+
         self.__class__.__id += 1
         self.__name__ = "Splitter_" + str(self.__id)
 
+        ## type string of the process unit
         self._type = "Splitter"
 
-        # _inlet store the upstream units and their flow contribution
-        # in the format of {unit, Flow}
+        ## upstream units and their flows in the format of {unit: Flow}
         self._inlet = {}
-        # outlets shall be a single receiver each
+        ## mainstream outlet, a single receiver
         self._main_outlet = None
+        ## sidestream outlet, a single receiver
         self._side_outlet = None
         
-        # flag to indicate whether there are upstream units
+        ## flag on whether there are upstream units
         self._has_discharger = False
-        self._has_sidestream = True  # always True for splitter
-        # main outlet connection flag
+        ## flag on whether there is a sidestream, always True for a splitter
+        self._has_sidestream = True
+        ## flag on whether the mainstream outlet is connected
         self._mo_connected = False
-        # side outlet connection flag
+        ## flag on whether the sidestream outlet is connected
         self._so_connected = False
 
-        # determine how to calculate branch flows
+        ## whether the mainstream outflow is by inflow - sidestream outflow
         self._upstream_set_mo_flow = False
 
-        # flow data source tags
+        ## flow data source tag for inlet
         self._in_flow_ds = flow_data_src.TBD
+        ## flow data source tag for mainstream outlet
         self._mo_flow_ds = flow_data_src.TBD
+        ## flow data source tag for sidestream outlet
         self._so_flow_ds = flow_data_src.TBD
 
 
-        # to confirm it has received _so_flow
+        ## flag to confirm it has received _so_flow > 0 m3/d
         self._so_flow_defined = False
 
-        # main outlet flow, m3/d
+        ## mainstream outflow, m3/d
         self._mo_flow = 0.0
-        # side outlet flow, m3/d
+        ## sidestream outflow, m3/d
         self._so_flow = 0.0
-
-        # total inlet flow calculated from all dischargers
+        ## total inlet flow, m3/d
         self._total_inflow = 0.0
-        # inlet flow back calculated as (_mo_flow + _so_flow)
-        #self._in_flow_backcalc = 0.0
         
+        ## flag on whether this splitter is SRT controller
         self._SRT_controller = False
         
         # influent/main_outlet/side_oulet model components:
@@ -133,15 +139,20 @@ class splitter(poopy_lab_obj):
         #    _comps[10]: X_BA
         #    _comps[11]: X_D
         #    _comps[12]: X_NS
+        #
+        ## inlet model components
         self._in_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS 
+        ## mainstream outlet model components
         self._mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+        ## sidestream outlet model components
         self._so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
 
-        # results of previous round
+        ## mainstream outlet model components for the previous round
         self._prev_mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+        ## sidestream outlet model components for the previous round
         self._prev_so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
 
-        # convergence status for the unit itself
+        ## flag on convergence status
         self._converged = False
 
         return None
@@ -323,10 +334,28 @@ class splitter(poopy_lab_obj):
 
         
     def get_type(self):
+        """
+        Return the type string of the process unit.
+
+        Args:
+            None
+
+        Return:
+            str
+        """
         return self._type
 
 
     def has_sidestream(self):
+        """
+        Return whether the unit has a sidestream.
+
+        Args:
+            None
+
+        Return:
+            bool
+        """
         return self._has_sidestream
 
 
@@ -378,10 +407,28 @@ class splitter(poopy_lab_obj):
 
 
     def has_discharger(self):
+        """
+        Return whether the unit's inlet has been connected.
+
+        Args:
+            None
+
+        Return:
+            bool
+        """
         return self._has_discharger
 
 
     def get_upstream(self):
+        """
+        Return the _inlet {} of the unit.
+
+        Args:
+            None
+
+        Return:
+            {unit_addr: flow into self._inlet}
+        """
         return self._inlet
 
 
@@ -452,6 +499,9 @@ class splitter(poopy_lab_obj):
     
 
     def update_combined_input(self):
+        """
+        Update both total inflow and blended concentrations (model components).
+        """
         self.totalize_inflow()
         self.blend_inlet_comps()
         return None
@@ -538,10 +588,28 @@ class splitter(poopy_lab_obj):
     
 
     def main_outlet_connected(self):
+        """
+        Return whether the mainstream outlet is connected.
+
+        Args:
+            None
+
+        Return:
+            bool
+        """
         return self._mo_connected
 
 
     def get_downstream_main(self):
+        """
+        Return the process unit connected at the mainstream outlet.
+
+        Args:
+            None
+
+        Return:
+            poopy_lab_obj
+        """
         return self._main_outlet
 
 
@@ -586,14 +654,32 @@ class splitter(poopy_lab_obj):
             
 
     def get_main_outflow(self):
+        """
+        Return the mainstream outflow.
+
+        Args:
+            None
+
+        Return:
+            float, m3/d
+        """
         self.totalize_inflow()
         self._branch_flow_helper()
         if self._mo_flow < 0:
-            print("WARN/ERROR:", self.__name__, "main outlet flow < 0.")
+            print('WARN/ERROR:', self.__name__, 'main outlet flow < 0.')
         return self._mo_flow
 
 
     def get_main_outlet_concs(self):
+        """
+        Return a copy of the mainstream outlet concentrations.
+        
+        Args:
+            None
+
+        Return:
+            list
+        """
         return self._mo_comps[:]
     
 
@@ -634,10 +720,28 @@ class splitter(poopy_lab_obj):
                 
 
     def side_outlet_connected(self):
+        """
+        Return True if the main outlet is connected, False if not.
+
+        Args:
+            None
+
+        Return:
+            bool
+        """
         return self._so_connected
 
 
     def get_downstream_side(self):
+        """
+        Return the process unit connected to the side outlet.
+
+        Args:
+            None
+
+        Return:
+            poopy_lab_obj
+        """
         return self._side_outlet
 
 
@@ -674,18 +778,45 @@ class splitter(poopy_lab_obj):
 
 
     def sidestream_flow_defined(self):
+        """
+        Return whether the sidestream flow rate has been defined.
+
+        Args:
+            None
+
+        Return:
+            bool
+        """
         return self._so_flow_defined
     
 
     def get_side_outflow(self):
+        """
+        Return the sidestream outlet flow rate.
+
+        Args:
+            None
+
+        Return:
+            float
+        """
         self.totalize_inflow()
         self._branch_flow_helper()
         if self._so_flow < 0:
-            print("WARN/ERROR:", self.__name__,"side outlet flow < 0.")
+            print('WARN/ERROR:', self.__name__,'side outlet flow < 0.')
         return self._so_flow
 
 
     def get_side_outlet_concs(self):
+        """
+        Return a copy of the sidestream outlet concentrations.
+
+        Args:   
+            None
+
+        Return:
+            list
+        """
         return self._so_comps[:]
     
 
@@ -706,13 +837,27 @@ class splitter(poopy_lab_obj):
         See:
             discharge().
         """
-
         if dschgr in self._inlet and flow >= 0:
             self._inlet[dschgr] = flow
         return None
 
 
     def _discharge_main_outlet(self):
+        """
+        Pass the flow and concentrations to the main outlet.
+
+        This function identifies the process unit connected to the mainstream
+        outlet, then call its set_flow() and update_combined_input() so that
+        the flow and concentrations from the current unit is passed onto the
+        mainstream outlet.
+
+        See:    
+            discharge();
+            get_downstream_main();
+            set_flow();
+            update_combined_input();
+            _discharge_side_outlet();
+        """
         m = self.get_downstream_main()
         m.set_flow(self, self._mo_flow)
         m.update_combined_input()
@@ -720,6 +865,21 @@ class splitter(poopy_lab_obj):
 
 
     def _discharge_side_outlet(self):
+        """
+        Pass the flow and concentrations to the side outlet.
+
+        This function identifies the process unit connected to the sidestream
+        outlet, then call its set_flow() and update_combined_input() so that
+        the flow and concentrations from the current unit is passed onto the
+        sidestream outlet.
+
+        See:    
+            discharge();
+            get_downstream_side();
+            set_flow();
+            update_combined_input();
+            _discharge_main_outlet();
+        """
         s = self.get_downstream_side()
         s.set_flow(self, self._so_flow)
         s.update_combined_input() 
@@ -727,6 +887,18 @@ class splitter(poopy_lab_obj):
  
  
     def discharge(self):
+        """
+        Pass the total flow and blended components to the downstreams.
+
+        Record the main- and sidestream outlet concentrations from the previous
+        iteration. Update the concentrations for the two outlet branches. Pass
+        the flows and concentrations onto the downstream units.
+
+        See:
+            _branch_flow_helper();
+            _discharge_main_outlet();
+            _discharge_side_outlet().
+        """
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 
@@ -740,17 +912,20 @@ class splitter(poopy_lab_obj):
         if self._main_outlet != None:            
             self._discharge_main_outlet()
         else:
-            print("ERROR:", self.__name__, "main outlet incomplete")
+            print('ERROR:', self.__name__, 'main outlet incomplete.')
 
         if self._side_outlet != None:
             self._discharge_side_outlet()
         elif self._has_sidestream:
-            print("ERROR:", self.__name__, "side outlet incomplete")
+            print('ERROR:', self.__name__, 'side outlet incomplete')
 
         return None
 
 
     def get_TSS(self, br='Main'):
+        """
+        Return the Total Suspended Solids of the specified branch.
+        """
         #TODO: need to make COD/TSS = 1.2 changeable for different type of
         # sludge
         index_list = [7, 8, 9, 10, 11]
@@ -758,44 +933,73 @@ class splitter(poopy_lab_obj):
 
 
     def get_VSS(self, br='Main'):
+        """
+        Return the Volatile Suspended Solids of the specified branch.
+        """
         #TODO: need to make COD/VSS = 1.42 changeable for diff. type of sludge
         index_list = [7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list) / 1.42
     
 
     def get_COD(self, br='Main'):
+        """
+        Return the Chemical Oxygen Demand (total) of the specified branch.
+        """
         index_list = [1, 2, 7, 8, 9, 10, 11]
         return self._sum_helper(br, index_list)
 
 
     def get_sCOD(self, br='Main'):
+        """
+        Return the soluble COD of the specified branch.
+        """
         index_list = [1, 2]
         return self._sum_helper(br, index_list)
 
 
     def get_pCOD(self, br='Main'):
+        """
+        Return the particultate COD of the specified branch.
+        """
         return self.get_COD(br) - self.get_sCOD(br)
 
 
     def get_TN(self, br='Main'):
+        """
+        Return the total nitrogen of the specified branch.
+
+        TN = TKN + NOx_N
+        """
         index_list = [3, 4, 5, 12]
         return self._sum_helper(br, index_list)
 
 
     def get_orgN(self, br='Main'):
+        """
+        Return the organic nitrogen of the specified branch.
+        """
         index_list = [4, 12]
         return self._sum_helper(br, index_list)
 
 
     def get_inorgN(self, br='Main'):
+        """
+        Return the inorganic nitrogen of the specified branch.
+        """
         return self.get_TN(br) - self.get_orgN(br)
 
 
     def get_pN(self, br='Main'):
+        """
+        Return the particulate nitrogen of the specified branch.
+        """
         return self._sum_helper(br, [12])
 
 
     def get_sN(self, br='Main'):
+        """
+        Return the soluble nitrogen of the specified branch.
+        """
         return self.get_TN(br) - self.get_pN(br)
 
 
@@ -945,6 +1149,7 @@ class pipe(splitter):
     def __init__(self):
         """
         A few special steps are taken when initializing a "pipe":
+
             1) Its sidestream is connected to None, with the sidestream flow is
             fixed at 0 m3/d, and the _so_flow_defined set to True;
 

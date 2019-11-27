@@ -33,6 +33,7 @@ see more details in specific implementations.
 ## @namespace base
 ## @file base.py
 
+
 from abc import ABCMeta, abstractmethod
 
 
@@ -204,7 +205,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def get_main_outlet_concs(self):
         """
-        Return the effluent model components (list) of the mainstream outlet.
+        Return a copy of the mainstream outlet concentrations.
         """
         pass
 
@@ -260,7 +261,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def get_side_outlet_concs(self):
         """
-        Return the model components (concentrations) of the sidestream.
+        Return a copy of the sidestream outlet concentrations.
         """
         pass
 
@@ -341,7 +342,6 @@ class poopy_lab_obj(object):
     def get_TN(self, branch='Main'):
         """
         Return the total nitrogen of the specified branch.
-        TN = TKN + NOx_N
         """
         pass
 

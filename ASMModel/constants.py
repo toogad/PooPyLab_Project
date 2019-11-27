@@ -24,14 +24,18 @@
 #
 # 
 
-"""Definitions of some constants.
+"""Definitions of some constants (may change soon).
 """
 ## @namespace constants
+## @file constants.py
 
 
+## number of ASM 1 model components
 _NUM_ASM1_COMPONENTS = 13
+## number of ASM 3 model components
 _NUM_ASM3_COMPONENTS = 13
+## number of ASM 2d model components
 _NUM_ASM2d_COMPONENTS = 21
 
-# convergence limit
-_CONVERG_LIMIT = 1E-8
+## convergence limit
+_CONVERG_LIMIT = 1E-5
