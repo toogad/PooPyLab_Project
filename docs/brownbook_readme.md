@@ -12,4 +12,7 @@ brilliant when it comes to mathematics. Hopefully, the documentation explains
 why things have been done in specific ways so that you may be able to offer
 better solutions and contribute to the project.
 
+Please see the code on [github](https://github.com/toogad/poopylab_project),
+with the high level development thoughts also on its wiki.
+
 -KZ
