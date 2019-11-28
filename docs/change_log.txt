@@ -231,8 +231,9 @@ December 17, 2013 KZ: Added/revised blend_components() definition.
 December 07, 2013 Kai Zhang
 
 
-ASM1 class:
+ASM_1 class:
 ------------------------------------------------------------------------------
+20191127 KZ: fixed typos in self._params and _stoichs
 20191024 KZ: revised _dCdt() to facilitate Runge-Kutta method
 20191022 KZ: corresponding changes to asm_reactor in its
                 set_model_condition()

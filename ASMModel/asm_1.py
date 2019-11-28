@@ -122,8 +122,8 @@ class ASM_1():
         self._temperature = ww_temp
         self._bulk_DO = DO
         self._delta_t = self._temperature - 20.0
-        self._param = self._set_params()
-        self._stoich = self._set_stoichs()
+        self._params = self._set_params()
+        self._stoichs = self._set_stoichs()
         return None
 
 
@@ -159,7 +159,7 @@ class ASM_1():
         """
         Set the kinetic parameters/constants @ 20C for the ASM 1 model.
 
-        This function updates the self._param based on the model temperature
+        This function updates the self._params based on the model temperature
         and DO.
 
         See:
