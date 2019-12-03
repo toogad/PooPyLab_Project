@@ -360,9 +360,8 @@ class ASM_1():
 
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
-
     #
-    def _monod(self, term_in_nom_denom, term_only_in_denom):
+    def _monod(self, term_in_num_denum, term_only_in_denum):
         """
         Template for Monod kinetics or switches.
 
@@ -374,13 +373,13 @@ class ASM_1():
             Monod kinetic of NOx-N on Autotrophs.
         
         Args:
-            term_in_nom_denom:  the term in both nominator and denominator
-            term_in_nom_denom:  the term only in nominator
+            term_in_num_denum:      the term in both numerator & denumerator
+            term_only_in_denum:     the term only in numerator
 
         Return:
             float
         """
-        return term_in_nom_denom / (term_in_nom_denom + term_only_in_denom)
+        return term_in_num_denum / (term_in_num_denum + term_only_in_denum)
 
 
     def _r0_AerGH(self, comps):
