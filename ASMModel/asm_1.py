@@ -122,8 +122,8 @@ class ASM_1():
         self._temperature = ww_temp
         self._bulk_DO = DO
         self._delta_t = self._temperature - 20.0
-        self._params = self._set_params()
-        self._stoichs = self._set_stoichs()
+        self._set_params()
+        self._set_stoichs()
         return None
 
 
