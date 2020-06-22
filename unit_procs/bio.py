@@ -447,7 +447,7 @@ class asm_reactor(pipe):
         _rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
                     - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
                     for j in range(_nc)]
-        _err = (sum(_rk4_sqr_) / _nc) ** 0.5
+        _err = sum(_rk4_sqr_) ** 0.5
 
         print('current err:', _err)
 
@@ -521,6 +521,7 @@ class asm_reactor(pipe):
                 #            + 16/135 * k1[j] + 6656/12825 * k3[j]
                 #            + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
                 #            for j in range(len(self._mo_comps))]
+                print("RKF45 step=", self._step)
                 self._sludge._comps = [self._sludge._comps[j]
                             + 25/216 * k1[j] + 1408/2565 * k3[j]
                             + 2197/4104 * k4[j] - 0.2 * k5[j] 
