@@ -291,13 +291,20 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-5):
+    def is_converged(self, limit=1E-6):
         """
         Return the convergence status of the unit.
 
-        This function checks the changes of flows and concentrations between
-        last round of simulation and current. If all changes are within the
-        tolerance limit, it flags the self._converged True.
+        This function checks the absolute changes of flows and concentrations 
+        between last round of simulation and current. If all changes are within 
+        the tolerance limit, it flags the self._converged True.
+
+        The same absolute changes will be used in evaluting the convergence of
+        splitter, clarifier, pipe, effluent, WAS, and other unit processes that
+        do not have splicit definitions of change rate terms (dy/dt = f(...)).
+
+        This function is redefined for unit processes like ASMReactor whose
+        models have specific dy/dt terms.
 
         Args:
             limit: Limit within which the simulation is considered converged
@@ -323,7 +330,7 @@ class splitter(poopy_lab_obj):
 
         _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
         _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow)
-                        / self._total_inflow <= limit)
+                        <= limit)
 
         self._converged = _conc_cnvg and _flow_cnvg
 
@@ -1035,14 +1042,14 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], rel_lim=1E-5):
+    def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], abs_lim=1E-6):
         """
         Check the convergence of model components (concentrations).
 
         Args:
             curr_comps: current model components
             prev_comps: prevous round model components
-            rel_lim: relative limit for convergence
+            abs_lim: absolute limit for convergence
 
         Retrun:
             list of bool for each model component's convergence status
@@ -1053,15 +1060,15 @@ class splitter(poopy_lab_obj):
 
         _nc = len(curr_comps)
         _cnvg = [False] * _nc
-        rel_diff = []
+        abs_diff = []
         for i in range(_nc):
             if prev_comps[i] == 0 and curr_comps[i] == 0:
                 _cnvg[i] = True
             else:
                 #TODO: assuming prev_comps[i] > 0:
-                _rd = abs(curr_comps[i] - prev_comps[i]) / prev_comps[i]
-                rel_diff.append(_rd)
-                _cnvg[i] = _rd <= rel_lim
+                _ad = abs(curr_comps[i] - prev_comps[i]) / prev_comps[i]
+                abs_diff.append(_ad)
+                _cnvg[i] = _ad <= abs_lim
 
         return _cnvg[:]
 
@@ -1330,7 +1337,7 @@ class influent(pipe):
         pass
 
 
-    def is_converged(self, limit=1E-4):
+    def is_converged(self, limit=1E-6):
         """
         Return the convergence status of the unit.
 
