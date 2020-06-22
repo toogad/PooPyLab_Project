@@ -89,6 +89,9 @@ class asm_reactor(pipe):
         ## sludge mixed liquor contained in the reactor
         self._sludge = ASM_1(ww_temp, DO)
 
+        # storage of _sludge._dCdt for the current step
+        self._del_C_del_t = [0.0] * constants._NUM_ASM1_COMPONENTS
+
         self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
         self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
@@ -106,6 +109,30 @@ class asm_reactor(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE
     #
+    def is_converged(self, limit=1E-6):
+        """
+        Redefine the convergence evaluation for the asm_reactor because of the
+        explicit definitions of dy/dt in the ASM model.
+
+        Current default criteria for steady state (convergence):
+            L2-norm of dy/dt < 1E-6
+
+        Args:
+            limit: Limit within which the simulation is considered converged
+
+        Return:
+            True/False
+        """
+        
+        _der2 = [dcdt * dcdt for dcdt in self._del_C_del_t]
+        _sum = sum(_der2)
+        L2_norm = _sum ** 0.5
+
+        print("dCdt:{}, L2norm={}".format(self._del_C_del_t, L2_norm))
+
+        return L2_norm < limit
+
+
     def discharge(self):
         """
         Pass the total flow and blended components to the downstreams.
@@ -442,30 +469,30 @@ class asm_reactor(pipe):
             _RKF45_err().
         """
 
-        _del_C_del_t = self._sludge._dCdt(
+        self._del_C_del_t = self._sludge._dCdt(
                             self._active_vol,
                             self._total_inflow,
                             self._in_comps, 
                             self._mo_comps)
 
-        #print('_del_C_del_t:{}'.format(_del_C_del_t))
+        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
 
         _uppers_sol = []
         _uppers_part = []
 
         for i in range(7):
-            # screen out the zero items in _del_C_del_t
-            if _del_C_del_t[i] != 0:
-                #_uppers_sol.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
+            # screen out the zero items in self._del_C_del_t
+            if self._del_C_del_t[i] != 0:
+                #_uppers_sol.append(self._mo_comps[i] / abs(self._del_C_del_t[i]))
                 _uppers_sol.append(self._sludge._comps[i] 
-                        / abs(_del_C_del_t[i]))
+                        / abs(self._del_C_del_t[i]))
 
-        for j in range(7, len(_del_C_del_t)):
-            # screen out the zero items in _del_C_del_t
-            if _del_C_del_t[j] != 0:
-                #_uppers_part.append(self._mo_comps[j] / abs(_del_C_del_t[j]))
+        for j in range(7, len(self._del_C_del_t)):
+            # screen out the zero items in self._del_C_del_t
+            if self._del_C_del_t[j] != 0:
+                #_uppers_part.append(self._mo_comps[j] / abs(self._del_C_del_t[j]))
                 _uppers_part.append(self._sludge._comps[j] 
-                        / abs(_del_C_del_t[j]))
+                        / abs(self._del_C_del_t[j]))
 
     
         _max_step_sol = min(_uppers_sol)
@@ -532,30 +559,30 @@ class asm_reactor(pipe):
         #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
         #   0 < del_t < Retention_Time_C_k, where
         #   C is the individual model component and k is the kth reactor
-        _del_C_del_t = self._sludge._dCdt(
+        self._del_C_del_t = self._sludge._dCdt(
                             self._active_vol,
                             self._total_inflow,
                             self._in_comps, 
                             self._mo_comps)
 
-        #print('_del_C_del_t:{}'.format(_del_C_del_t))
+        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
 
         _uppers_sol = []
         _uppers_part = []
 
         for i in range(first_index_part):
-            # screen out the zero items in _del_C_del_t
-            if _del_C_del_t[i] != 0:
-                #_uppers_sol.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
+            # screen out the zero items in self._del_C_del_t
+            if self._del_C_del_t[i] != 0:
+                #_uppers_sol.append(self._mo_comps[i] / abs(self._del_C_del_t[i]))
                 _uppers_sol.append(self._sludge._comps[i] 
-                        / abs(_del_C_del_t[i]))
+                        / abs(self._del_C_del_t[i]))
 
-        for j in range(first_index_part, len(_del_C_del_t)):
-            # screen out the zero items in _del_C_del_t
-            if _del_C_del_t[j] != 0:
-                #_uppers_part.append(self._mo_comps[j] / abs(_del_C_del_t[j]))
+        for j in range(first_index_part, len(self._del_C_del_t)):
+            # screen out the zero items in self._del_C_del_t
+            if self._del_C_del_t[j] != 0:
+                #_uppers_part.append(self._mo_comps[j] / abs(self._del_C_del_t[j]))
                 _uppers_part.append(self._sludge._comps[j] 
-                        / abs(_del_C_del_t[j]))
+                        / abs(self._del_C_del_t[j]))
 
     
         _max_step_sol = min(_uppers_sol)
@@ -574,8 +601,8 @@ class asm_reactor(pipe):
         sz_2 = _step_sol / 2  #TODO: use soluble step for all for now
 
         # _w1 = yn = self._mo_comps
-        # k1 is idetical to _del_C_del_t calculated above
-        k1 = _del_C_del_t 
+        # k1 is idetical to self._del_C_del_t calculated above
+        k1 = self._del_C_del_t 
 
         # _w2 = y_n + _step/2 * k1
         _w2 = [self._mo_comps[i] + sz_2 * k1[i] for i in range(len(k1))]
@@ -635,30 +662,30 @@ class asm_reactor(pipe):
         #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
         #   0 < del_t < Retention_Time_C_k, where
         #   C is the individual model component and k is the kth reactor
-        _del_C_del_t = self._sludge._dCdt(
+        self._del_C_del_t = self._sludge._dCdt(
                             self._active_vol,
                             self._total_inflow,
                             self._in_comps, 
                             self._mo_comps)
 
-        #print('_del_C_del_t:{}'.format(_del_C_del_t))
+        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
 
         _uppers_sol = []
         _uppers_part = []
 
         for i in range(first_index_part):
-            # screen out the zero items in _del_C_del_t
-            if _del_C_del_t[i] != 0:
-                #_uppers_sol.append(self._mo_comps[i] / abs(_del_C_del_t[i]))
+            # screen out the zero items in self._del_C_del_t
+            if self._del_C_del_t[i] != 0:
+                #_uppers_sol.append(self._mo_comps[i] / abs(self._del_C_del_t[i]))
                 _uppers_sol.append(self._sludge._comps[i] 
-                        / abs(_del_C_del_t[i]))
+                        / abs(self._del_C_del_t[i]))
 
-        for j in range(first_index_part, len(_del_C_del_t)):
-            # screen out the zero items in _del_C_del_t
-            if _del_C_del_t[j] != 0:
-                #_uppers_part.append(self._mo_comps[j] / abs(_del_C_del_t[j]))
+        for j in range(first_index_part, len(self._del_C_del_t)):
+            # screen out the zero items in self._del_C_del_t
+            if self._del_C_del_t[j] != 0:
+                #_uppers_part.append(self._mo_comps[j] / abs(self._del_C_del_t[j]))
                 _uppers_part.append(self._sludge._comps[j] 
-                        / abs(_del_C_del_t[j]))
+                        / abs(self._del_C_del_t[j]))
 
     
         _max_step_sol = min(_uppers_sol)
@@ -674,13 +701,13 @@ class asm_reactor(pipe):
 
         # TODO: use the same time step before further optimization
         #for i in range(first_index_particulate):
-            #self._mo_comps[i] += _del_C_del_t[i] * self._int_step_sol
+            #self._mo_comps[i] += self._del_C_del_t[i] * self._int_step_sol
             
         #for j in range(first_index_particulate, len(self._mo_comps)):
-            #self._mo_comps[j] += _del_C_del_t[j] * self._int_step_part
+            #self._mo_comps[j] += self._del_C_del_t[j] * self._int_step_part
 
         for i in range(len(self._mo_comps)):
-            self._sludge._comps[i] += _del_C_del_t[i] * _step_sol
+            self._sludge._comps[i] += self._del_C_del_t[i] * _step_sol
 
         self._so_comps = self._mo_comps = self._sludge._comps[:]
 

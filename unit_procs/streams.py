@@ -303,7 +303,7 @@ class splitter(poopy_lab_obj):
         splitter, clarifier, pipe, effluent, WAS, and other unit processes that
         do not have splicit definitions of change rate terms (dy/dt = f(...)).
 
-        This function is redefined for unit processes like ASMReactor whose
+        This function is redefined for unit processes like asm_reactor whose
         models have specific dy/dt terms.
 
         Args:
@@ -320,22 +320,24 @@ class splitter(poopy_lab_obj):
         #print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
         #    self._prev_so_comps))
 
-        _mo_cnvg = self._check_conc_cnvg(self._mo_comps,
-                                        self._prev_mo_comps,
-                                        limit)
-                  
-        _so_cnvg = self._check_conc_cnvg(self._so_comps,
-                                        self._prev_so_comps,
-                                        limit)
-
-        _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
+#        _mo_cnvg = self._check_conc_cnvg(self._mo_comps,
+#                                        self._prev_mo_comps,
+#                                        limit)
+#                  
+#        _so_cnvg = self._check_conc_cnvg(self._so_comps,
+#                                        self._prev_so_comps,
+#                                        limit)
+#
+#        _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
         _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow)
-                        <= limit)
+                        <  limit)
 
-        self._converged = _conc_cnvg and _flow_cnvg
+        #self._converged = _conc_cnvg and _flow_cnvg
+        self._converged = _flow_cnvg
 
         #print('{} cnvg: flow {}, main {}, side{}'.format(
         #        self.__name__, _flow_cnvg, _mo_cnvg, _so_cnvg))
+        print('{} cnvg: flow {}'.format(self.__name__, _flow_cnvg))
 
         return self._converged
 
@@ -1066,9 +1068,10 @@ class splitter(poopy_lab_obj):
                 _cnvg[i] = True
             else:
                 #TODO: assuming prev_comps[i] > 0:
-                _ad = abs(curr_comps[i] - prev_comps[i]) / prev_comps[i]
+                # _ad = abs(curr_comps[i] - prev_comps[i]) / prev_comps[i]
+                _ad = abs(curr_comps[i] - prev_comps[i])
                 abs_diff.append(_ad)
-                _cnvg[i] = _ad <= abs_lim
+                _cnvg[i] = _ad <  abs_lim
 
         return _cnvg[:]
 

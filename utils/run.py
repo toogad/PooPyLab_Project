@@ -47,13 +47,11 @@ def check_global_cnvg(wwtp):
         bool
     """
 
-    _glb_cnvg = True
     for unit in wwtp:
         if not unit.is_converged():
-            _glb_cnvg = False
             #print(unit.__name__, 'not converged yet')
-            break
-    return _glb_cnvg
+            return False
+    return True
 
 
 def show_concs(wwtp):
