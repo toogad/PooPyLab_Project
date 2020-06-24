@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20200623 KZ: retested after updating steady state criteria
 # 20191017 KZ: passed testing
 # 20190920 KZ: init and digressed to BFS traverse of the PFD
 #
@@ -112,8 +113,6 @@ if __name__ == '__main__':
     _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
     utils.run.backward_set_flow([_WAS[0], _eff[0]])
     utils.run.traverse_plant(wwtp, _inf[0])
-    
-    max = 10000
     
     r = 1
     while True:

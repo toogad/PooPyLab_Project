@@ -454,7 +454,7 @@ class asm_reactor(pipe):
         return _err
 
 
-    def _runge_kutta_fehlberg_45(self, tol=2E-5):
+    def _runge_kutta_fehlberg_45(self, tol=1E-6):
         """
         Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
 
