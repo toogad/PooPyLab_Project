@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20200625 KZ: retested after updating the steadt state criteria
 # 20191015 KZ: checked against ASIM results and passed.
 # 20191014 KZ: re-test after flow data source tags implementation.
 # 20190917 KZ: Matched ASIM results!!! - PASSED TEST!!
@@ -112,11 +113,10 @@ if __name__ == '__main__':
     for _r in _reactors:
         _r.assign_initial_guess(_seed)
     
-    utils.run.forward_set_flow(wwtp, _inf[0])
+    utils.run.forward_set_flow(wwtp)
     utils.run.traverse_plant(wwtp, _inf[0])
 
-    max = 500
-    i = 0
+    i = 1
     while True:
         #_WAS[0].set_mainstream_flow(_WAS_flow)
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
         utils.run.traverse_plant(wwtp, _inf[0])
 
-        if utils.run.check_global_cnvg(wwtp) or i >= max:
+        if utils.run.check_global_cnvg(wwtp):
             break
         
         i += 1
