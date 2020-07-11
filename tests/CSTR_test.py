@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 2020-07-11 KZ: added handling of CSTR w/o RAS/WAS
 # 2020-07-08 KZ: init
 #
 
@@ -49,7 +50,6 @@ if __name__ == '__main__':
 
     _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
 
-    # TODO: _WAS may be an empty []
     _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
 
     _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
@@ -106,19 +106,28 @@ if __name__ == '__main__':
 
     
     utils.run.forward_set_flow(wwtp)
-    _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
-    _WAS[0].set_mainstream_flow(_WAS_flow)
+    
+    # collect all the possible starting points for backward flow setting
+    _backward_start_points = [_w for _w in _WAS] + [_e for _e in _eff]
+    
+    if len(_WAS) == 0:
+        _WAS_flow = 0
+    else:
+        _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
+        _WAS[0].set_mainstream_flow(_WAS_flow)
     _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-    utils.run.backward_set_flow([_WAS[0], _eff[0]])
+    utils.run.backward_set_flow(_backward_start_points)
     utils.run.traverse_plant(wwtp, _inf[0])
     
     r = 1
     while True:
-        _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
-        _WAS[0].set_mainstream_flow(_WAS_flow)
+        if len(_WAS) == 0:
+            _WAS_flow = 0
+        else:
+            _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
+            _WAS[0].set_mainstream_flow(_WAS_flow)
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-        utils.run.backward_set_flow([_WAS[0], _eff[0]])
-        #pdb.set_trace()
+        utils.run.backward_set_flow(_backward_start_points)
         utils.run.traverse_plant(wwtp, _inf[0])
 
         if utils.run.check_global_cnvg(wwtp):

@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20200711 KZ: integrated the handling of a PFD w/o RAS/WAS
 # 20200623 KZ: retested after updating steady state criteria
 # 20191022 KZ: init and passed
 #
@@ -107,19 +108,28 @@ if __name__ == '__main__':
 
     
     utils.run.forward_set_flow(wwtp)
-    _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
-    _WAS[0].set_mainstream_flow(_WAS_flow)
-    _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-    utils.run.backward_set_flow([_WAS[0], _eff[0]])
-    #pdb.set_trace()
-    utils.run.traverse_plant(wwtp, _inf[0])
 
-    r = 1
-    while True:
+    # collect all the possible starting points for backward flow setting
+    _backward_start_points = [_w for _w in _WAS] + [_e for _e in _eff]
+    
+    if len(_WAS) == 0:
+        _WAS_flow = 0
+    else:
         _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
         _WAS[0].set_mainstream_flow(_WAS_flow)
+    _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
+    utils.run.backward_set_flow(_backward_start_points)
+    utils.run.traverse_plant(wwtp, _inf[0])
+    
+    r = 1
+    while True:
+        if len(_WAS) == 0:
+            _WAS_flow = 0
+        else:
+            _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
+            _WAS[0].set_mainstream_flow(_WAS_flow)
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-        utils.run.backward_set_flow([_WAS[0], _eff[0]])
+        utils.run.backward_set_flow(_backward_start_points)
         utils.run.traverse_plant(wwtp, _inf[0])
 
         if utils.run.check_global_cnvg(wwtp):
