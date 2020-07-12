@@ -51,7 +51,7 @@ wwtp = [inlet,
         p1, ra, p2,
         outlet]
 
-SRT = 10  # day
+SRT = 10  # day, in CSTR, this is not a CONTROLLED operation param.
 
 def construct():
     # make an CMAS plant
@@ -63,7 +63,7 @@ def construct():
     inlet.set_mainstream_flow(37800)
     
     ra.set_model_condition(10, 2.0)
-    ra.set_active_vol(14000)
+    ra.set_active_vol(37800*2)  # CSTR SRT = HRT, let HRT = 2 d
 
     print("CMAS PFD constructed.")
 
