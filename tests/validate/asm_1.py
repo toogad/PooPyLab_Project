@@ -697,7 +697,7 @@ class ASM_1():
                 + self._stoichs['7_12'] * self._r7_HydXN(comps)
 
 
-    def _dCdt(self, vol, flow, in_comps, mo_comps):
+    def _dCdt(self, mo_comps, vol, flow, in_comps):
         '''
         Defines dC/dt for the reactor based on mass balance.
 
@@ -763,4 +763,4 @@ class ASM_1():
         result.append((in_comps[12] - mo_comps[12]) / _HRT
                         + self._rate12_X_NS(mo_comps))
 
-        return result[:]
+        return result
