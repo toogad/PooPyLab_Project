@@ -34,6 +34,8 @@
 ## @namespace bio
 ## @file bio.py
 
+from scipy.optimize import root
+
 from unit_procs.streams import pipe
 from ASMModel.asm_1 import ASM_1
 from ASMModel import constants
@@ -151,7 +153,8 @@ class asm_reactor(pipe):
 
         #self._integrate(7, 'Euler', 0.05, 2.0)
         #self._integrate(7, 'RK4', 0.05, 2.0)
-        self._integrate(7, 'RKF45', 0.05, 2.0)
+        #self._integrate(7, 'RKF45', 0.05, 2.0)
+        self._relax()
         self._so_comps = self._mo_comps[:]
         self._discharge_main_outlet()
 
@@ -259,13 +262,47 @@ class asm_reactor(pipe):
             ASMModel.ASM_1.get_stoichs().
         """
         return self._sludge.get_stoichs()
+    
+    
+    def _relax(self):
+        """
+        Relaxation into steady state.
+
+        This function is to utilize the root finding routines in scipy.optimize
+        module to solve the differential equation system that dC/dt = 0 instead
+        of reaching the steady state with real time integration.
+
+        Args:
+            None
+
+        Return:
+            model components that satisify dC/dt = 0
+
+        Note:
+            Requires constant influent characterisitics and operating
+            conditions.
+        """
+        
+        root_ss = root(self._sludge._dCdt,
+                        self._sludge._comps,
+                        (self._active_vol, self._total_inflow, self._in_comps),
+                        method='hybr',
+                        options={'factor':0.1})
+
+        print(root_ss)
+
+        self._sludge._comps = root_ss.x[:]
+
+        self._mo_comps = self._sludge._comps[:]
+
+        return None
 
 
-    def _integrate(self, 
-            first_index_particulate=7,
-            method_name='RKF45',
-            f_s=0.05,
-            f_p=2.0):
+    def _integrate(self,
+                    first_index_particulate=7,
+                    method_name='RKF45',
+                    f_s=0.05,
+                    f_p=2.0):
         """
         Integrate the model forward in time.
 
@@ -281,18 +318,18 @@ class asm_reactor(pipe):
             f_p:                see Note 2 below
 
         Notes:
-            1. It is highly recommended the model components are arranged 
-            such that all the soluble ones are ahead of the particulate ones   
-            in the array. Generally, soluble components requires smaller       
-            time steps than particulate ones. This kind of arrangement will    
-            enable quick identification of soluble/particulate components that 
-            may have very different suitable time step during integration.     
-            Using appropriate but different time steps for the soluble and     
-            particulate components is required for fast integrations with      
-            correct results.                                                   
+            1. It is highly recommended the model components are arranged
+            such that all the soluble ones are ahead of the particulate ones
+            in the array. Generally, soluble components requires smaller    
+            time steps than particulate ones. This kind of arrangement will
+            enable quick identification of soluble/particulate components that
+            may have very different suitable time step during integration.  
+            Using appropriate but different time steps for the soluble and
+            particulate components is required for fast integrations with
+            correct results.
 
-            2. The two parameters f_s and f_p came from the IWA Activated 
-            Sludge Model 1 Report where it talks about the appropriate         
+            2. The two parameters f_s and f_p came from the IWA Activated
+            Sludge Model 1 Report where it talks about the appropriate
             integration step sizes for the soluble and particulate component.
             The report suggested that the integration step sizes can be
             determined by using the actual retention time of the constituent in
@@ -302,7 +339,7 @@ class asm_reactor(pipe):
 
 
         Retrun:
-            self._step                                         
+            self._step
 
         See:
             _runge_kutta_fehlberg_45();
@@ -317,7 +354,7 @@ class asm_reactor(pipe):
             self._runge_kutta_4(first_index_particulate, f_s, f_p)
         else:
             self._euler(first_index_particulate, f_s, f_p)
-        
+ 
         return None
 
 
@@ -544,7 +581,7 @@ class asm_reactor(pipe):
             #    self._step = h_new
 
 
-        self._mo_comps = self._so_comps = self._sludge._comps[:]
+        self._mo_comps = self._sludge._comps[:]
 
         return self._step
 
@@ -626,7 +663,7 @@ class asm_reactor(pipe):
                                 * _step_sol
                                 for i in range(len(self._sludge._comps))]
 
-        self._mo_comps = self._so_comps = self._sludge._comps[:]
+        self._mo_comps = self._sludge._comps[:]
 
         return None
 
@@ -679,7 +716,7 @@ class asm_reactor(pipe):
         for i in range(len(self._mo_comps)):
             self._sludge._comps[i] += self._del_C_del_t[i] * _step_sol
 
-        self._so_comps = self._mo_comps = self._sludge._comps[:]
+        self._mo_comps = self._sludge._comps[:]
 
         return None
 
