@@ -697,7 +697,7 @@ class ASM_1():
                 + self._stoichs['7_12'] * self._r7_HydXN(comps)
 
 
-    def _dCdt(self, vol, flow, in_comps, mo_comps):
+    def _dCdt(self, mo_comps, vol, flow, in_comps):
         '''
         Defines dC/dt for the reactor based on mass balance.
 
@@ -706,10 +706,10 @@ class ASM_1():
                  == (in_comps - mo_comps) / HRT + GrowthRate
  
         Args:
-            vol:        reactor's active volume, m3;
-            flow:       reactor's total inflow, m3;
-            in_comps:   list of model compoennts for inlet, mg/L;
             mo_comps:   list of model component for mainstream outlet, mg/L.
+            vol:        reactor's active volume, m3;
+            flow:       reactor's total inflow, m3/d
+            in_comps:   list of model compoennts for inlet, mg/L;
 
         Return:
             dC/dt of the system ([float])

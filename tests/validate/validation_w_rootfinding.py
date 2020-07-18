@@ -175,6 +175,7 @@ def initial_guess_mod(params={}, reactors=[38400], inf_flow=38400, plant_inf=[])
 
 if __name__ == '__main__':
     import pdb
+    import timeit
     import scipy.optimize
     from asm_1 import ASM_1
         
@@ -191,14 +192,19 @@ if __name__ == '__main__':
     CSTR_vol = 37800 * 2  # m3, matching the configuration in CSTR.py
     inf_flow = 37800  # m3/d, matching the flow in CSTR.py, HRT = SRT = 2d
 
-    Guess = initial_guess_mod(sludge.get_params(), [CSTR_vol], in_flow, InfC)
+    Guess = initial_guess_mod(sludge.get_params(), [CSTR_vol], inf_flow, InfC)
     
     # model components
     Comps = Guess[:]
+
+    start_t = timeit.default_timer()
 
     r = scipy.optimize.root(sludge._dCdt,
                                 Comps,
                                 (CSTR_vol, inf_flow, InfC),
                                 options={'eps':1e-8, 'factor':0.1})
 
+    core_run_time = timeit.default_timer() - start_t
+
     print("root = {} ".format(r))
+    print("CORE RUN TIME = ", core_run_time)
