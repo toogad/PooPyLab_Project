@@ -34,7 +34,8 @@
 ## @namespace bio
 ## @file bio.py
 
-from scipy.optimize import root
+from scipy.optimize import root, least_squares
+import numpy as np
 
 from unit_procs.streams import pipe
 from ASMModel.asm_1 import ASM_1
@@ -126,13 +127,25 @@ class asm_reactor(pipe):
             True/False
         """
         
+        #TODO: UNCOMMENT BELOW FOR INTEGRATION. TEMPORARY COMMENTEDO OUT FOR
+        #RELAXATION
         _der2 = [dcdt * dcdt for dcdt in self._del_C_del_t]
         _sum = sum(_der2)
         L2_norm = _sum ** 0.5
-
-        print("dCdt:{}, L2norm={}".format(self._del_C_del_t, L2_norm))
-
+        print("L2norm = ", L2_norm)
         return L2_norm < limit
+        #TODO: UNCOMMENT ABOVE FOR INTEGRATION
+
+
+        #_delta = [abs(self._prev_mo_comps[i] - self._mo_comps[i])
+        #            for i in range(len(self._mo_comps))]
+        #_cnvg = [_delta[i] <= limit for i in range(len(_delta))]
+        #print("Delta = ", _delta)
+
+        return not (False in _cnvg)
+
+
+
 
 
     def discharge(self):
@@ -153,8 +166,8 @@ class asm_reactor(pipe):
 
         #self._integrate(7, 'Euler', 0.05, 2.0)
         #self._integrate(7, 'RK4', 0.05, 2.0)
-        #self._integrate(7, 'RKF45', 0.05, 2.0)
-        self._relax()
+        self._integrate(7, 'RKF45', 0.05, 2.0)
+        #self._relax()
         self._so_comps = self._mo_comps[:]
         self._discharge_main_outlet()
 
@@ -283,11 +296,20 @@ class asm_reactor(pipe):
             conditions.
         """
         
-        root_ss = root(self._sludge._dCdt,
-                        self._sludge._comps,
-                        (self._active_vol, self._total_inflow, self._in_comps),
-                        method='hybr',
-                        options={'factor':0.1})
+        #TODO: DO WE NEED TO RESEED THE INITIAL GUESS FOR EVERY ROUND OF "ROOT"
+#        root_ss = root(self._sludge._dCdt,
+#                        self._sludge._comps,
+#                        (self._active_vol, self._total_inflow, self._in_comps),
+#                        method='hybr',
+#                        options={'factor':0.1})
+
+        _temp_guess = [2.0, 66.3, 2.4, 0.67, 0.39, 27.6, 2.1, 16.2, 30.4, 2400,
+                149, 321, 239]
+        root_ss = least_squares(self._sludge._dCdt,
+                    _temp_guess,
+                    bounds=(0, np.inf), method='trf', ftol=1e-8, xtol=1e-8,
+                    gtol=1e-8, x_scale=0.1, loss='linear', f_scale=0.1,
+                    args=(self._active_vol, self._total_inflow, self._in_comps))
 
         print(root_ss)
 
@@ -300,9 +322,7 @@ class asm_reactor(pipe):
 
     def _integrate(self,
                     first_index_particulate=7,
-                    method_name='RKF45',
-                    f_s=0.05,
-                    f_p=2.0):
+                    method_name='RKF45'):
         """
         Integrate the model forward in time.
 
@@ -313,9 +333,7 @@ class asm_reactor(pipe):
 
         Args:
             first_index_particulate:    see Note 1 below
-            method_name:        'RKF45'|'RK4'|'Euler'
-            f_s:                see Note 2 below
-            f_p:                see Note 2 below
+            method_name:        'RKF45' (see Note 2 below)
 
         Notes:
             1. It is highly recommended the model components are arranged
@@ -328,32 +346,25 @@ class asm_reactor(pipe):
             particulate components is required for fast integrations with
             correct results.
 
-            2. The two parameters f_s and f_p came from the IWA Activated
-            Sludge Model 1 Report where it talks about the appropriate
-            integration step sizes for the soluble and particulate component.
-            The report suggested that the integration step sizes can be
-            determined by using the actual retention time of the constituent in
-            the reactor times f_s (factor for solubles, typ. 5% to 20%) or f_p
-            (factor for particulate, can go up to 200%). These two parameters
-            were used in the Euler and RK4 methods, but not RKF45.
-
+            2. RKF45 is the only home-brew method for now. Euler and RK4
+            methods have been coded and tested in the past but no longer in use
+            as of now. The code is moved to bio_py_funcs_not_used.txt for
+            archiving.
 
         Retrun:
             self._step
 
         See:
             _runge_kutta_fehlberg_45();
-            _runge_kutta_4();
-            _euler();
             discharge().
         """
 
         if method_name == 'RKF45':
             self._runge_kutta_fehlberg_45()
-        elif method_name == 'RK4':
-            self._runge_kutta_4(first_index_particulate, f_s, f_p)
-        else:
-            self._euler(first_index_particulate, f_s, f_p)
+        #elif method_name == 'RK4':
+        #    self._runge_kutta_4(first_index_particulate, f_s, f_p)
+        #else:
+        #    self._euler(first_index_particulate, f_s, f_p)
  
         return None
 
@@ -505,16 +516,12 @@ class asm_reactor(pipe):
                     + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
                     for j in range(_nc)]
 
-
-        #_err_sqr = [(del_RK4[j] - del_RK5[j]) ** 2 for j in range(_nc)]
-        
-        #_err = sum(_err_sqr) ** 0.5
         _rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
                     - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
                     for j in range(_nc)]
-        _err = sum(_rk4_sqr_) ** 0.5
 
-        print('current err:', _err)
+        _err = sum(_rk4_sqr_) ** 0.5
+        #print('current err:', _err)
 
         return _err
 
@@ -559,20 +566,14 @@ class asm_reactor(pipe):
             elif _s > 1.5 and self._step * _s < _max_step_sol:
                 self._step *= 2.0
 
-            print('h_old={}, scalar={}'.format(self._step, _s))
+            #print('h_old={}, scalar={}'.format(self._step, _s))
 
-            if _error < tol or self._step < 1e-14:
-                # update estimate using RK5 with current step size:
-                #self._sludge._comps = [self._sludge._comps[j]
-                #            + 16/135 * k1[j] + 6656/12825 * k3[j]
-                #            + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
-                #            for j in range(len(self._mo_comps))]
-                print("RKF45 step=", self._step)
+            if _error < tol or self._step < 1e-7:
+                #print("RKF45 step=", self._step)
                 self._sludge._comps = [self._sludge._comps[j]
                             + 25/216 * k1[j] + 1408/2565 * k3[j]
                             + 2197/4104 * k4[j] - 0.2 * k5[j] 
                             for j in range(len(self._mo_comps))]
-
                 break
 
             # if the h_new offers significant speed gain, increase the
@@ -580,147 +581,10 @@ class asm_reactor(pipe):
             #if h_new / self._step >= 1.25 or h_new < self._step:
             #    self._step = h_new
 
-
         self._mo_comps = self._sludge._comps[:]
 
         return self._step
 
-
-    def _runge_kutta_4(self, first_index_part, f_s, f_p):
-        """
-        Integration by using Runge-Kutta 4th order method.
-        
-        Args:
-            first_index_part:   first index of particulate model component;
-            f_s:                factor of max step for soluble components;
-            f_p:                factor of max step for particulate components.
-
-        Return:
-            step size used  # TODO: REVISE TO RETURN STEP SIZE INSTEAD OF NONE
-
-        See:
-            _runge_kutta_fehlberg_45();
-            _euler();
-        """
-        # Determine the next step size based on:
-        #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
-        #   0 < del_t < Retention_Time_C_k, where
-        #   C is the individual model component and k is the kth reactor
-        self._del_C_del_t = self._sludge._dCdt(
-                            self._mo_comps,
-                            self._active_vol,
-                            self._total_inflow,
-                            self._in_comps)
-
-        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
-        _max_step_sol, _max_step_part = self._max_steps(self._del_C_del_t, 7)
-
-        _step_sol = f_s * _max_step_sol
-        _step_part = f_p * _max_step_part
-
-        #self._int_step_sol = min(self._int_step_sol, _new_step_sol)
-        #print('step_sol = ', self._int_step_sol)
-
-        #print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
-
-        # mid-point version of RK4, using half the given step size:
-        #sz_2 = _step / 2
-        sz_2 = _step_sol / 2  #TODO: use soluble step for all for now
-
-        # _w1 = yn = self._mo_comps
-        # k1 is idetical to self._del_C_del_t calculated above
-        k1 = self._del_C_del_t 
-
-        # _w2 = y_n + _step/2 * k1
-        _w2 = [self._mo_comps[i] + sz_2 * k1[i] for i in range(len(k1))]
-
-        k2 = self._sludge._dCdt(
-                            _w2,
-                            self._active_vol,
-                            self._total_inflow,
-                            self._in_comps)
-
-        # _w3 = y_n + _step/2 * k2
-        _w3 = [self._mo_comps[i] + sz_2 * k2[i] for i in range(len(k2))]
-
-        k3 = self._sludge._dCdt(
-                            _w3,
-                            self._active_vol,
-                            self._total_inflow,
-                            self._in_comps)
-
-        # _w4 = yn + _step * k3
-        _w4 = [self._mo_comps[i] + _step_sol * k3[i] for i in range(len(k3))]
-
-        k4 = self._sludge._dCdt(
-                            _w4,
-                            self._active_vol,
-                            self._total_inflow,
-                            self._in_comps)
-
-        self._sludge._comps = [self._sludge._comps[i]
-                                + (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6
-                                * _step_sol
-                                for i in range(len(self._sludge._comps))]
-
-        self._mo_comps = self._sludge._comps[:]
-
-        return None
-
-
-    def _euler(self, first_index_part=7, f_s=0.05, f_p=2.0):
-        """
-        Integration by using Euler's method, aka RK1
-        
-        Args:
-            first_index_part: first index of particulate component;
-            f_s:    factor of max step for soluble components;
-            f_p:    factor of max step for particulate components.
-
-        Return:
-            step size used  # TODO: REVISE TO RETURN STEP SIZE INSTEAD OF NONE
-            
-        See:
-            _runge_kutta_fehlberg_45();
-            _runge_kutta_4();
-        """
-
-        # Determine the next step size based on:
-        #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
-        #   0 < del_t < Retention_Time_C_k, where
-        #   C is the individual model component and k is the kth reactor
-        self._del_C_del_t = self._sludge._dCdt(
-                            self._mo_comps,
-                            self._active_vol,
-                            self._total_inflow,
-                            self._in_comps)
-
-        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
-        _max_step_sol, _max_step_part = self._max_steps(self._del_C_del_t, 7)
-
-        _step_sol = f_s * _max_step_sol
-        _step_part = f_s * _max_step_part
-
-        #self._int_step_sol = min(self._int_step_sol, _new_step_sol)
-        #print('step_sol = ', self._int_step_sol)
-
-        #print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
-
-        # TODO: use the same time step before further optimization
-        #for i in range(first_index_particulate):
-            #self._mo_comps[i] += self._del_C_del_t[i] * self._int_step_sol
-            
-        #for j in range(first_index_particulate, len(self._mo_comps)):
-            #self._mo_comps[j] += self._del_C_del_t[j] * self._int_step_part
-
-        for i in range(len(self._mo_comps)):
-            self._sludge._comps[i] += self._del_C_del_t[i] * _step_sol
-
-        self._mo_comps = self._sludge._comps[:]
-
-        return None
-
-            
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
 

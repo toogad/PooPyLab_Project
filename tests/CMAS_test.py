@@ -52,7 +52,6 @@ if __name__ == '__main__':
 
     _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
 
-    # TODO: _WAS may be an empty []
     _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
 
     _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
@@ -118,6 +117,9 @@ if __name__ == '__main__':
     else:
         _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
         _WAS[0].set_mainstream_flow(_WAS_flow)
+
+    #pdb.set_trace()
+
     _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
     utils.run.backward_set_flow(_backward_start_points)
     utils.run.traverse_plant(wwtp, _inf[0])
@@ -129,6 +131,7 @@ if __name__ == '__main__':
         else:
             _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
             _WAS[0].set_mainstream_flow(_WAS_flow)
+
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
         utils.run.backward_set_flow(_backward_start_points)
         utils.run.traverse_plant(wwtp, _inf[0])

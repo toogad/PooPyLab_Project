@@ -337,7 +337,8 @@ class splitter(poopy_lab_obj):
 
         #print('{} cnvg: flow {}, main {}, side{}'.format(
         #        self.__name__, _flow_cnvg, _mo_cnvg, _so_cnvg))
-        print('{} cnvg: flow {}'.format(self.__name__, _flow_cnvg))
+
+        #print('{} cnvg: flow {}'.format(self.__name__, _flow_cnvg))
 
         return self._converged
 

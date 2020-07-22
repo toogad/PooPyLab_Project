@@ -177,6 +177,7 @@ if __name__ == '__main__':
     import pdb
     import timeit
     import scipy.optimize
+    import numpy as np
     from asm_1 import ASM_1
         
     #pdb.set_trace() 
@@ -193,16 +194,27 @@ if __name__ == '__main__':
     inf_flow = 37800  # m3/d, matching the flow in CSTR.py, HRT = SRT = 2d
 
     Guess = initial_guess_mod(sludge.get_params(), [CSTR_vol], inf_flow, InfC)
+
+    print("Initial Guess = {}".format(Guess))
     
     # model components
     Comps = Guess[:]
 
     start_t = timeit.default_timer()
 
-    r = scipy.optimize.root(sludge._dCdt,
-                                Comps,
-                                (CSTR_vol, inf_flow, InfC),
-                                options={'eps':1e-8, 'factor':0.1})
+#    r = scipy.optimize.root(sludge._dCdt,
+#                                Comps,
+#                                (CSTR_vol, inf_flow, InfC),
+#                                options={'eps':1e-8, 'factor':0.1})
+    r = scipy.optimize.least_squares(sludge._dCdt,
+                                        Comps,
+                                        jac='2-point',
+                                        bounds=(0, np.inf),
+                                        method='trf', ftol=1e-8, xtol=1e-8,
+                                        gtol=1e-8, x_scale=1.0, loss='linear',
+                                        f_scale=1.0,
+                                        args=(CSTR_vol, inf_flow, InfC))
+                                        
 
     core_run_time = timeit.default_timer() - start_t
 
