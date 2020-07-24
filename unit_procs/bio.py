@@ -141,8 +141,7 @@ class asm_reactor(pipe):
         #            for i in range(len(self._mo_comps))]
         #_cnvg = [_delta[i] <= limit for i in range(len(_delta))]
         #print("Delta = ", _delta)
-
-        return not (False in _cnvg)
+        #return not (False in _cnvg)
 
 
 
@@ -164,11 +163,14 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        #self._integrate(7, 'Euler', 0.05, 2.0)
-        #self._integrate(7, 'RK4', 0.05, 2.0)
-        self._integrate(7, 'RKF45', 0.05, 2.0)
+        ##self._integrate(7, 'Euler', 0.05, 2.0)
+        ##self._integrate(7, 'RK4', 0.05, 2.0)
+
+        self._integrate(7, 'RKF45')
         #self._relax()
+
         self._so_comps = self._mo_comps[:]
+        #print(self.__name__, " dC/dt=", self._del_C_del_t)
         self._discharge_main_outlet()
 
         return None
@@ -303,11 +305,10 @@ class asm_reactor(pipe):
 #                        method='hybr',
 #                        options={'factor':0.1})
 
-        _temp_guess = [2.0, 66.3, 2.4, 0.67, 0.39, 27.6, 2.1, 16.2, 30.4, 2400,
-                149, 321, 239]
         root_ss = least_squares(self._sludge._dCdt,
-                    _temp_guess,
-                    bounds=(0, np.inf), method='trf', ftol=1e-8, xtol=1e-8,
+                    self._mo_comps,
+                    bounds=(0, np.inf), jac='cs', method='trf',
+                    ftol=1e-8, xtol=1e-8,
                     gtol=1e-8, x_scale=0.1, loss='linear', f_scale=0.1,
                     args=(self._active_vol, self._total_inflow, self._in_comps))
 
