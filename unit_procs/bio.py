@@ -112,7 +112,7 @@ class asm_reactor(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE
     #
-    def is_converged(self, limit=1E-6):
+    def is_converged(self, limit=1E-4):
         """
         Redefine the convergence evaluation for the asm_reactor because of the
         explicit definitions of dy/dt in the ASM model.
@@ -127,23 +127,9 @@ class asm_reactor(pipe):
             True/False
         """
         
-        #TODO: UNCOMMENT BELOW FOR INTEGRATION. TEMPORARY COMMENTEDO OUT FOR
-        #RELAXATION
-        _der2 = [dcdt * dcdt for dcdt in self._del_C_del_t]
-        _sum = sum(_der2)
-        L2_norm = _sum ** 0.5
+        L2_norm = sum([dcdt ** 2 for dcdt in self._del_C_del_t]) ** 0.5
         print("L2norm = ", L2_norm)
         return L2_norm < limit
-        #TODO: UNCOMMENT ABOVE FOR INTEGRATION
-
-
-        #_delta = [abs(self._prev_mo_comps[i] - self._mo_comps[i])
-        #            for i in range(len(self._mo_comps))]
-        #_cnvg = [_delta[i] <= limit for i in range(len(_delta))]
-        #print("Delta = ", _delta)
-        #return not (False in _cnvg)
-
-
 
 
 
@@ -527,7 +513,7 @@ class asm_reactor(pipe):
         return _err
 
 
-    def _runge_kutta_fehlberg_45(self, tol=1E-6):
+    def _runge_kutta_fehlberg_45(self, tol=1E-4):
         """
         Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
 
@@ -560,8 +546,7 @@ class asm_reactor(pipe):
             # (1/2) ^ (1/4) ~= 0.840896
             #_s = 0.840896 * (tol * h / _err) ** 0.25 
             _s = 0.84 * (tol * self._step / _error) ** 0.25 
-            # potential new step:
-            #h_new = min(self._step * _s, _max_step_sol)
+
             if _s < 0.75:
                 self._step /= 2.0
             elif _s > 1.5 and self._step * _s < _max_step_sol:
@@ -570,17 +555,12 @@ class asm_reactor(pipe):
             #print('h_old={}, scalar={}'.format(self._step, _s))
 
             if _error < tol or self._step < 1e-7:
-                #print("RKF45 step=", self._step)
+                print("RKF45 step=", self._step)
                 self._sludge._comps = [self._sludge._comps[j]
                             + 25/216 * k1[j] + 1408/2565 * k3[j]
                             + 2197/4104 * k4[j] - 0.2 * k5[j] 
                             for j in range(len(self._mo_comps))]
                 break
-
-            # if the h_new offers significant speed gain, increase the
-            # step size for the next round
-            #if h_new / self._step >= 1.25 or h_new < self._step:
-            #    self._step = h_new
 
         self._mo_comps = self._sludge._comps[:]
 

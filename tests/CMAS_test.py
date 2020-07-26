@@ -35,7 +35,7 @@ from unit_procs.streams import pipe, influent, effluent
 from unit_procs.bio import asm_reactor
 import utils.pfd
 import utils.run
-import pdb
+import pdb, cProfile
 
 if __name__ == '__main__':
 
@@ -124,6 +124,8 @@ if __name__ == '__main__':
     utils.run.backward_set_flow(_backward_start_points)
     utils.run.traverse_plant(wwtp, _inf[0])
     
+    profile = cProfile.Profile()
+    profile.enable()
     r = 1
     while True:
         if len(_WAS) == 0:
@@ -139,6 +141,7 @@ if __name__ == '__main__':
         if utils.run.check_global_cnvg(wwtp):
             break
         r += 1
+    profile.disable()
 
 
     utils.run.show_concs(wwtp)
@@ -148,3 +151,5 @@ if __name__ == '__main__':
     print(_reactors[0].get_active_vol())
     print(_reactors[0].get_model_params())
     print(_reactors[0].get_model_stoichs())
+
+    profile.print_stats()

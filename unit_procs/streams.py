@@ -340,10 +340,6 @@ class splitter(poopy_lab_obj):
 
         #print('{} cnvg: flow {}'.format(self.__name__, _flow_cnvg))
 
-        print(self.__name__, ":")
-        #print("prev_mo:", self._prev_mo_comps)
-        #print("curr_mo:", self._mo_comps)
-
         return self._converged
 
         
@@ -874,7 +870,7 @@ class splitter(poopy_lab_obj):
         """
         m = self.get_downstream_main()
         m.set_flow(self, self._mo_flow)
-        m.update_combined_input()
+        #m.update_combined_input()
         return None
 
 
@@ -896,7 +892,7 @@ class splitter(poopy_lab_obj):
         """
         s = self.get_downstream_side()
         s.set_flow(self, self._so_flow)
-        s.update_combined_input() 
+        #s.update_combined_input() 
         return None
  
  
