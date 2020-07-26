@@ -62,9 +62,9 @@ class ASM_1():
         """
 
         ## wastewater temperature used in the model, degC
-        self._temperature = ww_temp
+        #self._temperature = ww_temp
         ## mixed liquor bulk dissolved oxygen, mg/L
-        self._bulk_DO = DO 
+        #self._bulk_DO = DO 
         
         # define the model parameters and stochoimetrics as dict() so that it
         # is easier to keep track of names and values
@@ -76,10 +76,11 @@ class ASM_1():
         self._stoichs = {}
 
         ## temperature difference b/t what's used and baseline (20C), degC
-        self._delta_t = self._temperature - 20
+        #self._delta_t = self._temperature - 20
         
-        self._set_params()
-        self._set_stoichs()
+        #self._set_params()
+        #self._set_stoichs()
+        self.update(ww_temp, DO)
         
         # The Components the ASM components IN THE REACTOR
         # For ASM #1:

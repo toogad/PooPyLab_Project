@@ -495,7 +495,7 @@ class splitter(poopy_lab_obj):
         """
 
         if self._total_inflow:  # make sure it's not 0
-            for i in range(constants._NUM_ASM1_COMPONENTS):
+            for i in range(len(self._mo_comps)):
                 temp = 0.0
                 for unit in self._inlet:
                     if self == unit.get_downstream_main():

@@ -404,10 +404,14 @@ class asm_reactor(pipe):
         # previous round of RK4 vs RK5 comparison
         h = self._step
 
-        f1 = self._sludge._dCdt(self._mo_comps,
-                                self._active_vol,
-                                self._total_inflow,
-                                self._in_comps)
+        #TODO: f1 should've been calculated in _runge_kutta_fehlberg_45()
+        #f1 = self._sludge._dCdt(self._mo_comps,
+        #                        self._active_vol,
+        #                        self._total_inflow,
+        #                        self._in_comps)
+        #TODO: verify above
+
+        f1 = self._del_C_del_t  #calculated in _runge_kutta_fehlberg_45()
 
         
         k1 = [h * f1[j] for j in range(_nc)]
@@ -491,18 +495,6 @@ class asm_reactor(pipe):
 
         _nc = len(self._mo_comps)
 
-        # propose an estimate using RK4 with current step size, without the yk
-        # term
-        del_RK4 = [25/216 * k1[j] + 1408/2565 * k3[j]
-                    + 2197/4101 * k4[j] - 0.2 * k5[j]
-                    for j in range(_nc)]
-                       
-        # propose an estimate using RK5 with current step size, without the yk
-        # term
-        del_RK5 = [16/135 * k1[j] + 6656/12825 * k3[j]
-                    + 28561/56430 * k4[j] - 9/50 * k5[j] + 2/55 * k6[j]
-                    for j in range(_nc)]
-
         _rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
                     - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
                     for j in range(_nc)]
@@ -513,7 +505,7 @@ class asm_reactor(pipe):
         return _err
 
 
-    def _runge_kutta_fehlberg_45(self, tol=1E-4):
+    def _runge_kutta_fehlberg_45(self, tol=1E-6):
         """
         Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
 
@@ -536,7 +528,9 @@ class asm_reactor(pipe):
 
         #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
 
-        _max_step_sol, _max_step_part = self._max_steps(self._del_C_del_t, 7)
+        #TODO: SEE IF WE CAN BYPASS THIS
+        #_max_step_sol, _max_step_part = self._max_steps(self._del_C_del_t, 7)
+        #TODO: end
 
         while True:
             k1, k2, k3, k4, k5, k6 = self._RKF45_ks()
@@ -549,13 +543,13 @@ class asm_reactor(pipe):
 
             if _s < 0.75:
                 self._step /= 2.0
-            elif _s > 1.5 and self._step * _s < _max_step_sol:
+            elif _s > 1.5: #and self._step * _s < _max_step_sol:
                 self._step *= 2.0
 
             #print('h_old={}, scalar={}'.format(self._step, _s))
 
             if _error < tol or self._step < 1e-7:
-                print("RKF45 step=", self._step)
+                #print("RKF45 step=", self._step)
                 self._sludge._comps = [self._sludge._comps[j]
                             + 25/216 * k1[j] + 1408/2565 * k3[j]
                             + 2197/4104 * k4[j] - 0.2 * k5[j] 
