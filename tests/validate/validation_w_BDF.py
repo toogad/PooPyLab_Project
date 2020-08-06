@@ -174,8 +174,7 @@ def initial_guess_mod(params={}, reactors=[38400], inf_flow=38400, plant_inf=[])
 #------------MAIN TEST------------------------------
 
 if __name__ == '__main__':
-    import pdb
-    import timeit
+    import pdb, timeit, cProfile
     import scipy.integrate as si
     import numpy as np
     from asm_1 import ASM_1
@@ -200,17 +199,19 @@ if __name__ == '__main__':
     # model components
     Comps = Guess[:]
 
-    t = np.linspace(0, 50, 50*1440)
+    t = np.linspace(0, 20, 20*1440)
 
-    start_t = timeit.default_timer()
+    profile = cProfile.Profile()
+    profile.enable()
     
-    r = si.odeint(sludge._dCdt, Comps, t, args=(75600, 37800, InfC),
-            tfirst=True)
+    # odeint() seems a lot faster than solve_ivp()
+    #r = si.odeint(sludge._dCdt, Comps, t, args=(75600, 37800, InfC), tfirst=True)
 
-    #r = si.solve_ivp(sludge._dCdt, [0, 2*1440], Comps, args=(75600, 37800, InfC),
-    #        t_eval=[0,2880], method='RK45')
+    r = si.solve_ivp(sludge._dCdt, [0, 10*1440], Comps, args=(75600, 37800, InfC),
+            t_eval=[0,2880], method='RK45')
     
-    core_run_time = timeit.default_timer() - start_t
+    profile.disable()
+    profile.print_stats()
 
-    print("root = {} ".format(r[-1]))
-    print("CORE RUN TIME = ", core_run_time)
+    #print("root = {} ".format(r[-1]))
+    print("root = {}".format(r))

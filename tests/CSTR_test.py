@@ -34,7 +34,7 @@ from unit_procs.bio import asm_reactor
 import utils.pfd
 import utils.run
 import pdb
-import timeit
+import timeit, cProfile
 
 if __name__ == '__main__':
 
@@ -111,7 +111,11 @@ if __name__ == '__main__':
     # collect all the possible starting points for backward flow setting
     _backward_start_points = [_w for _w in _WAS] + [_e for _e in _eff]
     
-    start_t = timeit.default_timer()
+    profile = cProfile.Profile()
+    profile.enable()
+
+    #start_t = timeit.default_timer()
+
 
     if len(_WAS) == 0:
         _WAS_flow = 0
@@ -137,11 +141,14 @@ if __name__ == '__main__':
             break
         r += 1
 
-    core_run_time = timeit.default_timer() - start_t
+    #core_run_time = timeit.default_timer() - start_t
+    profile.disable()
 
     utils.run.show_concs(wwtp)
 
-    print("TOTAL ITERATION = ", r, " RUN TIME = ", core_run_time)
+    profile.print_stats()
+
+    #print("TOTAL ITERATION = ", r, " RUN TIME = ", core_run_time)
 
     print(_reactors[0].get_active_vol())
     print(_reactors[0].get_model_params())
