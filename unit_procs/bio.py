@@ -118,19 +118,19 @@ class asm_reactor(pipe):
         explicit definitions of dy/dt in the ASM model.
 
         Current default criteria for steady state (convergence):
-            L2-norm of dy/dt < 1E-6
+            L2-norm of dy/dt < limit
 
         Args:
             limit: Limit within which the simulation is considered converged
 
         Return:
             True/False
+
         """
-        
+
         L2_norm = sum([dcdt ** 2 for dcdt in self._del_C_del_t]) ** 0.5
         print("L2norm = ", L2_norm)
         return L2_norm < limit
-
 
 
     def discharge(self):
@@ -149,11 +149,7 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        ##self._integrate(7, 'Euler', 0.05, 2.0)
-        ##self._integrate(7, 'RK4', 0.05, 2.0)
-
         self._integrate(7, 'RKF45')
-        #self._relax()
 
         self._so_comps = self._mo_comps[:]
         #print(self.__name__, " dC/dt=", self._del_C_del_t)
@@ -265,48 +261,6 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
     
     
-    def _relax(self):
-        """
-        Relaxation into steady state.
-
-        This function is to utilize the root finding routines in scipy.optimize
-        module to solve the differential equation system that dC/dt = 0 instead
-        of reaching the steady state with real time integration.
-
-        Args:
-            None
-
-        Return:
-            model components that satisify dC/dt = 0
-
-        Note:
-            Requires constant influent characterisitics and operating
-            conditions.
-        """
-        
-        #TODO: DO WE NEED TO RESEED THE INITIAL GUESS FOR EVERY ROUND OF "ROOT"
-#        root_ss = root(self._sludge._dCdt,
-#                        self._sludge._comps,
-#                        (self._active_vol, self._total_inflow, self._in_comps),
-#                        method='hybr',
-#                        options={'factor':0.1})
-
-        root_ss = least_squares(self._sludge._dCdt,
-                    self._mo_comps,
-                    bounds=(0, np.inf), jac='cs', method='trf',
-                    ftol=1e-8, xtol=1e-8,
-                    gtol=1e-8, x_scale=0.1, loss='linear', f_scale=0.1,
-                    args=(self._active_vol, self._total_inflow, self._in_comps))
-
-        print(root_ss)
-
-        self._sludge._comps = root_ss.x[:]
-
-        self._mo_comps = self._sludge._comps[:]
-
-        return None
-
-
     def _integrate(self,
                     first_index_particulate=7,
                     method_name='RKF45'):
@@ -404,13 +358,7 @@ class asm_reactor(pipe):
         # previous round of RK4 vs RK5 comparison
         h = self._step
 
-        #TODO: f1 should've been calculated in _runge_kutta_fehlberg_45()
-        #f1 = self._sludge._dCdt(self._mo_comps,
-        #                        self._active_vol,
-        #                        self._total_inflow,
-        #                        self._in_comps)
-        #TODO: verify above
-
+        #f1 should've been calculated in _runge_kutta_fehlberg_45()
         f1 = self._del_C_del_t  #calculated in _runge_kutta_fehlberg_45()
 
         
