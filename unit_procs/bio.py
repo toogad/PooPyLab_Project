@@ -448,6 +448,7 @@ class asm_reactor(pipe):
                     for j in range(_nc)]
 
         _err = sum(_rk4_sqr_) ** 0.5
+
         #print('current err:', _err)
 
         return _err
