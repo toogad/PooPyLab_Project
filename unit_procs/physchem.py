@@ -259,9 +259,9 @@ class final_clarifier(splitter):
         """
 
 
-        if not self._valid_under_TSS(self._under_TSS):
-            print('WARN:', self.__name__, 'has unrealistic underflow TSS.')
-            return None
+        #if not self._valid_under_TSS(self._under_TSS):
+        #    print('WARN:', self.__name__, 'has unrealistic underflow TSS.')
+        #    return None
 
         _in_tss = self.get_TSS('Inlet')
         self._under_TSS = (self._total_inflow * _in_tss * self._capture_rate

@@ -106,7 +106,11 @@ class asm_reactor(pipe):
 
         ## step size for model integration, hr
         self._step = 0.5 / 24.0
-        
+
+        self._atol = 1e-6
+
+        self._rtol = 1e-4
+
         return None
 
 
@@ -128,9 +132,15 @@ class asm_reactor(pipe):
 
         """
 
-        L2_norm = sum([dcdt ** 2 for dcdt in self._del_C_del_t]) ** 0.5
-        print("L2norm = ", L2_norm)
-        return L2_norm < limit
+        #L2_norm = sum([dcdt ** 2 for dcdt in self._del_C_del_t]) ** 0.5
+        #print("L2norm = ", L2_norm)
+        #return L2_norm < limit
+
+        _accept = [ abs(self._mo_comps[i] - self._prev_mo_comps[i])
+                < 1e-5 + 1e-6 * self._prev_mo_comps[i] 
+                for i in range(len(self._mo_comps)) ]
+
+        return not (False in _accept)
 
 
     def discharge(self):
@@ -150,6 +160,7 @@ class asm_reactor(pipe):
         self._prev_so_comps = self._mo_comps[:]
 
         self._integrate(7, 'RKF45')
+
 
         self._so_comps = self._mo_comps[:]
         #print(self.__name__, " dC/dt=", self._del_C_del_t)
@@ -302,44 +313,14 @@ class asm_reactor(pipe):
 
         if method_name == 'RKF45':
             self._runge_kutta_fehlberg_45()
+        else:
+            self._runge_kutta_dp_45()
         #elif method_name == 'RK4':
         #    self._runge_kutta_4(first_index_particulate, f_s, f_p)
         #else:
         #    self._euler(first_index_particulate, f_s, f_p)
  
         return None
-
-
-    def _max_steps(self, dCdt=[], last_index_sol_comp=7):
-        """
-        Determine the max acceptable integration steps for the model components.
-
-        Args:
-            last_index_sol_comp: last index of soluble component (see note).
-    
-        Return:
-            max_step_sol, max_step_part
-
-        Note:
-            It is assumed that the model components are arranged in the list
-            with all the soluble components at the front, followed by all the
-            particulate ones. This will make using different time steps for the
-            two types of model components to speed up the dynamic simulation
-            possible.
-
-       """
-        _uppers_sol = [self._sludge._comps[i] / abs(dCdt[i]) 
-                        for i in range(last_index_sol_comp)
-                        if dCdt[i] != 0]
-
-        _uppers_part = [self._sludge._comps[j] / abs(dCdt[j])
-                        for j in range(last_index_sol_comp, len(dCdt))
-                        if dCdt[j] != 0]
-
-        _max_s_sol = min(_uppers_sol)
-        _max_s_part = min(_uppers_part)
-
-        return _max_s_sol, _max_s_part
 
 
     def _RKF45_ks(self):
@@ -454,7 +435,7 @@ class asm_reactor(pipe):
         return _err
 
 
-    def _runge_kutta_fehlberg_45(self, tol=1E-6):
+    def _runge_kutta_fehlberg_45(self, tol=1e-4):
         """
         Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
 
@@ -477,10 +458,6 @@ class asm_reactor(pipe):
 
         #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
 
-        #TODO: SEE IF WE CAN BYPASS THIS
-        #_max_step_sol, _max_step_part = self._max_steps(self._del_C_del_t, 7)
-        #TODO: end
-
         while True:
             k1, k2, k3, k4, k5, k6 = self._RKF45_ks()
 
@@ -489,11 +466,12 @@ class asm_reactor(pipe):
             # (1/2) ^ (1/4) ~= 0.840896
             #_s = 0.840896 * (tol * h / _err) ** 0.25 
             _s = 0.84 * (tol * self._step / _error) ** 0.25 
+            self._step *= _s
 
-            if _s < 0.75:
-                self._step /= 2.0
-            elif _s > 1.5: #and self._step * _s < _max_step_sol:
-                self._step *= 2.0
+#            if _s < 0.75:
+#                self._step /= 2.0
+#            elif _s > 1.5:
+#                self._step *= 2.0
 
             #print('h_old={}, scalar={}'.format(self._step, _s))
 
@@ -509,6 +487,32 @@ class asm_reactor(pipe):
 
         return self._step
 
+    def _RKDP_45_ks(self):
+        # number of model components
+        _nc = len(self._mo_comps)
+
+        # update the step size using the current step size and the scalar from
+        # previous round of RK4 vs RK5 comparison
+        h = self._step
+
+        #f1 should've been calculated in _runge_kutta_fehlberg_45()
+        f1 = self._del_C_del_t  #calculated in _runge_kutta_dp_45()
+
+        k1 = [ h * f1[i] for i in range(_nc) ]
+
+        w2 = [ self._mo_comps[i] + 0.2 * k1[i]
+                for in in range(_nc) ]
+
+        f2 = self._sludge._dCdt(w2,
+                                self._active_vol,
+                                self._total_inflow,
+                                self._in_comps)
+
+        k2 = [ h * f2[i] for i in range(_nc) ]
+
+
+
+        return 
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
 
