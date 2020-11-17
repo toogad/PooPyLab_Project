@@ -34,13 +34,11 @@
 ## @namespace bio
 ## @file bio.py
 
-from scipy.optimize import root, least_squares
-import numpy as np
-
 from unit_procs.streams import pipe
 from ASMModel.asm_1 import ASM_1
 from ASMModel import constants
 
+from scipy.integrate import solve_ivp
 
 # ----------------------------------------------------------------------------
 
@@ -104,19 +102,27 @@ class asm_reactor(pipe):
 
         self._upstream_set_mo_flow = True
 
-        ## step size for model integration, hr
-        self._step = 0.5 / 24.0
+        # initial guess of step size for model integration, hr
+        self._step = 1.0 / 24.0
 
-        self._atol = 1e-6
+        # local error for integration routine:
+        self._prev_local_err = 1e-3
 
-        self._rtol = 1e-4
+        # absolute tolerance for integration
+        self._atol = 1e-5
+        # relative tolerance for integration
+        self._rtol = 1e-5
+
+        #---------------------
+        # solution of the integration
+        self._solultion = None
 
         return None
 
 
     # ADJUSTMENTS TO COMMON INTERFACE
     #
-    def is_converged(self, limit=1E-4):
+    def is_converged(self, limit=0.01):
         """
         Redefine the convergence evaluation for the asm_reactor because of the
         explicit definitions of dy/dt in the ASM model.
@@ -131,16 +137,14 @@ class asm_reactor(pipe):
             True/False
 
         """
-
-        #L2_norm = sum([dcdt ** 2 for dcdt in self._del_C_del_t]) ** 0.5
+        #L2_norm = (sum([dcdt ** 2 for dcdt in self._del_C_del_t])) ** 0.5
         #print("L2norm = ", L2_norm)
         #return L2_norm < limit
 
-        _accept = [ abs(self._mo_comps[i] - self._prev_mo_comps[i])
-                < 1e-5 + 1e-6 * self._prev_mo_comps[i] 
-                for i in range(len(self._mo_comps)) ]
-
-        return not (False in _accept)
+        accept = [abs(self._mo_comps[i] - self._prev_mo_comps[i])
+                    < 1e-4 + 1e-4 * self._prev_mo_comps[i]
+                    for i in range(len(self._mo_comps))]
+        return not (False in accept)
 
 
     def discharge(self):
@@ -159,11 +163,11 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        self._integrate(7, 'RKF45')
-
+        #self._integrate('RKF45')
+        self._mo_comps = self._integrate('RKF45')  #TODO: HERE
 
         self._so_comps = self._mo_comps[:]
-        #print(self.__name__, " dC/dt=", self._del_C_del_t)
+
         self._discharge_main_outlet()
 
         return None
@@ -272,9 +276,7 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
     
     
-    def _integrate(self,
-                    first_index_particulate=7,
-                    method_name='RKF45'):
+    def _integrate(self, method_name='RKF45'):
         """
         Integrate the model forward in time.
 
@@ -311,16 +313,18 @@ class asm_reactor(pipe):
             discharge().
         """
 
-        if method_name == 'RKF45':
-            self._runge_kutta_fehlberg_45()
-        else:
-            self._runge_kutta_dp_45()
-        #elif method_name == 'RK4':
-        #    self._runge_kutta_4(first_index_particulate, f_s, f_p)
-        #else:
-        #    self._euler(first_index_particulate, f_s, f_p)
- 
-        return None
+        # integration with home brew rkf45
+        #self._runge_kutta_fehlberg_45()
+        #return None
+
+        # integration using scipy.integrate.solve_ivp()
+        self._solultion = solve_ivp(self._sludge._dCdt, [0, 1], self._mo_comps,
+                    method="BDF",
+                    args=(self._active_vol, self._total_inflow, self._in_comps)
+                    )
+        #print(self._solultion.y)
+        self._sludge._comps = [yi[-1] for yi in self._solultion.y]
+        return self._sludge._comps[:]
 
 
     def _RKF45_ks(self):
@@ -349,7 +353,7 @@ class asm_reactor(pipe):
         _w2 = [self._sludge._comps[j] + k1[j] / 4
                 for j in range(_nc)]
 
-        f2 = self._sludge._dCdt(_w2,
+        f2 = self._sludge._dCdt_kz(_w2,
                                 self._active_vol,
                                 self._total_inflow,
                                 self._in_comps)
@@ -361,7 +365,7 @@ class asm_reactor(pipe):
         _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j]
                 for j in range(_nc)]
 
-        f3 = self._sludge._dCdt(_w3,
+        f3 = self._sludge._dCdt_kz(_w3,
                                 self._active_vol,
                                 self._total_inflow,
                                 self._in_comps)
@@ -373,7 +377,7 @@ class asm_reactor(pipe):
                 + 7296/2197 * k3[j]
                 for j in range(_nc)]
 
-        f4 = self._sludge._dCdt(_w4,
+        f4 = self._sludge._dCdt_kz(_w4,
                                 self._active_vol,
                                 self._total_inflow,
                                 self._in_comps)
@@ -385,7 +389,7 @@ class asm_reactor(pipe):
                 + 3680/513 * k3[j] - 845/4104 * k4[j]
                 for j in range(_nc)]
 
-        f5 = self._sludge._dCdt(_w5,
+        f5 = self._sludge._dCdt_kz(_w5,
                                 self._active_vol,
                                 self._total_inflow,
                                 self._in_comps)
@@ -397,7 +401,7 @@ class asm_reactor(pipe):
                 - 3544/2565 * k3[j] + 1859/4104 * k4[j] - 11/40 * k5[j]
                 for j in range(_nc)]
 
-        f6 = self._sludge._dCdt(_w6,
+        f6 = self._sludge._dCdt_kz(_w6,
                                 self._active_vol,
                                 self._total_inflow,
                                 self._in_comps)
@@ -424,15 +428,27 @@ class asm_reactor(pipe):
 
         _nc = len(self._mo_comps)
 
-        _rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
-                    - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
-                    for j in range(_nc)]
-
-        _err = sum(_rk4_sqr_) ** 0.5
+        #_rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
+        #            - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
+        #            for j in range(_nc)]
+#
+#        _err = sum(_rk4_sqr_) ** 0.5
 
         #print('current err:', _err)
 
-        return _err
+        #return _err
+
+        delta = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
+                    - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j])
+                    for j in range(_nc)]
+
+        scale = [ self._atol + self._rtol * self._mo_comps[i]
+                    for i in range(_nc) ]
+
+        LE_sum = sum( [ (delta[i] / scale[i])**2 for i in range(_nc) ] )
+
+        return (LE_sum / _nc)**0.5 
+
 
 
     def _runge_kutta_fehlberg_45(self, tol=1e-4):
@@ -450,7 +466,7 @@ class asm_reactor(pipe):
             _RKF45_err().
         """
 
-        self._del_C_del_t = self._sludge._dCdt(
+        self._del_C_del_t = self._sludge._dCdt_kz(
                             self._mo_comps,
                             self._active_vol,
                             self._total_inflow,
@@ -461,21 +477,16 @@ class asm_reactor(pipe):
         while True:
             k1, k2, k3, k4, k5, k6 = self._RKF45_ks()
 
-            _error = self._RKF45_err(k1, k3, k4, k5, k6)
+            self._prev_local_err = self._RKF45_err(k1, k3, k4, k5, k6)
 
             # (1/2) ^ (1/4) ~= 0.840896
             #_s = 0.840896 * (tol * h / _err) ** 0.25 
-            _s = 0.84 * (tol * self._step / _error) ** 0.25 
+            _s = 0.84 * (tol * self._step / self._prev_local_err) ** 0.25 
             self._step *= _s
-
-#            if _s < 0.75:
-#                self._step /= 2.0
-#            elif _s > 1.5:
-#                self._step *= 2.0
 
             #print('h_old={}, scalar={}'.format(self._step, _s))
 
-            if _error < tol or self._step < 1e-7:
+            if self._prev_local_err < tol or self._step < 1e-5:
                 #print("RKF45 step=", self._step)
                 self._sludge._comps = [self._sludge._comps[j]
                             + 25/216 * k1[j] + 1408/2565 * k3[j]
@@ -487,32 +498,6 @@ class asm_reactor(pipe):
 
         return self._step
 
-    def _RKDP_45_ks(self):
-        # number of model components
-        _nc = len(self._mo_comps)
-
-        # update the step size using the current step size and the scalar from
-        # previous round of RK4 vs RK5 comparison
-        h = self._step
-
-        #f1 should've been calculated in _runge_kutta_fehlberg_45()
-        f1 = self._del_C_del_t  #calculated in _runge_kutta_dp_45()
-
-        k1 = [ h * f1[i] for i in range(_nc) ]
-
-        w2 = [ self._mo_comps[i] + 0.2 * k1[i]
-                for in in range(_nc) ]
-
-        f2 = self._sludge._dCdt(w2,
-                                self._active_vol,
-                                self._total_inflow,
-                                self._in_comps)
-
-        k2 = [ h * f2[i] for i in range(_nc) ]
-
-
-
-        return 
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
 

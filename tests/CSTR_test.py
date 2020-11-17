@@ -62,6 +62,8 @@ if __name__ == '__main__':
     _eff = utils.pfd.get_all_units(wwtp, 'Effluent')
 
     print('Influent in the PFD: {}'.format([_u.__name__ for _u in _inf]))
+    _inf[0].blend_inlet_comps()
+    print("Influent Conc:", _inf[0]._in_comps)
 
     _plant_inf_flow = sum([_u.get_main_outflow() for _u in _inf])
     print(' Total influent flow into plant:', _plant_inf_flow)
@@ -117,6 +119,7 @@ if __name__ == '__main__':
     #start_t = timeit.default_timer()
 
 
+    #pdb.set_trace()
     if len(_WAS) == 0:
         _WAS_flow = 0
     else:
