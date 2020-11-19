@@ -164,7 +164,7 @@ class asm_reactor(pipe):
         self._prev_so_comps = self._mo_comps[:]
 
         #self._integrate('RKF45')
-        self._mo_comps = self._integrate('RKF45')  #TODO: HERE
+        self._mo_comps = self._integrate('BDF')  #TODO: HERE
 
         self._so_comps = self._mo_comps[:]
 
@@ -276,21 +276,23 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
     
     
-    def _integrate(self, method_name='RKF45'):
+    def _integrate(self, method_name="BDF"):
         """
         Integrate the model forward in time.
 
         Starting from the initial guess, this function integrates the model
-        forward in time. There are a few integration methods available in
-        PooPyLab: Euler, Runge-Kutta 4th order, and Runge-Kutta-Felhberg 4/5.
-        The default is RKF45.
+        forward in time. 
+
 
         Args:
             first_index_particulate:    see Note 1 below
-            method_name:        'RKF45' (see Note 2 below)
+            method_name:        "BDF", "RK45", "Radau", etc.(see Note 2 below)
+
+        Retrun:
+            self._sludge._comps
 
         Notes:
-            1. It is highly recommended the model components are arranged
+            1) It is highly recommended the model components are arranged
             such that all the soluble ones are ahead of the particulate ones
             in the array. Generally, soluble components requires smaller    
             time steps than particulate ones. This kind of arrangement will
@@ -300,13 +302,23 @@ class asm_reactor(pipe):
             particulate components is required for fast integrations with
             correct results.
 
-            2. RKF45 is the only home-brew method for now. Euler and RK4
-            methods have been coded and tested in the past but no longer in use
-            as of now. The code is moved to bio_py_funcs_not_used.txt for
-            archiving.
+            2) There are a few integration methods attempted for PooPyLab:
+            Euler, Runge-Kutta 4th order, Runge-Kutta-Felhberg 4/5,
+            RK-Dormand-Prince-4/5, and the ODE system partitioning scheme
+            suggested in the IWA ASM1 report.  After much study, it is decided
+            to settle with scipy.integrate.solve_ivp routine for now so that
+            the rest of the PooPyLab development can progress, while KZ
+            continues in his study of BDF methods and attempts for a home brew
+            version.  
+            Euler, RK4, RKF45, RKDP45, and Partitioned ODE methods
+            have been coded and tested in the past but no longer in use as of
+            now, except for RKF45. The unused code is moved to
+            bio_py_funcs_not_used.txt for archiving.
 
-        Retrun:
-            self._step
+            3) This function can be removed from the source code because the
+            discharge() function can call scipy.integrate.solve_ivp() directly.
+            For now, it is kept because it may be useful when KZ wants to have
+            the option of using his home brew solvers down the road.
 
         See:
             _runge_kutta_fehlberg_45();
@@ -319,11 +331,13 @@ class asm_reactor(pipe):
 
         # integration using scipy.integrate.solve_ivp()
         self._solultion = solve_ivp(self._sludge._dCdt, [0, 1], self._mo_comps,
-                    method="BDF",
+                    method=method_name,
                     args=(self._active_vol, self._total_inflow, self._in_comps)
                     )
         #print(self._solultion.y)
+
         self._sludge._comps = [yi[-1] for yi in self._solultion.y]
+
         return self._sludge._comps[:]
 
 
