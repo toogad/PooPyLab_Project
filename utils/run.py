@@ -35,6 +35,9 @@ from unit_procs.streams import pipe, influent, effluent, WAS, splitter
 from unit_procs.bio import asm_reactor
 from unit_procs.physchem import final_clarifier
 from utils.datatypes import flow_data_src
+import utils.pfd
+
+import pdb, cProfile
 
 def check_global_cnvg(wwtp):
     """
@@ -511,3 +514,104 @@ def backward_set_flow(start=[]):
     
     return None
 
+
+def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
+    # identify units of different types
+    _inf = utils.pfd.get_all_units(wwtp, 'Influent')
+    _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
+
+    # TODO: _WAS may be an empty []
+    _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
+
+    _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
+    _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
+    _final_clar = utils.pfd.get_all_units(wwtp, 'Final_Clarifier')
+    _eff = utils.pfd.get_all_units(wwtp, 'Effluent')
+    _plant_inf_flow = sum([_u.get_main_outflow() for _u in _inf])
+
+    if verbose:
+        print('Influent in the PFD: {}'.format([_u.__name__ for _u in _inf]))
+        print(' Total influent flow into plant:', _plant_inf_flow)
+        print('Reactors in the PFD: {}'.format([_u.__name__ for _u in _reactors]))
+        print('WAS units in the PFD: {}'.format([_u.__name__ for _u in _WAS]))
+        print('Splitters in the PFD: {}'.format(
+            [_u.__name__ for _u in _splitters]))
+        print('SRT Controlling Splitter in the PFD: {}'.format(
+            [_u.__name__ for _u in _srt_ctrl]))
+        print('Final Clarifier in the PFD: {}'.format(
+            [_u.__name__ for _u in _final_clar]))
+        print('Effluent in the PFD: {}'.format([_u.__name__ for _u in _eff]))
+        print()
+        for i in range(len(_reactors)):
+            print(_reactors[i].get_active_vol())
+            print(_reactors[i].get_model_params())
+            print(_reactors[i].get_model_stoichs())
+
+
+    # start the main loop
+    _WAS_flow = 0.0  # M3/d
+    _SRT = target_SRT
+
+    # get the influent ready
+    for _u in _inf:
+        _u.update_combined_input()
+        _u.discharge()
+
+    # TODO: what if there are multiple influent units?
+    _params = _reactors[0].get_model_params()
+    _seed = initial_guess(_params, 
+                            _reactors,
+                            _inf[0].get_main_outflow(), 
+                            _inf[0].get_main_outlet_concs())
+    
+    print('Initial guess = {}'.format(_seed))
+
+    for _r in wwtp:
+        _r.assign_initial_guess(_seed)
+
+    for fc in _final_clar:
+        fc.set_capture_rate(0.992)
+
+    forward_set_flow(wwtp)
+
+    # collect all the possible starting points for backward flow setting
+    _backward_start_points = [_w for _w in _WAS] + [_e for _e in _eff]
+    
+    if len(_WAS) == 0:
+        _WAS_flow = 0
+    else:
+        _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
+        _WAS[0].set_mainstream_flow(_WAS_flow)
+    _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
+    backward_set_flow(_backward_start_points)
+    traverse_plant(wwtp, _inf[0])
+    
+    if diagnose:
+        profile = cProfile.Profile()
+        profile.enable()
+
+    r = 1
+    while True:
+        if len(_WAS) == 0:
+            _WAS_flow = 0
+        else:
+            _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
+            _WAS[0].set_mainstream_flow(_WAS_flow)
+        _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
+        backward_set_flow(_backward_start_points)
+        traverse_plant(wwtp, _inf[0])
+
+        if check_global_cnvg(wwtp):
+            break
+        r += 1
+
+    if diagnose:
+        profile.disable()
+
+    show_concs(wwtp)
+
+    if verbose:
+        print("TOTAL ITERATION = ", r)
+
+    if diagnose:
+        profile.print_stats()
