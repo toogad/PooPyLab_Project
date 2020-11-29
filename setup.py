@@ -13,10 +13,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     keywords="ASM Wastewater Simulation",
     url="https://github.com/toogad/PooPyLabProject",
-    package=setuptools.find_packages(include=['PooPyLab', 'PooPyLab.*']),
-    classifier=[
+    packages=setuptools.find_packages(include=['PooPyLab', 'PooPyLab.*']),
+    classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: GPLv3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent"
         ],
     python_requires='>=3',
