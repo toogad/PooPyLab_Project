@@ -516,6 +516,29 @@ def backward_set_flow(start=[]):
 
 
 def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
+    """
+    Integrate the entire plant towards a steady state at the target SRT.
+
+    Constant influent flows and loads are required. If the user only knows the
+    dynamic influent characteristics, the averages should be used as the
+    influent conditions.
+
+    Args:
+        wwtp:       all process units in a wastewater treatment plant
+        target_SRT: target solids retention time (d) for the steady state
+        verbose:    flag for more detailed output
+        diagnose:   flag for the use of cProfile for performance analysis
+
+    Return:
+        None
+
+    See:
+        utils.pdf;
+        forward_set_flow();
+        backward_set_flow();
+        traverse_plant()
+    """
+
     # identify units of different types
     _inf = utils.pfd.get_all_units(wwtp, 'Influent')
     _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
