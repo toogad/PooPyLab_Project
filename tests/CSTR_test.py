@@ -25,13 +25,13 @@
 #
 #
 # Change Log:
-# 2020-11-27 KZ: tested w/ utils.run.get_steady_state()
-# 2020-07-11 KZ: added handling of CSTR w/o RAS/WAS
-# 2020-07-08 KZ: init
+# 20201129 KZ: re-run after package structure update
+# 20201127 KZ: tested w/ utils.run.get_steady_state()
+# 20200711 KZ: added handling of CSTR w/o RAS/WAS
+# 20200708 KZ: init
 #
 
-import utils.pfd
-import utils.run
+from PooPyLab.utils import pfd, run
 
 if __name__ == '__main__':
 
@@ -39,9 +39,9 @@ if __name__ == '__main__':
 
     wwtp = CSTR.construct()
 
-    utils.pfd.check(wwtp)
+    pfd.check(wwtp)
 
-    utils.pfd.show(wwtp)
+    pfd.show(wwtp)
 
-    utils.run.get_steady_state(wwtp, CSTR.SRT)
+    run.get_steady_state(wwtp, CSTR.SRT)
 

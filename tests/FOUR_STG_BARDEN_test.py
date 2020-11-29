@@ -25,12 +25,12 @@
 #
 #
 # Change Log:
+# 20201129 KZ: re-run after package structure update
 # 20200711 KZ: integrated the handling of a PFD w/o RAS/WAS
 # 20191029 KZ: init and passed
 #
 
-import utils.pfd
-import utils.run
+from PooPyLab.utils import pfd, run
 
 if __name__ == '__main__':
 
@@ -38,9 +38,9 @@ if __name__ == '__main__':
 
     wwtp = FOUR_STG_BARDEN.construct()
 
-    utils.pfd.check(wwtp)
+    pfd.check(wwtp)
 
-    utils.pfd.show(wwtp)
+    pfd.show(wwtp)
 
-    utils.run.get_steady_state(wwtp, FOUR_STG_BARDEN.SRT)
+    run.get_steady_state(wwtp, FOUR_STG_BARDEN.SRT)
 

@@ -32,13 +32,14 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
+# 20201129 KZ: re-run after package structure update
 # 20190911 KZ: set_model_condition replaced set_ASM_condition
 # 20190815 KZ: init
 #
 
-from unit_procs.streams import influent, effluent, pipe
-from unit_procs.bio import asm_reactor
-from utils.pfd import check, show
+from PooPyLab.unit_procs.streams import influent, effluent, pipe
+from PooPyLab.unit_procs.bio import asm_reactor
+from PooPyLab.utils.pfd import check, show
 
 
 inlet = influent()

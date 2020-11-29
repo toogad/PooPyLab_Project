@@ -44,13 +44,15 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
-#   2019-10-29 KZ: init
+# 20201129 KZ: re-run after package structure update
+# 20191029 KZ: init
 #
 
-from unit_procs.streams import influent, effluent, WAS, splitter, pipe
-from unit_procs.bio import asm_reactor
-from unit_procs.physchem import final_clarifier
-from utils.pfd import check, show
+from PooPyLab.unit_procs.streams import splitter, pipe, WAS
+from PooPyLab.unit_procs.streams import influent, effluent
+from PooPyLab.unit_procs.bio import asm_reactor
+from PooPyLab.unit_procs.physchem import final_clarifier
+from PooPyLab.utils.pfd import check, show
 
 
 inlet = influent()

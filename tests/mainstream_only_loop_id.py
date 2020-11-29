@@ -3,15 +3,16 @@
 # Author: Kai Zhang
 #
 # Change Log:
+# 20201129 KZ: re-run after package structure update
 # 2020-06-25: updated test
 # 2019-07-21: revised to use the updated classes structure/funcs
 # 2019-03-17: testing pfd_check(), specifically mainstream-only loop finding
 #
 
-from unit_procs.streams import influent, effluent, WAS, splitter, pipe
-from unit_procs.bio import asm_reactor
-from unit_procs.physchem import final_clarifier
-from utils.pfd import check, show
+from PooPyLab.unit_procs.streams import influent, effluent, WAS, splitter, pipe
+from PooPyLab.unit_procs.bio import asm_reactor
+from PooPyLab.unit_procs.physchem import final_clarifier
+from PooPyLab.utils.pfd import check, show
 import pdb
 
 

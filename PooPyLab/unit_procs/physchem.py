@@ -40,7 +40,7 @@
 ## @file physchem.py
 
 
-from unit_procs.streams import splitter
+from ..unit_procs.streams import splitter
 
 
 # ----------------------------------------------------------------------------

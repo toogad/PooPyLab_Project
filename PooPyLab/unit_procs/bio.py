@@ -34,9 +34,9 @@
 ## @namespace bio
 ## @file bio.py
 
-from unit_procs.streams import pipe
-from ASMModel.asm_1 import ASM_1
-from ASMModel import constants
+from ..unit_procs.streams import pipe
+from ..ASMModel.asm_1 import ASM_1
+from ..ASMModel import constants
 
 from scipy.integrate import solve_ivp
 

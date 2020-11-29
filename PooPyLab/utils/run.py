@@ -31,11 +31,11 @@
 ## @namespace run
 ## @file run.py
 
-from unit_procs.streams import pipe, influent, effluent, WAS, splitter
-from unit_procs.bio import asm_reactor
-from unit_procs.physchem import final_clarifier
-from utils.datatypes import flow_data_src
-import utils.pfd
+from ..unit_procs.streams import pipe, influent, effluent, WAS, splitter
+from ..unit_procs.bio import asm_reactor
+from ..unit_procs.physchem import final_clarifier
+from ..utils.datatypes import flow_data_src
+from ..utils import pfd
 
 import pdb, cProfile
 
@@ -540,16 +540,16 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
     """
 
     # identify units of different types
-    _inf = utils.pfd.get_all_units(wwtp, 'Influent')
-    _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
+    _inf = pfd.get_all_units(wwtp, 'Influent')
+    _reactors = pfd.get_all_units(wwtp, 'ASMReactor')
 
     # TODO: _WAS may be an empty []
-    _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
+    _WAS = pfd.get_all_units(wwtp, 'WAS')
 
-    _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
+    _splitters = pfd.get_all_units(wwtp, 'Splitter')
     _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
-    _final_clar = utils.pfd.get_all_units(wwtp, 'Final_Clarifier')
-    _eff = utils.pfd.get_all_units(wwtp, 'Effluent')
+    _final_clar = pfd.get_all_units(wwtp, 'Final_Clarifier')
+    _eff = pfd.get_all_units(wwtp, 'Effluent')
     _plant_inf_flow = sum([_u.get_main_outflow() for _u in _inf])
 
     if verbose:

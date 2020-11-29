@@ -31,9 +31,9 @@
 ## @namespace pfd
 ## @file pfd.py
 
-from unit_procs.streams import influent, effluent, WAS, pipe, splitter
-from unit_procs.bio import asm_reactor
-from unit_procs.physchem import final_clarifier
+from ..unit_procs.streams import influent, effluent, WAS, pipe, splitter
+from ..unit_procs.bio import asm_reactor
+from ..unit_procs.physchem import final_clarifier
 
 
 def _check_connection(pfd=[]):

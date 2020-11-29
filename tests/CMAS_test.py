@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20201129 KZ: re-run after package structure update
 # 20201127 KZ: tested with the utils.run.get_steady_state()
 # 20200711 KZ: integrated the handling of PFD w/o RAS/WAS
 # 20200623 KZ: retested after updating steady state criteria
@@ -32,8 +33,7 @@
 # 20190920 KZ: init and digressed to BFS traverse of the PFD
 #
 
-import utils.pfd
-import utils.run
+from PooPyLab.utils import pfd, run
 
 if __name__ == '__main__':
 
@@ -41,11 +41,11 @@ if __name__ == '__main__':
 
     wwtp = CMAS.construct()
 
-    utils.pfd.check(wwtp)
+    pfd.check(wwtp)
 
-    utils.pfd.show(wwtp)
+    pfd.show(wwtp)
 
-    utils.run.get_steady_state(wwtp, target_SRT=CMAS.SRT,
-                                verbose=False,
-                                diagnose=False)
+    run.get_steady_state(wwtp, target_SRT=CMAS.SRT,
+                            verbose=False,
+                            diagnose=False)
 

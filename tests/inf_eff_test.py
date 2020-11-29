@@ -25,13 +25,13 @@
 #
 #
 # Change Log:
+# 20201129 KZ: re-run after package structure update
 # 20191011 KZ: retested after flow_data_src implementation and passed
 # 20190815 KZ: init and passed
 #
 
-from unit_procs.streams import pipe, influent, effluent
-import utils.pfd
-import utils.run
+from PooPyLab.unit_procs.streams import pipe, influent, effluent
+from PooPyLab.utils import pfd, run
 import pdb
 
 if __name__ == '__main__':
@@ -40,24 +40,24 @@ if __name__ == '__main__':
 
     wwtp = INF_EFF.construct()
 
-    utils.pfd.check(wwtp)
+    pfd.check(wwtp)
 
-    utils.pfd.show(wwtp)
+    pfd.show(wwtp)
 
     # identify units of different types
-    _inf = utils.pfd.get_all_units(wwtp, 'Influent')
+    _inf = pfd.get_all_units(wwtp, 'Influent')
 
-    _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
+    _reactors = pfd.get_all_units(wwtp, 'ASMReactor')
 
-    _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
+    _WAS = pfd.get_all_units(wwtp, 'WAS')
 
-    _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
+    _splitters = pfd.get_all_units(wwtp, 'Splitter')
 
     _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
 
-    _final_clar = utils.pfd.get_all_units(wwtp, 'Final_Clarifier')
+    _final_clar = pfd.get_all_units(wwtp, 'Final_Clarifier')
 
-    _eff = utils.pfd.get_all_units(wwtp, 'Effluent')
+    _eff = pfd.get_all_units(wwtp, 'Effluent')
 
     print('Influent in the PFD: {}'.format([_u.__name__ for _u in _inf]))
 
@@ -83,20 +83,20 @@ if __name__ == '__main__':
     _WAS_flow = 0.0  # M3/d
     # there is no need to seed the system in this example
 
-    utils.run.forward_set_flow(wwtp)
-    utils.run.traverse_plant(wwtp, _inf[0])
+    run.forward_set_flow(wwtp)
+    run.traverse_plant(wwtp, _inf[0])
     
     #pdb.set_trace()
 
     while True:
 
-        utils.run.backward_set_flow(_eff)
+        run.backward_set_flow(_eff)
 
-        utils.run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0])
 
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
-        if utils.run.check_global_cnvg(wwtp):
+        if run.check_global_cnvg(wwtp):
             break
 
 
