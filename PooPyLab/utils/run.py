@@ -581,16 +581,16 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
         _u.discharge()
 
     # TODO: what if there are multiple influent units?
-    _params = _reactors[0].get_model_params()
-    _seed = initial_guess(_params, 
-                            _reactors,
-                            _inf[0].get_main_outflow(), 
-                            _inf[0].get_main_outlet_concs())
-    
-    print('Initial guess = {}'.format(_seed))
-
-    for _r in wwtp:
-        _r.assign_initial_guess(_seed)
+    if len(_reactors):
+        _params = _reactors[0].get_model_params()
+        _seed = initial_guess(_params, 
+                                _reactors,
+                                _inf[0].get_main_outflow(), 
+                                _inf[0].get_main_outlet_concs())
+        
+        print('Initial guess = {}'.format(_seed))
+        for _r in wwtp:
+            _r.assign_initial_guess(_seed)
 
     for fc in _final_clar:
         fc.set_capture_rate(0.992)
