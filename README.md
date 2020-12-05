@@ -13,3 +13,6 @@ Follow the project on Twitter: @poopylab .
 More detailed documentation:
 [toogad.github.io/brownbook](https://toogad.github.io/brownbook/index.html)
 
+Wiki/Tutorial:
+[PooPyLab Wiki](https://github.com/toogad/PooPyLab_Project/wiki)
+
