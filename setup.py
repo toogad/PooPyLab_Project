@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_des,
     long_description_content_type="text/markdown",
     keywords="ASM Wastewater Simulation",
-    url="https://github.com/toogad/PooPyLabProject",
+    url="https://github.com/toogad/PooPyLab_Project",
     project_urls={
         'Source': 'https://github.com/toogad/PooPyLab_Project',
         'Documentation': 'https://toogad.github.io/brownbook/index.html',
