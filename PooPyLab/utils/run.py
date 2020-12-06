@@ -67,32 +67,30 @@ def show_concs(wwtp):
     Return:
         None
     """
-            #    self._comps[0]: S_DO as COD
-        #    self._comps[1]: S_I
-        #    self._comps[2]: S_S
-        #    self._comps[3]: S_NH
-        #    self._comps[4]: S_NS
-        #    self._comps[5]: S_NO
-        #    self._comps[6]: S_ALK
-        #    self._comps[7]: X_I
-        #    self._comps[8]: X_S
-        #    self._comps[9]: X_BH
-        #    self._comps[10]: X_BA
-        #    self._comps[11]: X_D
-        #    self._comps[12]: X_NS
+    #    self._comps[0]: S_DO as COD
+    #    self._comps[1]: S_I
+    #    self._comps[2]: S_S
+    #    self._comps[3]: S_NH
+    #    self._comps[4]: S_NS
+    #    self._comps[5]: S_NO
+    #    self._comps[6]: S_ALK
+    #    self._comps[7]: X_I
+    #    self._comps[8]: X_S
+    #    self._comps[9]: X_BH
+    #    self._comps[10]: X_BA
+    #    self._comps[11]: X_D
+    #    self._comps[12]: X_NS
  
     col_name = ['FLOW',
                 'S_DO', 'S_I', 'S_S', 'S_NH', 'S_NS', 'S_NO', 'S_ALK',
                 'X_I', 'X_S', 'X_BH', 'X_BA', 'X_D', 'X_NS']
-
-    print('        ', end='')
-    for cn in col_name:
-        print('{:>12s}'.format(cn), end='')
-    print()
+    format_cn = '{:>12s}' * len(col_name)
+    print(' ' * 8, end='')
+    print(format_cn.format(*col_name))
 
     for elem in wwtp:
         print(elem.__name__, '::')
-        print('__main  {:>12.3f}'.format(elem.get_main_outflow()),
+        print('__main  {:>12.3f}'.format(elem.get_main_outflow()), 
                 end='')
         for msconc in elem.get_main_outlet_concs():
             print('{:>12.3f}'.format(msconc), end='')
@@ -162,9 +160,9 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
 
     SRT_OXIC = max(SRT_OXIC_A, SRT_OXIC_H) * SF
 
-    print('Min Oxic SRT for Heterotrophs = {} (day)'.format(SRT_OXIC_H))
-    print('Min Oxic SRT for Autotrophs = {} (day)'.format(SRT_OXIC_A))
-    print('SELECTED Oxic SRT = {} (day)'.format(SRT_OXIC))
+    print('Min Oxic SRT for Heterotrophs = {:.2f} (day)'.format(SRT_OXIC_H))
+    print('Min Oxic SRT for Autotrophs = {:.2f} (day)'.format(SRT_OXIC_A))
+    print('SELECTED Oxic SRT = {:.2f} (day)'.format(SRT_OXIC))
 
     # Initial guesses of S_S and S_NH based on the selected oxic SRT
     init_S_S = params['K_S'] * (1.0 / SRT_OXIC + params['b_LH']) \
@@ -173,8 +171,8 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     init_S_NH = params['K_NH'] * (1.0 / SRT_OXIC + params['b_LA']) \
             / (params['u_max_A'] - (1.0 / SRT_OXIC + params['b_LA']))
 
-    print('eff. S_S = {} (mg/L COD)'.format(init_S_S))
-    print('eff. S_NH = {} (mg/L N)'.format(init_S_NH))
+    #print('eff. S_S = {:.3f} (mg/L COD)'.format(init_S_S))
+    #print('eff. S_NH = {:.3f} (mg/L N)'.format(init_S_NH))
 
     # daily active heterotrphic biomass production, unit: gCOD/day
     daily_heter_biomass_prod = inf_flow  * (inf_S_S + inf_X_S - init_S_S)\
@@ -230,8 +228,6 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     return [init_S_DO, init_S_I, init_S_S, init_S_NH, init_S_NS, init_S_NO,
             init_S_ALK,
             init_X_I, init_X_S, init_X_BH, init_X_BA, init_X_D, init_X_NS]
-#    return [2.0, init_S_I, 1.0, 1.0, 1.0, 1.0, 5, init_X_I, 1.0, 500, 20, 1.0,
-#            1.0]
 
 
 def _forward(me, visited=[]):
@@ -614,8 +610,8 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
                                 _reactors,
                                 _inf[0].get_main_outflow(), 
                                 _inf[0].get_main_outlet_concs())
-        
-        print('Initial guess = {}'.format(_seed))
+        format_sd = '{:<.3f}, ' * len(_seed) 
+        print('Initial guess =', format_sd.format(*_seed), '\n\n')
         for _r in wwtp:
             _r.assign_initial_guess(_seed)
 
