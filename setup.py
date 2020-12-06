@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='poopylab', 
-    version='0.01.0.20201129', 
+    version='0.01.0.20201206', 
     author="Kai Zhang",
     author_email="poopylabproject@gmail.com",
     description="An open source simulation tool for biological wastewater treatment, by the poop nerds, for the the poop nerds.",
     long_description=long_des,
     long_description_content_type="text/markdown",
-    keywords="ASM Wastewater Simulation",
+    keywords="Activated Sludge Model ASM Wastewater Simulation",
     url="https://github.com/toogad/PooPyLab_Project",
     project_urls={
         'Source': 'https://github.com/toogad/PooPyLab_Project',
