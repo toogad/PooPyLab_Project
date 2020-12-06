@@ -59,7 +59,7 @@ def check_global_cnvg(wwtp):
 
 def show_concs(wwtp):
     """
-    Print the concentrations of the branches of each unit in the WWTP's PFD.
+    Print the model components of the branches of each unit in the WWTP's PFD.
 
     Args:
         wwtp:   list of process units in a WWTP's PFD
@@ -67,15 +67,42 @@ def show_concs(wwtp):
     Return:
         None
     """
+            #    self._comps[0]: S_DO as COD
+        #    self._comps[1]: S_I
+        #    self._comps[2]: S_S
+        #    self._comps[3]: S_NH
+        #    self._comps[4]: S_NS
+        #    self._comps[5]: S_NO
+        #    self._comps[6]: S_ALK
+        #    self._comps[7]: X_I
+        #    self._comps[8]: X_S
+        #    self._comps[9]: X_BH
+        #    self._comps[10]: X_BA
+        #    self._comps[11]: X_D
+        #    self._comps[12]: X_NS
+ 
+    col_name = ['FLOW',
+                'S_DO', 'S_I', 'S_S', 'S_NH', 'S_NS', 'S_NO', 'S_ALK',
+                'X_I', 'X_S', 'X_BH', 'X_BA', 'X_D', 'X_NS']
+
+    print('        ', end='')
+    for cn in col_name:
+        print('{:>12s}'.format(cn), end='')
+    print()
 
     for elem in wwtp:
-        print('{}: main out flow = {}, side out flow = {}, (m3/d)'.format(
-            elem.__name__, elem.get_main_outflow(), elem.get_side_outflow()))
-        print('     main outlet conc = {}'.format(
-            elem.get_main_outlet_concs()))
+        print(elem.__name__, '::')
+        print('__main  {:>12.3f}'.format(elem.get_main_outflow()),
+                end='')
+        for msconc in elem.get_main_outlet_concs():
+            print('{:>12.3f}'.format(msconc), end='')
+        print()
         if elem.has_sidestream():
-            print('     side outlet conc = {}'.format(
-            elem.get_side_outlet_concs()))
+            print('__side  {:>12.3f}'.format(elem.get_side_outflow()),
+                    end='')
+            for ssconc in elem.get_side_outlet_concs():
+                print("{:>12.3f}".format(ssconc), end='')
+            print()
 
     return None
 
