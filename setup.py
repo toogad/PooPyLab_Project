@@ -8,7 +8,7 @@ setuptools.setup(
     version='0.01.0.20201206', 
     author="Kai Zhang",
     author_email="poopylabproject@gmail.com",
-    description="An open source simulation tool for biological wastewater treatment, by the poop nerds, for the the poop nerds.",
+    description="The .#2. best simulation tool for biological wastewater treatment, by the poop nerds, for the the poop nerds.",
     long_description=long_des,
     long_description_content_type="text/markdown",
     keywords="Activated Sludge Model ASM Wastewater Simulation",
