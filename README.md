@@ -6,7 +6,7 @@ lot of details on the wiki yet, but more than what's on here.
 
 To install the PooPyLab package: pip3 install poopylab
 
-Please see the tests/ folder for examples about how to use the available classes/methods to construct your own treatment plant process flow diagrams and get steady state results.
+Please see the examples/ folder for examples about how to use the available classes/methods to construct your own treatment plant process flow diagrams and get steady state results.
 
 Follow the project on Twitter: @poopylab .
 
