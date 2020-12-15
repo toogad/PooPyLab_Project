@@ -39,11 +39,15 @@ Reference:
 
 
 from ..ASMModel import constants
+from .asmbase import asm_model
 
-class ASM_1():
+
+class ASM_1(asm_model):
     """
     Kinetics and stoichiometrics of IWA ASM 1 model.
     """
+
+    __id = 0
 
     def __init__(self, ww_temp=20, DO=2):
         """
@@ -61,99 +65,51 @@ class ASM_1():
             _set_stoichs();
         """
 
-        ## wastewater temperature used in the model, degC
-        #self._temperature = ww_temp
-        ## mixed liquor bulk dissolved oxygen, mg/L
-        #self._bulk_DO = DO 
-        
-        # define the model parameters and stochoimetrics as dict() so that it
-        # is easier to keep track of names and values
+        asm_model.__init__(self) 
+        self.__class__.__id += 1
 
-        ## kinetic constants
-        self._params = {}
-
-        ## stoichiometrics
-        self._stoichs = {}
-
-        ## temperature difference b/t what's used and baseline (20C), degC
-        #self._delta_t = self._temperature - 20
-        
-        #self._set_params()
-        #self._set_stoichs()
-        self.update(ww_temp, DO)
-        
-        # The Components the ASM components IN THE REACTOR
-        # For ASM #1:
-        #
-        #    self._comps[0]: S_DO as COD
-        #    self._comps[1]: S_I
-        #    self._comps[2]: S_S
-        #    self._comps[3]: S_NH
-        #    self._comps[4]: S_NS
-        #    self._comps[5]: S_NO
-        #    self._comps[6]: S_ALK
-        #    self._comps[7]: X_I
-        #    self._comps[8]: X_S
-        #    self._comps[9]: X_BH
-        #    self._comps[10]: X_BA
-        #    self._comps[11]: X_D
-        #    self._comps[12]: X_NS
-        #
-        ## ASM model components
-        self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
-
+#        ## wastewater temperature used in the model, degC
+#        #self._temperature = ww_temp
+#        ## mixed liquor bulk dissolved oxygen, mg/L
+#        #self._bulk_DO = DO 
+#        
+#        # define the model parameters and stochoimetrics as dict() so that it
+#        # is easier to keep track of names and values
+#
+#        ## kinetic constants
+#        self._params = {}
+#
+#        ## stoichiometrics
+#        self._stoichs = {}
+#
+#        ## temperature difference b/t what's used and baseline (20C), degC
+#        #self._delta_t = self._temperature - 20
+#        
+#        #self._set_params()
+#        #self._set_stoichs()
+#        self.update(ww_temp, DO)
+#        
+#        # The Components the ASM components IN THE REACTOR
+#        # For ASM #1:
+#        #
+#        #    self._comps[0]: S_DO as COD
+#        #    self._comps[1]: S_I
+#        #    self._comps[2]: S_S
+#        #    self._comps[3]: S_NH
+#        #    self._comps[4]: S_NS
+#        #    self._comps[5]: S_NO
+#        #    self._comps[6]: S_ALK
+#        #    self._comps[7]: X_I
+#        #    self._comps[8]: X_S
+#        #    self._comps[9]: X_BH
+#        #    self._comps[10]: X_BA
+#        #    self._comps[11]: X_D
+#        #    self._comps[12]: X_NS
+#        #
+#        ## ASM model components
+#        self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+#
         return None
-
-
-    def update(self, ww_temp, DO):
-        """ 
-        Update the ASM model with new water temperature and dissolved O2. 
-
-        Args:
-            ww_temp:    wastewater temperature, degC;
-            DO:         dissolved oxygen, mg/L
-
-        Return:
-            None
-
-        See:
-            _set_params();
-            _set_stoichs().
-        """
-        self._temperature = ww_temp
-        self._bulk_DO = DO
-        self._delta_t = self._temperature - 20.0
-        self._set_params()
-        self._set_stoichs()
-        return None
-
-
-    def get_params(self):
-        """
-        Return the values of the kinetic parameter dictionary.
-        """
-        return self._params.copy()
-
-
-    def get_stoichs(self):
-        """
-        Return the values of the stoichiometric dictionary.
-        """
-        return self._stoichs.copy()
-
-
-    def get_all_comps(self):
-        """
-        Return a copy of the model components (concentrations).
-        """
-        return self._comps[:]
-
-
-    def get_bulk_DO(self):
-        """
-        Return the bulk dissolved O2 concentration, mg/L.
-        """
-        return self._bulk_DO
 
 
     def _set_params(self):
@@ -362,27 +318,6 @@ class ASM_1():
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
     #
-    def _monod(self, term_in_num_denum, term_only_in_denum):
-        """
-        Template for Monod kinetics or switches.
-
-        The following kinetics/swithes all use the _monod() function:
-            Monod kinetic of solube biodegradable COD on Heterotrophs;
-            Monod switch of Dissol. O2 on Heterotrophs;
-            Monod switch of Dissol. O2 on Autotrophs;
-            Monod kinetic of Ammonia-N on Autotrophs;
-            Monod kinetic of NOx-N on Autotrophs.
-        
-        Args:
-            term_in_num_denum:      the term in both numerator & denumerator
-            term_only_in_denum:     the term only in numerator
-
-        Return:
-            float
-        """
-        return term_in_num_denum / (term_in_num_denum + term_only_in_denum)
-
-
     def _r0_AerGH(self, comps):
         """
         Aerobic Growth Rate of Heterotrophs (mgCOD/L/day).
