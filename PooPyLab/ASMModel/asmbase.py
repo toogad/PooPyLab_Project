@@ -91,7 +91,7 @@ class asm_model(object):
         #    self._comps[12]: X_NS
         #
         ## ASM model components
-        self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._comps = []
 
         return None
 
