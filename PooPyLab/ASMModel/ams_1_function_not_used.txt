@@ -1,0 +1,86 @@
+
+    def _dCdt_iwa(self, mo_comps, vol, flow, in_comps, comp_type):
+        '''
+        Defines dC/dt for the reactor based on mass balance.
+
+        Overall mass balance:
+        dComp/dt == InfFlow / Actvol * (in_comps - mo_comps) + GrowthRate
+                 == (in_comps - mo_comps) / HRT + GrowthRate
+ 
+        Args:
+            t:          time for use in ODE integration routine, d
+            mo_comps:   list of model component for mainstream outlet, mg/L.
+            vol:        reactor's active volume, m3;
+            flow:       reactor's total inflow, m3/d
+            in_comps:   list of model compoennts for inlet, mg/L;
+            comp_type:  type of comps to calc: "OXY", "SOL", "PART", "ALL"
+
+        Return:
+            dC/dt of the system ([float])
+        
+        ASM1 Components:
+            0_S_DO, 
+            1_S_I, 2_S_S, 3_S_NH, 4_S_NS, 5_S_NO, 6_S_ALK,
+            7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
+        '''
+
+        _HRT = vol / flow
+        result = []
+
+        if comp_type == "OXY" or comp_type == "ALL":
+        #result = [(in_comps[0] - mo_comps[0]) / _HRT 
+        #                + self._rate0_S_DO()]
+
+        # set DO rate to zero since DO is set to a fix conc.
+            result.append(0.0)
+            if comp_type == "OXY":
+                return result[:]
+
+        if comp_type == "SOL" or comp_type == "ALL":
+            result.append((in_comps[1] - mo_comps[1]) / _HRT 
+                            + self._rate1_S_I(mo_comps))
+
+            result.append((in_comps[2] - mo_comps[2]) / _HRT
+                            + self._rate2_S_S(mo_comps))
+
+            result.append((in_comps[3] - mo_comps[3]) / _HRT
+                            + self._rate3_S_NH(mo_comps))
+
+            result.append((in_comps[4] - mo_comps[4]) / _HRT
+                            + self._rate4_S_NS(mo_comps))
+
+            result.append((in_comps[5] - mo_comps[5]) / _HRT
+                            + self._rate5_S_NO(mo_comps))
+
+            result.append((in_comps[6] - mo_comps[6]) / _HRT
+                            + self._rate6_S_ALK(mo_comps))
+            if comp_type == "SOL":
+                return result[:]
+
+        if comp_type == "PART" or comp_type == "ALL":
+            result.append((in_comps[7] - mo_comps[7]) / _HRT
+                            + self._rate7_X_I(mo_comps))
+
+            result.append((in_comps[8] - mo_comps[8]) / _HRT
+                            + self._rate8_X_S(mo_comps))
+
+            result.append((in_comps[9] - mo_comps[9]) / _HRT
+                            + self._rate9_X_BH(mo_comps))
+
+            result.append((in_comps[10] - mo_comps[10]) / _HRT
+                            + self._rate10_X_BA(mo_comps))
+
+            result.append((in_comps[11] - mo_comps[11]) / _HRT
+                            + self._rate11_X_D(mo_comps))
+
+            result.append((in_comps[12] - mo_comps[12]) / _HRT
+                            + self._rate12_X_NS(mo_comps))
+            if comp_type == "PART":
+                return result[:]
+        
+        if comp_type == "ALL":
+            return result[:]
+        
+        print("dCdt(..., comp_type) given INVALID COMP_TYPE")
+        return None
+

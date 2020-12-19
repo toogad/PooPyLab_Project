@@ -1,0 +1,37 @@
+def _flow_balance(cur, prefix, done):
+    # cur: current unit
+    # prefix {}: collection of units that are the prefix to the cur
+    # done []: collection of the units that have been balanced
+    # THE DEVELOPMENT OF THIS FUNCTION IS PUT ON HOLD. KZ 2019-03-02
+
+    if cur.balanced():
+        if cur not in balanced:
+            balanced.append(cur)
+        cur.discharge()
+    else:  # cur is not yet flow-balanced:
+        upst = cur.get_upstream()
+        if upst != None:  # cur is not an influent
+            for dis in upst:
+                _t = _id_upstream_type(cur, dis)
+                if _t == "INFLUENT" or _t == "SPLITTER_SIDE":
+                    # flow is given (TODO: check in discharge())
+                    dis.discharge()
+                    return dis.get_outlet_flow()
+                elif _t == "SPLITTER_MAIN" or _t == "PIPE":
+                    return _flow_balance(dis, balanced)
+                dis.discharge()
+        else:  # cur itself is an influent
+            cur.discharge()
+    print(cur.__name__, "flow is balanced:", cur.flow_balanced())
+    return cur.get_outlet_flow()
+
+def check_flow_balance(pfd):
+    # THE DEVELOPEMENT OF THIS FUNCTION IS PUT ON HOLD. KZ, 2019-03-02
+    _rearrange(pfd)
+    balanced = []
+    for i in range(len(pfd)):
+        _flow_balance(pfd[i], balanced)
+    return None
+
+
+
