@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20201223 KZ: re-run after get_steady_state() interface update
 # 20201129 KZ: re-run after package structure update
 # 20190815 KZ: init and passed
 #
@@ -83,7 +84,7 @@ if __name__ == '__main__':
     _WAS_flow = 0.0  # M3/d
 
     run.forward_set_flow(wwtp)
-    run.traverse_plant(wwtp, _inf[0])
+    run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
     
     #pdb.set_trace()
 
@@ -95,7 +96,7 @@ if __name__ == '__main__':
 
         #pdb.set_trace()
         run.backward_set_flow([_WAS[0], _eff[0]])
-        run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
         if run.check_global_cnvg(wwtp):
             break

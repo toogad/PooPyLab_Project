@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20201223 KZ: re-run after get_steady_state() interface update
 # 20201129 KZ: re-run after package structure update
 # 20200711 KZ: integrated the handling of a PFD w/o RAS/WAS
 # 20191029 KZ: init and passed
@@ -42,5 +43,8 @@ if __name__ == '__main__':
 
     pfd.show(wwtp)
 
-    run.get_steady_state(wwtp, FOUR_STG_BARDEN.SRT)
+    run.get_steady_state(wwtp, FOUR_STG_BARDEN.SRT,
+                            mn='BDF',
+                            fDO=True,
+                            DOsat=10)
 

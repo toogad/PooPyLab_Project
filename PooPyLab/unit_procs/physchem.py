@@ -139,7 +139,7 @@ class final_clarifier(splitter):
         return None
 
 
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
@@ -149,6 +149,22 @@ class final_clarifier(splitter):
         to set the flows for inlet, mainstream outlet, and sidestream outlet,  
         then calls _settle_solids() to fractions the particulate components    
         according to the branch flows and user set percent solids capture.     
+
+        Args:
+            method_name:    integration method as per scipy.integrate.solveivp;
+            fix_DO:         whether to simulate w/ a fix DO setpoint;
+            DO_sat_T:       saturated DO conc. under the site conditions (mg/L)
+            (see note)
+
+        Return:
+            None
+
+        Note:
+            Argument method_name is not used as of now but will be applicable
+            when a settling model is placed here in the final_clarifier class.
+
+            Arguments of fix_DO and DO_sat_T are dummies for now because it is
+            assumed that there is no biochemical reactions in the clarifier.
 
         See:
             _settle_solids();

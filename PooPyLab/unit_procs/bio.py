@@ -80,24 +80,24 @@ class asm_reactor(pipe):
 
         self._type = 'ASMReactor'
 
-        ## active volume, m3
+        # active volume, m3
         self._active_vol = act_vol
-        ## side water depth, m
+        # side water depth, m
         self._swd = swd
-        ## plan section area, m2
+        # plan view section area, m2
         self._area = self._active_vol / self._swd
 
-        ## sludge mixed liquor contained in the reactor
+        # sludge mixed liquor contained in the reactor
         self._sludge = ASM_1(ww_temp, DO)
 
         # storage of _sludge._dCdt for the current step
-        self._del_C_del_t = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._del_C_del_t = [0.0] * len(self._sludge._comps)
 
-        self._in_comps = [0.0] * constants._NUM_ASM1_COMPONENTS 
-        self._mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = [0.0] * len(self._sludge._comps)
+        self._mo_comps = [0.0] * len(self._sludge._comps)
 
         # results of previous round
-        self._prev_mo_comps = [0.0] * constants._NUM_ASM1_COMPONENTS
+        self._prev_mo_comps = [0.0] * len(self._sludge._comps)
         self._prev_so_comps = self._prev_mo_comps
 
         self._upstream_set_mo_flow = True
@@ -105,15 +105,15 @@ class asm_reactor(pipe):
         # initial guess of step size for model integration, hr
         self._step = 1.0 / 24.0
 
-        # local error for integration routine:
+        # local error for integration
+        # used in kz's homebrew integration routine only
         self._prev_local_err = 1e-3
 
         # absolute tolerance for integration
-        self._atol = 1e-5
+        self._atol = 1e-4
         # relative tolerance for integration
-        self._rtol = 1e-5
+        self._rtol = 1e-4
 
-        #---------------------
         # solution of the integration
         self._solultion = None
 
@@ -124,10 +124,12 @@ class asm_reactor(pipe):
     #
     def is_converged(self, limit=0.01):
         """
-        Redefine the convergence evaluation for the asm_reactor because of the
-        explicit definitions of dy/dt in the ASM model.
+        Check for asm_reactor's steady state.
 
         Current default criteria for steady state (convergence):
+            | current_result - prev_result | < atol + rtol * prev_result
+
+        Alternative criteria:
             L2-norm of dy/dt < limit
 
         Args:
@@ -142,12 +144,12 @@ class asm_reactor(pipe):
         #return L2_norm < limit
 
         accept = [abs(self._mo_comps[i] - self._prev_mo_comps[i])
-                    < 1e-4 + 1e-4 * self._prev_mo_comps[i]
+                    < self._atol + self._rtol * self._prev_mo_comps[i]
                     for i in range(len(self._mo_comps))]
         return not (False in accept)
 
 
-    def discharge(self, method_name="BDF"):
+    def discharge(self, method_name="BDF", fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
@@ -204,7 +206,8 @@ class asm_reactor(pipe):
         # integration using scipy.integrate.solve_ivp()
         self._solultion = solve_ivp(self._sludge._dCdt, [0, 1], self._mo_comps,
                     method=method_name,
-                    args=(self._active_vol, self._total_inflow, self._in_comps)
+                    args=(self._active_vol, self._total_inflow, self._in_comps,
+                            True, 10)
                     )
         #print(self._solultion.y)
         self._sludge._comps = [yi[-1] for yi in self._solultion.y]
@@ -238,6 +241,33 @@ class asm_reactor(pipe):
         self._mo_comps = initial_guess[:]  # CSTR: outlet = mixed liquor
         return None
 
+    def update_proj_conditions(self, ww_temp=20, elev=100, salinity=1.0):
+        """
+        Update the site conditions for the process unit.
+
+        Args:
+            ww_temp:    water/wastewater temperature, degC
+            elev:       site elevation above mean sea level, meter
+            salinity:   salinity of w/ww, GRAM/L
+
+        Return:
+            None
+
+        See:
+            get_saturated_DO().
+        """
+        if ww_temp > 4 and ww_temp <= 40\
+                and elev >= 0 and elev <= 3000\
+                and salinity >= 0:
+            self._ww_temp = ww_temp
+            self._elev = elev
+            self._salinity = salinity
+            self._DO_sat_T = self.get_saturated_DO()
+            self.set_model_condition(self._ww_temp, self._sludge.get_bulk_DO())
+        else:
+            print(self.__name__, ' ERROR IN NEW PROJECT CONDITIONS. NO UPDATES')
+
+        return None
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
 
@@ -287,7 +317,7 @@ class asm_reactor(pipe):
         See:
             ASMModel.ASM_1.update().
         """
-        if ww_temp >= 4 and DO >= 0:
+        if ww_temp > 4 and ww_temp <= 40 and DO >= 0:
             self._sludge.update(ww_temp, DO)
         else:
             print("ERROR:", self.__name__, "given crazy temperature or DO.")

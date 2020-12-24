@@ -43,5 +43,5 @@ if __name__ == '__main__':
 
     pfd.show(wwtp)
 
-    run.get_steady_state(wwtp, CSTR.SRT)
+    run.get_steady_state(wwtp, CSTR.SRT, False, False, 'BDF', True, 10)
 

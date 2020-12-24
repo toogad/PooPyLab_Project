@@ -291,7 +291,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def discharge(self):
+    def discharge(self, method_name, fix_DO, DO_sat_T):
         """
         Pass the total flow and blended components to the downstreams.
         """
@@ -374,6 +374,22 @@ class poopy_lab_obj(object):
     def get_sN(self, branch='Main'):
         """
         Return the soluble nitrogen of the specified branch.
+        """
+        pass
+
+
+    @abstractmethod
+    def update_proj_conditions(self, ww_temp, elevation, salinity):
+        """
+        Set the project site conditions for the process unit.
+        """
+        pass
+
+
+    @abstractmethod
+    def get_saturated_DO(self):
+        """
+        Calculate the saturated DO concentration under the site conditions.
         """
         pass
 

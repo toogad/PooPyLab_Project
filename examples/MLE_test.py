@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20201223 KZ: re-run after get_steady_state() interface update
 # 20201129 KZ: re-run after package structure update
 # 20201127 KZ: moved steps into utils.run.get_steady_state()
 # 20200711 KZ: integrated the handling of a PFD w/o RAS/WAS
@@ -46,5 +47,8 @@ if __name__ == '__main__':
 
     run.get_steady_state(wwtp, target_SRT=MLE.SRT,
                             verbose=False,
-                            diagnose=False)
+                            diagnose=False,
+                            mn='BDF',
+                            fDO=True,
+                            DOsat=10)
 

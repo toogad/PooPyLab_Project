@@ -61,12 +61,25 @@ class ASM_1(asm_model):
             None
 
         See:
+            _set_ideal_kinetics_20C();
             _set_params();
-            _set_stoichs();
+            _set_stoichs().
         """
 
         asm_model.__init__(self) 
         self.__class__.__id += 1
+
+        self._set_ideal_kinetics_20C_to_defaults()
+
+        # wastewater temperature used in the model, degC
+        self._temperature = ww_temp
+        # mixed liquor bulk dissolved oxygen, mg/L
+        self._bulk_DO = DO 
+
+        # temperature difference b/t what's used and baseline (20C), degC
+        self._delta_t = self._temperature - 20
+        
+        self.update(ww_temp, DO)
 
         # The Components the ASM components IN THE REACTOR
         # For ASM #1:
@@ -91,87 +104,167 @@ class ASM_1(asm_model):
         return None
 
 
-    def _set_params(self):
+    def _set_ideal_kinetics_20C_to_defaults(self):
         """
-        Set the kinetic parameters/constants @ 20C for the ASM 1 model.
-
-        This function updates the self._params based on the model temperature
-        and DO.
+        Set the kinetic params/consts @ 20C to default ideal values.
 
         See:
             update();
+            _set_params();
             _set_stoichs().
         """
 
         # Ideal Growth Rate of Heterotrophs (u_max_H, 1/DAY)
-        self._params['u_max_H'] = 6.0 * pow(1.072, self._delta_t)
+        self._kinetics_20C['u_max_H'] = 6.0
 
         # Decay Rate of Heterotrophs (b_H, 1/DAY)
-        self._params['b_LH'] = 0.62 * pow(1.12, self._delta_t)
+        self._kinetics_20C['b_LH'] = 0.62
 
         # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
-        self._params['u_max_A'] = 0.8 * pow(1.103, self._delta_t)
+        self._kinetics_20C['u_max_A'] = 0.8
 
         # Decay Rate of Autotrophs (b_A, 1/DAY)
         # A wide range exists. Table 6.3 on Grady 1999 shows 0.096 (1/d). IWA's
         # ASM report did not even show b_A on its table for typical value. ASIM
         # software show a value of "0.000", probably cut off by the print
         # function. I can only assume it was < 0.0005 (1/d) at 20C.
-        #self._params['b_LA'] = 0.096 * pow(1.114, self._delta_t)
-        self._params['b_LA'] = 0.0007 * pow(1.114, self._delta_t)
+        #self._kinetics_20C['b_LA'] = 0.096
+        self._kinetics_20C['b_LA'] = 0.0007
 
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
-        self._params['K_S'] = 20.0
+        self._kinetics_20C['K_S'] = 20.0
 
         # Switch Coefficient for Dissoved O2 of Hetero. (K_OH, mgO2/L)
-        self._params['K_OH'] = 0.2
+        self._kinetics_20C['K_OH'] = 0.2
 
         # Association Conc. for Dissoved O2 of Auto. (K_OA, mgN/L)
-        self._params['K_OA'] = 0.4
+        self._kinetics_20C['K_OA'] = 0.4
 
         # Association Conc. for NH3-N of Auto. (K_NH, mgN/L)
-        self._params['K_NH'] = 1.0
+        self._kinetics_20C['K_NH'] = 1.0
 
         # Association Conc. for NOx of Hetero. (K_NO, mgN/L)
-        self._params['K_NO'] = 0.5
+        self._kinetics_20C['K_NO'] = 0.5
 
         # Hydrolysis Rate (k_h, mgCOD/mgBiomassCOD-day)
-        self._params['k_h'] = 3.0 * pow(1.116, self._delta_t)
+        self._kinetics_20C['k_h'] = 3.0
 
         # Half Rate Conc. for Hetero. Growth on Part. COD
         # (K_X, mgCOD/mgBiomassCOD)
-        self._params['K_X'] = 0.03 * pow(1.116, self._delta_t)
+        self._kinetics_20C['K_X'] = 0.03
 
         # Ammonification of Org-N in biomass (k_a, L/mgBiomassCOD-day)
-        self._params['k_a'] = 0.08 * pow(1.072, self._delta_t)
+        self._kinetics_20C['k_a'] = 0.08
 
         # Yield of Hetero. Growth on COD (Y_H, mgBiomassCOD/mgCODremoved)
-        self._params['Y_H'] = 0.67
+        self._kinetics_20C['Y_H'] = 0.67
 
         # Yield of Auto. Growth on TKN (Y_A, mgBiomassCOD/mgTKNoxidized)
-        self._params['Y_A'] = 0.24
+        self._kinetics_20C['Y_A'] = 0.24
 
         # Fract. of Debris in Lysed Biomass(f_D, gDebrisCOD/gBiomassCOD)
-        self._params['f_D'] = 0.08
+        self._kinetics_20C['f_D'] = 0.08
 
         # Correction Factor for Hydrolysis (cf_h, unitless)
-        self._params['cf_h'] = 0.4
+        self._kinetics_20C['cf_h'] = 0.4
 
         # Correction Factor for Anoxic Heterotrophic Growth (cf_g, unitless)
-        self._params['cf_g'] = 0.8
+        self._kinetics_20C['cf_g'] = 0.8
 
         # Ratio of N in Active Biomass (i_N_XB, mgN/mgActiveBiomassCOD)
-        self._params['i_N_XB'] = 0.086
+        self._kinetics_20C['i_N_XB'] = 0.086
 
         # Ratio of N in Debris Biomass (i_N_XD, mgN/mgDebrisBiomassCOD)
-        self._params['i_N_XD'] = 0.06
+        self._kinetics_20C['i_N_XD'] = 0.06
 
         return None
+
+
+    def _set_params(self):
+        """
+        Set the kinetic parameters/constants @ project temperature.
+
+        This function updates the self._params based on the model temperature
+        and DO.
+
+        See:
+            update();
+            _set_ideal_kinetics_20C();
+            _set_stoichs().
+        """
+
+        # Ideal Growth Rate of Heterotrophs (u_max_H, 1/DAY)
+        self._params['u_max_H'] = self._kinetics_20C['u_max_H']\
+                                * pow(1.072, self._delta_t)
+
+        # Decay Rate of Heterotrophs (b_H, 1/DAY)
+        self._params['b_LH'] = self._kinetics_20C['b_LH']\
+                                * pow(1.12, self._delta_t)
+
+        # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
+        self._params['u_max_A'] = self._kinetics_20C['u_max_A']\
+                                * pow(1.103, self._delta_t)
+
+        # Decay Rate of Autotrophs (b_A, 1/DAY)
+        self._params['b_LA'] = self._kinetics_20C['b_LA']\
+                                * pow(1.114, self._delta_t)
+
+        # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
+        self._params['K_S'] = self._kinetics_20C['K_S']
+
+        # Switch Coefficient for Dissoved O2 of Hetero. (K_OH, mgO2/L)
+        self._params['K_OH'] = self._kinetics_20C['K_OH']
+
+        # Association Conc. for Dissoved O2 of Auto. (K_OA, mgN/L)
+        self._params['K_OA'] = self._kinetics_20C['K_OA']
+
+        # Association Conc. for NH3-N of Auto. (K_NH, mgN/L)
+        self._params['K_NH'] = self._kinetics_20C['K_NH']
+
+        # Association Conc. for NOx of Hetero. (K_NO, mgN/L)
+        self._params['K_NO'] = self._kinetics_20C['K_NO']
+
+        # Hydrolysis Rate (k_h, mgCOD/mgBiomassCOD-day)
+        self._params['k_h'] = self._kinetics_20C['k_h']\
+                                * pow(1.116, self._delta_t)
+
+        # Half Rate Conc. for Hetero. Growth on Part. COD
+        # (K_X, mgCOD/mgBiomassCOD)
+        self._params['K_X'] = self._kinetics_20C['K_X']\
+                                * pow(1.116, self._delta_t)
+
+        # Ammonification of Org-N in biomass (k_a, L/mgBiomassCOD-day)
+        self._params['k_a'] = self._kinetics_20C['k_a']\
+                                * pow(1.072, self._delta_t)
+
+        # Yield of Hetero. Growth on COD (Y_H, mgBiomassCOD/mgCODremoved)
+        self._params['Y_H'] = self._kinetics_20C['Y_H']
+
+        # Yield of Auto. Growth on TKN (Y_A, mgBiomassCOD/mgTKNoxidized)
+        self._params['Y_A'] = self._kinetics_20C['Y_A']
+
+        # Fract. of Debris in Lysed Biomass(f_D, gDebrisCOD/gBiomassCOD)
+        self._params['f_D'] = self._kinetics_20C['f_D']
+
+        # Correction Factor for Hydrolysis (cf_h, unitless)
+        self._params['cf_h'] = self._kinetics_20C['cf_h']
+
+        # Correction Factor for Anoxic Heterotrophic Growth (cf_g, unitless)
+        self._params['cf_g'] = self._kinetics_20C['cf_g']
+
+        # Ratio of N in Active Biomass (i_N_XB, mgN/mgActiveBiomassCOD)
+        self._params['i_N_XB'] = self._kinetics_20C['i_N_XB']
+
+        # Ratio of N in Debris Biomass (i_N_XD, mgN/mgDebrisBiomassCOD)
+        self._params['i_N_XD'] = self._kinetics_20C['i_N_XD']
+
+        return None
+
 
     # STOCHIOMETRIC MATRIX 
     def _set_stoichs(self):
         """
-        Set the stoichiometrics @ 20C for the ASM 1 model.
+        Set the stoichiometrics for the model.
 
         Note:
             Make sure to match the .csv model template file in the
@@ -181,6 +274,7 @@ class ASM_1(asm_model):
 
         See:
             _set_params();
+            _set_ideal_kinetics_20C();
             update().
         """
 
@@ -192,7 +286,6 @@ class ASM_1(asm_model):
         self._stoichs['2_0'] = (self._params['Y_A'] - 4.57) \
                                 / self._params['Y_A']
  
-
         # S_S for aerobic hetero. growth, as COD
         self._stoichs['0_2'] = -1.0 / self._params['Y_H'] 
 
@@ -201,7 +294,6 @@ class ASM_1(asm_model):
 
         # S_S for hydrolysis of part. substrate
         self._stoichs['6_2'] = 1.0
-
 
         # S_NH required for aerobic hetero. growth, as N
         self._stoichs['0_3'] = -self._params['i_N_XB']
@@ -216,14 +308,12 @@ class ASM_1(asm_model):
         # S_NH from ammonification, as N
         self._stoichs['5_3'] = 1.0
 
-        
         # S_NS used by ammonification, as N
         self._stoichs['5_4'] = -1.0
 
         # S_NS from hydrolysis of part.TKN, as N
         self._stoichs['7_4'] = 1.0
         
-
         # S_NO for anoxic hetero. growth, as N
         self._stoichs['1_5'] = (self._params['Y_H'] - 1.0) \
                                 / (2.86 * self._params['Y_H'])
@@ -246,7 +336,6 @@ class ASM_1(asm_model):
         # S_ALK generated by ammonification, as mM CaCO3
         self._stoichs['5_6'] = 1.0 / 14.0
 
-
         # X_S from hetero. decay, as COD
         self._stoichs['3_8'] = 1.0 - self._params['f_D']
 
@@ -256,7 +345,6 @@ class ASM_1(asm_model):
         # X_S consumed by hydrolysis of biomass
         self._stoichs['6_8'] = -1.0
 
-
         # X_BH from aerobic hetero. growth, as COD
         self._stoichs['0_9'] = 1.0
 
@@ -265,7 +353,6 @@ class ASM_1(asm_model):
 
         # X_BH lost in hetero. decay, as COD
         self._stoichs['3_9'] = -1.0
-
 
         # X_BA from aerobic auto. growth, as COD
         self._stoichs['2_10'] = 1.0
@@ -279,7 +366,6 @@ class ASM_1(asm_model):
 
         # X_D from auto. decay, as COD
         self._stoichs['4_11'] = self._params['f_D']
-
 
         # X_NS from hetero. decay, as N
         self._stoichs['3_12'] = self._params['i_N_XB'] - self._params['f_D'] \
@@ -612,7 +698,7 @@ class ASM_1(asm_model):
                 + self._stoichs['7_12'] * self._r7_HydXN(comps)
 
 
-    def _dCdt(self, t, mo_comps, vol, flow, in_comps):
+    def _dCdt(self, t, mo_comps, vol, flow, in_comps, fix_DO, DO_sat_T):
         '''
         Defines dC/dt for the reactor based on mass balance.
 
@@ -626,6 +712,8 @@ class ASM_1(asm_model):
             vol:        reactor's active volume, m3;
             flow:       reactor's total inflow, m3/d
             in_comps:   list of model compoennts for inlet, mg/L;
+            fix_DO:     whether to use a fix DO setpoint, bool
+            DO_sat_T:   saturation DO of the project elev. and temp, mg/L
 
         Return:
             dC/dt of the system ([float])
@@ -637,11 +725,15 @@ class ASM_1(asm_model):
 
         _HRT = vol / flow
         
-        #result = [(in_comps[0] - mo_comps[0]) / _HRT 
-        #                + self._rate0_S_DO()]
-
-        # set DO rate to zero since DO is set to a fix conc.
-        result = [0.0]
+        # set DO rate to zero since DO is set to a fix conc., which is
+        # recommended for steady state simulation; alternatively, use the given
+        # KLa to dynamically estimate residual DO
+        if fix_DO:
+            result = [0.0]
+        else:  #TODO: make 
+            result = [(in_comps[0] - mo_comps[0]
+                        + self._KLa * (DO_sat_T - self._comps[0])) / _HRT
+                        + self._rate0_S_DO(mo_comps)]
 
         result.append((in_comps[1] - mo_comps[1]) / _HRT 
                         + self._rate1_S_I(mo_comps))
@@ -708,9 +800,6 @@ class ASM_1(asm_model):
 
         _HRT = vol / flow
         
-        #result = [(in_comps[0] - mo_comps[0]) / _HRT 
-        #                + self._rate0_S_DO()]
-
         # set DO rate to zero since DO is set to a fix conc.
         result = [0.0]
 

@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20201223 KZ: re-run after get_steady_state() interface update
 # 20201129 KZ: re-run after package structure update
 # 20200625 KZ: retested after updating the steadt state criteria
 # 20191015 KZ: checked against ASIM results and passed.
@@ -100,7 +101,7 @@ if __name__ == '__main__':
 
     for _u in _inf:
         _u.update_combined_input()
-        _u.discharge()
+        _u.discharge('BDF', True, 10)
 
     # TODO: what if there are multiple influent units?
     _seed = run.initial_guess(_params, 
@@ -114,7 +115,7 @@ if __name__ == '__main__':
         _r.assign_initial_guess(_seed)
     
     run.forward_set_flow(wwtp)
-    run.traverse_plant(wwtp, _inf[0])
+    run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
     i = 1
     while True:
@@ -123,7 +124,7 @@ if __name__ == '__main__':
 
         run.backward_set_flow(_eff)
 
-        run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
         if run.check_global_cnvg(wwtp):
             break

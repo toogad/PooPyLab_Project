@@ -27,7 +27,7 @@
 
 """Definition of the common interface for IWA Activated Sludge Models
 """
-## @namespace asm_base
+## @namespace asmbase
 ## @file asmbase.py
 
 
@@ -50,48 +50,62 @@ class asm_model(object):
             None
 
         See:
+            _set_ideal_kinetics_20C_to_defaults();
             _set_params();
-            _set_stoichs();
+            _set_stoichs().
         """
 
-        ## wastewater temperature used in the model, degC
+        # wastewater temperature used in the model, degC
         self._temperature = ww_temp
-        ## mixed liquor bulk dissolved oxygen, mg/L
+        # mixed liquor bulk dissolved oxygen, mg/L
         self._bulk_DO = DO 
         
         # define the model parameters and stochoimetrics as dict() so that it
         # is easier to keep track of names and values
 
-        ## kinetic constants
+        # default kinetic constants AT 20 degree Celcius under ideal conditions
+        self._kinetics_20C = {}
+
+        # kinetic parameters AT PROJECT TEMPERATURE
         self._params = {}
 
-        ## stoichiometrics
+        # stoichiometrics
         self._stoichs = {}
 
-        ## temperature difference b/t what's used and baseline (20C), degC
-        self._delta_t = self._temperature - 20
-        
-        self.update(ww_temp, DO)
-        
-        # The Components the ASM components IN THE REACTOR
-        # For ASM #1:
-        #
-        #    self._comps[0]: S_DO as COD
-        #    self._comps[1]: S_I
-        #    self._comps[2]: S_S
-        #    self._comps[3]: S_NH
-        #    self._comps[4]: S_NS
-        #    self._comps[5]: S_NO
-        #    self._comps[6]: S_ALK
-        #    self._comps[7]: X_I
-        #    self._comps[8]: X_S
-        #    self._comps[9]: X_BH
-        #    self._comps[10]: X_BA
-        #    self._comps[11]: X_D
-        #    self._comps[12]: X_NS
-        #
-        ## ASM model components
+        # ASM model components
         self._comps = []
+
+        # temperature difference b/t what's used and baseline (20C), degC
+        self._delta_t = self._temperature - 20
+
+        # oxygen transfer coefficient, mg/m3-day
+        # placeholder for now, let
+        #   OUR = 80 mg/L-hr;
+        #   Saturation DO = 10 mg/L; and
+        #   DO in mixed liquor = 2 mg/L
+        self._KLa = 80 * 1000 * 24 / (10 - 2)
+
+        return None
+
+
+    def alter_kinetic_20C(self, name, new_val):
+        """
+        Alter a model kinetic constant at 20C (baseline temperature).
+
+        Args:
+            name:       name of the parameter to be altered (i.e. 'u_max_H');
+            new_val:    new parameter numeric value at 20C
+
+        Return:
+            None
+
+        See:
+            update()
+        """
+        if new_val > 0 and name in self._kinetics_20C.keys():
+            self._kinetics_20C[name] = new_val
+        else:
+            print('ERROR IN ALTERING 20C KINETICS. NO PARAMETER WAS CHANGED')
 
         return None
 
@@ -116,6 +130,24 @@ class asm_model(object):
         self._delta_t = self._temperature - 20.0
         self._set_params()
         self._set_stoichs()
+        return None
+
+
+    def set_KLa(self, kla):
+        """
+        Set KLa value.
+
+        Args:
+            kla:    new KLa value, mg/m3-day
+
+        Return:
+            None
+        """
+        if kla > 0:
+            self._KLa = kla
+        else:
+            print("ERROR IN USER GIVEN KLa VALUE. KLa NOT CHANGED")
+
         return None
 
 
@@ -147,25 +179,34 @@ class asm_model(object):
         return self._bulk_DO
 
 
-    def _set_params(self):
+    def _set_ideal_kinetics_20C_to_defaults(self):
         """
-        Set the kinetic parameters/constants @ 20C for the ASM model.
-
-        This function updates the self._params based on the model temperature
-        and DO.
-
-        Not implemented with details here but in actual models.
+        Set the kinetic params/consts @ 20C to default ideal values.
 
         See:
             update();
+            _set_params();
             _set_stoichs().
         """
         pass
+
+
+    def _set_params(self):
+        """
+        Set the kinetic parameters/constants to the project temperature & DO.
+
+        See:
+            _set_ideal_kinetics_20C_to_defaults();
+            _set_params();
+            _set_stoichs();
+            update().
+        """
+        pass
         
-    # STOCHIOMETRIC MATRIX 
+
     def _set_stoichs(self):
         """
-        Set the stoichiometrics @ 20C for the ASM 1 model.
+        Set the stoichiometrics for the model.
 
         Not implemented with details here but in actual models.
 
@@ -177,13 +218,12 @@ class asm_model(object):
 
         See:
             _set_params();
+            _set_ideal_kinetics_20C_to_defaults();
             update().
         """
         pass
 
         
-    # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
-    #
     def _monod(self, term_in_num_denum, term_only_in_denum):
         """
         Template for Monod kinetics or switches.

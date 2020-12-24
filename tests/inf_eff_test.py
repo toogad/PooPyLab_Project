@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20201223 KZ: re-run after get_steady_state() interface update
 # 20201129 KZ: re-run after package structure update
 # 20191011 KZ: retested after flow_data_src implementation and passed
 # 20190815 KZ: init and passed
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     # there is no need to seed the system in this example
 
     run.forward_set_flow(wwtp)
-    run.traverse_plant(wwtp, _inf[0])
+    run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
     
     #pdb.set_trace()
 
@@ -92,7 +93,7 @@ if __name__ == '__main__':
 
         run.backward_set_flow(_eff)
 
-        run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 

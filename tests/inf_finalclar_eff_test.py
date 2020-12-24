@@ -25,6 +25,7 @@
 #
 #
 # Change Log:
+# 20201223 KZ: re-run after get_steady_state() interface update
 # 20201129 KZ: re-run after package structure update
 # 20191011 KZ: re-run test after flow data source setting funcs
 # 20191004 KZ: re-run test after revision on final_clarifier 
@@ -96,7 +97,7 @@ if __name__ == '__main__':
 
         run.backward_set_flow([_WAS[0], _eff[0]])
 
-        run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
         if run.check_global_cnvg(wwtp):
             break

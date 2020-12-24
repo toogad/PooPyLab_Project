@@ -40,6 +40,8 @@
 ## @namespace streams
 ## @file streams.py
 
+import math
+
 from ..unit_procs.base import poopy_lab_obj
 from ..utils.datatypes import flow_data_src
 from ..ASMModel import constants
@@ -121,11 +123,20 @@ class splitter(poopy_lab_obj):
         self._so_flow = 0.0
         ## total inlet flow, m3/d
         self._total_inflow = 0.0
-        
+
+        # site elevation, meter above MSL
+        self._elev = 100.0
+        # water salinity, GRAM/L
+        self._salinity = 1.0
+        # water temperature, degC
+        self._ww_temp = 20.0
+        # saturated DO conc. under the side condition
+        self._DO_sat_T = self.get_saturated_DO()
+
         ## flag on whether this splitter is SRT controller
         self._SRT_controller = False
         
-        # influent/main_outlet/side_oulet model components:
+        # inlet/main_outlet/side_oulet model components:
         #    _comps[0]: S_DO as DO
         #    _comps[1]: S_I
         #    _comps[2]: S_S
@@ -316,29 +327,10 @@ class splitter(poopy_lab_obj):
             _check_conc_cnvg()
         """
 
-        #print(self.__name__)
-        #print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
-        #    self._prev_so_comps))
-
-#        _mo_cnvg = self._check_conc_cnvg(self._mo_comps,
-#                                        self._prev_mo_comps,
-#                                        limit)
-#                  
-#        _so_cnvg = self._check_conc_cnvg(self._so_comps,
-#                                        self._prev_so_comps,
-#                                        limit)
-#
-#        _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
         _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow)
                         <  limit)
 
-        #self._converged = _conc_cnvg and _flow_cnvg
         self._converged = _flow_cnvg
-
-        #print('{} cnvg: flow {}, main {}, side{}'.format(
-        #        self.__name__, _flow_cnvg, _mo_cnvg, _so_cnvg))
-
-        #print('{} cnvg: flow {}'.format(self.__name__, _flow_cnvg))
 
         return self._converged
 
@@ -896,13 +888,26 @@ class splitter(poopy_lab_obj):
         return None
  
  
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
         Record the main- and sidestream outlet concentrations from the previous
         iteration. Update the concentrations for the two outlet branches. Pass
         the flows and concentrations onto the downstream units.
+
+        Args:
+            method_name:    integration method as per scipy.integrate.solveivp;
+            fix_DO:         whether to simulate w/ a fix DO setpoint;
+            DO_sat_T:       saturated DO conc. under the site conditions (mg/L)
+
+        Return:
+            None
+
+        Note: For discharge() in the splitter/pipe/influent/effluent/WAS
+        classes, the arguments of method_name, fix_DO, and DO_sat_T are pretty
+        much dummies because it is assumed that there is no reaction of any
+        kind in these types of process units.
 
         See:
             _branch_flow_helper();
@@ -1013,6 +1018,81 @@ class splitter(poopy_lab_obj):
         return self.get_TN(br) - self.get_pN(br)
 
 
+    def update_proj_conditions(self, ww_temp=20, elev=100, salinity=1.0):
+        """
+        Update the site conditions for the process unit.
+
+        Args:
+            ww_temp:    water/wastewater temperature, degC
+            elev:       site elevation above mean sea level, meter
+            salinity:   salinity of w/ww, GRAM/L
+
+        Return:
+            None
+
+        See:
+            get_saturated_DO().
+        """
+        if ww_temp > 4 and ww_temp <= 40\
+                and elev >= 0 and elev <= 3000\
+                and salinity >= 0:
+            self._ww_temp = ww_temp
+            self._elev = elev
+            self._salinity = salinity
+            self._DO_sat_T = self.get_saturated_DO()
+        else:
+            print(self.__name__, ' ERROR IN NEW PROJECT CONDITIONS. NO UPDATES')
+
+        return None
+
+
+    def get_saturated_DO(self):
+        """
+        Calculate the saturated DO conc. based on current project conditions.
+
+        Current project conditions are defined in self._ww_temp, self._elev,
+        and self._salinity
+
+        Reference:
+            USCIS Office of Water Quality Technical Memorandum 2011.03
+            Change to Solubility Equations for Oxygen in Water
+
+        Args:
+            None
+
+        Return:
+            O2 Solubility (saturation conc.), mg/L
+        """
+        
+        T = self._ww_temp + 273.15  # convert degC to degK
+
+        # first, estimate the DO_sat_0 at 0 salinity and 1 atm, which is done by
+        # using the Benson-Krause equations:
+        DO_sat_0 = math.exp(
+                    - 139.34411 + 1.575701E5 / T 
+                    - 6.642308E7 / T**2 + 1.2438E10 / T**3
+                    - 8.621949E11 / T**4)
+        
+        # second, estimate the salinity factor, Fs
+        Fs = math.exp(-self._salinity * (0.017674 - 10.754/T + 2140.7/T**2))
+
+        # third, estimate the pressure factor, Fp
+        Patm_in_bar = 1.01325 * (1 - 2.25577E-5 * self._elev)**5.25588
+
+        theta_0 = 0.000975 - 1.426E-5 * self._ww_temp\
+                    + 6.436E-8 * self._ww_temp**2
+
+        vapor_pres_water = math.exp(11.8571 - 3840.7 / T - 216961.0 / T**2)
+
+        Fp = (Patm_in_bar - vapor_pres_water) * (1.0 - theta_0 * Patm_in_bar)\
+                / (1.0 - vapor_pres_water) / (1.0 - theta_0)
+
+        # finally, calculate the DO_sat for the site conditions
+        DO_sat_T = DO_sat_0 * Fs * Fp
+
+        return DO_sat_T
+
+
     def _branch_flow_helper(self):
         """
         Calculate 1 of the 3 branches' flow based on the other 2.
@@ -1076,7 +1156,7 @@ class splitter(poopy_lab_obj):
 
         return _cnvg[:]
 
-#
+    #
     # END OF COMMON INTERFACE DEFINITIONS
  
     
@@ -1458,7 +1538,7 @@ class influent(pipe):
         pass
 
 
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
@@ -1466,6 +1546,12 @@ class influent(pipe):
         not care the changes from the previous round to the current since it is
         the source for the entire WWTP. Therefore, _prev_mo_comps,
         _prev_so_comps, _mo_comps, and _so_comps all equal to _in_comps.
+
+        Args:
+            (see the note in the discharge() in the splitter class)
+
+        Return:
+            None
         """
 
         # influent concentrations don't change for steady state simulation
@@ -1652,12 +1738,19 @@ class effluent(pipe):
 #        return None
 
 
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
         This function is re-implemented for "effluent" because there is no
         further downstream units on either the main or side outlet.
+        
+        Args:
+            (see the note in the discharge() defined in the splitter class)
+
+        Return:
+            None
+
         """
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
@@ -1734,13 +1827,20 @@ class WAS(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
         WAS typically functions as an effluent obj. However, it can also be
         a pipe obj. that connects to solids management process units.
         Therefore, the discharge function allows a None at the main outlet.
+
+        Args: 
+            (see the note in discharge() defined in the splitter class)
+
+        Return:
+            None
+
         """
 
         self._prev_mo_comps = self._mo_comps[:]

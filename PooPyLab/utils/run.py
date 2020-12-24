@@ -347,13 +347,16 @@ def forward_set_flow(wwtp):
 
 
 
-def _BFS(_to_visit, _visited):
+def _BFS(_to_visit, _visited, mn, fDO, DOsat):
     """
     Breadth First Search type of traverse.
 
     Args:
         _to_visit:      list of process units to be visited;
         _visited:       list of process units visited.
+        mn:             method name used in scipy.integrate.solveivp()
+        fDO:            whether to simulate at a fix DO setpoint, bool
+        DOsat:          DO saturation conc. under the site conditions, mg/L
 
     Return:
         list of process units in their visited order.
@@ -367,7 +370,7 @@ def _BFS(_to_visit, _visited):
     if _next not in _visited:
         _visited.append(_next)
         _next.update_combined_input()
-        _next.discharge()
+        _next.discharge(mn, fDO, DOsat)
         if _next.has_sidestream():
             _next_s = _next.get_downstream_side()
             if _next_s not in _visited:
@@ -375,18 +378,21 @@ def _BFS(_to_visit, _visited):
         _next_m = _next.get_downstream_main()
         if _next_m not in _visited and _next_m != None:
             _to_visit.append(_next_m)
-        return _BFS(_to_visit, _visited)
+        return _BFS(_to_visit, _visited, mn, fDO, DOsat)
     else:
         return [_u.__name__ for _u in _visited]
 
 
-def traverse_plant(wwtp, plant_inf):
+def traverse_plant(wwtp, plant_inf, mn, fDO, DOsat):
     """
     Visit every process units on the PFD starting from the influent.
 
     Args:
         wwtp:       list of all process units on the WWTP's PFD;
-        plant_inf:  plant influent unit.
+        plant_inf:  plant influent unit;
+        mn:         method name for scipy.integrate.solveivp();
+        fDO:        whether to simulate w/ a fix DO setpoint, bool,
+        DOsat:      DO saturation conc. under the site coniditions, mg/L
 
     Return:
         None
@@ -400,7 +406,7 @@ def traverse_plant(wwtp, plant_inf):
     _finished = []
 
     while len(_visited) < len(wwtp):
-        _finished = _BFS(_to_visit, _visited)
+        _finished = _BFS(_to_visit, _visited, mn, fDO, DOsat)
     #print("visited:", _finished)
 
     return None
@@ -538,7 +544,8 @@ def backward_set_flow(start=[]):
     return None
 
 
-def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
+def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
+                        mn='BDF', fDO=True, DOsat=10):
     """
     Integrate the entire plant towards a steady state at the target SRT.
 
@@ -551,6 +558,9 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
         target_SRT: target solids retention time (d) for the steady state
         verbose:    flag for more detailed output
         diagnose:   flag for the use of cProfile for performance analysis
+        mn:         method used in scipy.integrate.solveivp(), string
+        fDO:        whether to simulate w/ a fix DO setpoint, bool
+        DOsat:      DO saturation conc. under the site conditions, mg/L
 
     Return:
         None
@@ -601,7 +611,7 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
     # get the influent ready
     for _u in _inf:
         _u.update_combined_input()
-        _u.discharge()
+        _u.discharge(mn, fDO, DOsat)
 
     # TODO: what if there are multiple influent units?
     if len(_reactors):
@@ -630,7 +640,7 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
         _WAS[0].set_mainstream_flow(_WAS_flow)
     _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
     backward_set_flow(_backward_start_points)
-    traverse_plant(wwtp, _inf[0])
+    traverse_plant(wwtp, _inf[0], mn, fDO, DOsat)
     
     if diagnose:
         profile = cProfile.Profile()
@@ -645,7 +655,7 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False):
             _WAS[0].set_mainstream_flow(_WAS_flow)
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
         backward_set_flow(_backward_start_points)
-        traverse_plant(wwtp, _inf[0])
+        traverse_plant(wwtp, _inf[0], mn, fDO, DOsat)
 
         if check_global_cnvg(wwtp):
             break
