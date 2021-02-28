@@ -576,7 +576,7 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
     _inf = pfd.get_all_units(wwtp, 'Influent')
     _reactors = pfd.get_all_units(wwtp, 'ASMReactor')
 
-    # TODO: _WAS may be an empty []
+    # _WAS may be an empty [], see below (after intial guess)
     _WAS = pfd.get_all_units(wwtp, 'WAS')
 
     _splitters = pfd.get_all_units(wwtp, 'Splitter')
@@ -633,20 +633,11 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
     # collect all the possible starting points for backward flow setting
     _backward_start_points = [_w for _w in _WAS] + [_e for _e in _eff]
     
-    if len(_WAS) == 0:
-        _WAS_flow = 0
-    else:
-        _WAS_flow = _WAS[0].set_WAS_flow(_SRT, _reactors, _eff)
-        _WAS[0].set_mainstream_flow(_WAS_flow)
-    _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
-    backward_set_flow(_backward_start_points)
-    traverse_plant(wwtp, _inf[0], mn, fDO, DOsat)
-    
     if diagnose:
         profile = cProfile.Profile()
         profile.enable()
 
-    r = 1
+    r = 0
     while True:
         if len(_WAS) == 0:
             _WAS_flow = 0
@@ -663,11 +654,9 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
 
     if diagnose:
         profile.disable()
+        profile.print_stats()
 
     show_concs(wwtp)
 
     if verbose:
         print("TOTAL ITERATION = ", r)
-
-    if diagnose:
-        profile.print_stats()

@@ -55,7 +55,7 @@ class ASM_1(asm_model):
 
         Args:
             ww_temp:    wastewater temperature, degC;
-            DO:         dissoved oxygen, mg/L
+            DO:         dissolved oxygen, mg/L
 
         Return:
             None
@@ -134,10 +134,10 @@ class ASM_1(asm_model):
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
         self._kinetics_20C['K_S'] = 20.0
 
-        # Switch Coefficient for Dissoved O2 of Hetero. (K_OH, mgO2/L)
+        # Switch Coefficient for Dissolved O2 of Hetero. (K_OH, mgO2/L)
         self._kinetics_20C['K_OH'] = 0.2
 
-        # Association Conc. for Dissoved O2 of Auto. (K_OA, mgN/L)
+        # Association Conc. for Dissolved O2 of Auto. (K_OA, mgN/L)
         self._kinetics_20C['K_OA'] = 0.4
 
         # Association Conc. for NH3-N of Auto. (K_NH, mgN/L)
@@ -212,10 +212,10 @@ class ASM_1(asm_model):
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
         self._params['K_S'] = self._kinetics_20C['K_S']
 
-        # Switch Coefficient for Dissoved O2 of Hetero. (K_OH, mgO2/L)
+        # Switch Coefficient for Dissolved O2 of Hetero. (K_OH, mgO2/L)
         self._params['K_OH'] = self._kinetics_20C['K_OH']
 
-        # Association Conc. for Dissoved O2 of Auto. (K_OA, mgN/L)
+        # Association Conc. for Dissolved O2 of Auto. (K_OA, mgN/L)
         self._params['K_OA'] = self._kinetics_20C['K_OA']
 
         # Association Conc. for NH3-N of Auto. (K_NH, mgN/L)
@@ -711,7 +711,7 @@ class ASM_1(asm_model):
             mo_comps:   list of model component for mainstream outlet, mg/L.
             vol:        reactor's active volume, m3;
             flow:       reactor's total inflow, m3/d
-            in_comps:   list of model compoennts for inlet, mg/L;
+            in_comps:   list of model components for inlet, mg/L;
             fix_DO:     whether to use a fix DO setpoint, bool
             DO_sat_T:   saturation DO of the project elev. and temp, mg/L
 
@@ -788,7 +788,7 @@ class ASM_1(asm_model):
             mo_comps:   list of model component for mainstream outlet, mg/L.
             vol:        reactor's active volume, m3;
             flow:       reactor's total inflow, m3/d
-            in_comps:   list of model compoennts for inlet, mg/L;
+            in_comps:   list of model components for inlet, mg/L;
 
         Return:
             dC/dt of the system ([float])
