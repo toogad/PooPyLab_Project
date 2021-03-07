@@ -199,6 +199,10 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
+        if fix_DO:
+            self._mo_comps[0] = self._sludge.get_bulk_DO()
+            self._so_comps[0] = self._mo_comps[0]
+
         # integration with home brew rkf45, currently NOT USED
         #self._runge_kutta_fehlberg_45()
         #return None

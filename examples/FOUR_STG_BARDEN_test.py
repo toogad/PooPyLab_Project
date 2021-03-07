@@ -23,13 +23,6 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/pipe/reactor classes.
 #
-#
-# Change Log:
-# 20201223 KZ: re-run after get_steady_state() interface update
-# 20201129 KZ: re-run after package structure update
-# 20200711 KZ: integrated the handling of a PFD w/o RAS/WAS
-# 20191029 KZ: init and passed
-#
 
 from PooPyLab.utils import pfd, run
 

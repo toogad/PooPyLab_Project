@@ -23,13 +23,6 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/pipe/reactor classes.
 #
-#
-# Change Log:
-# 20201129 KZ: re-run after package structure update
-# 20201127 KZ: tested w/ utils.run.get_steady_state()
-# 20200711 KZ: added handling of CSTR w/o RAS/WAS
-# 20200708 KZ: init
-#
 
 from PooPyLab.utils import pfd, run
 

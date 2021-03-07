@@ -23,27 +23,10 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/pipe/reactor classes.
 #
-#
-# Change Log:
-# 20201223 KZ: re-run after get_steady_state() interface update
-# 20201129 KZ: re-run after package structure update
-# 20200625 KZ: retested after updating the steadt state criteria
-# 20191015 KZ: checked against ASIM results and passed.
-# 20191014 KZ: re-test after flow data source tags implementation.
-# 20190917 KZ: Matched ASIM results!!! - PASSED TEST!!
-# 20190916 KZ: compared results against ASIM. ASIM has additional rate
-#           adjustments including K_ALK and ammonia limitations. 
-#           But the results are comparable!!
-# 20190915 KZ: start to get reasonable integration results.
-# 20190911 KZ: got the pfd to run with results. need to verify its validity
-# 20190911 KZ: continued after rearraning ASM1 and integration function
-# 20190815 KZ: init
-#
 
 from PooPyLab.unit_procs.streams import pipe, influent, effluent
 from PooPyLab.unit_procs.bio import asm_reactor
 from PooPyLab.utils import pfd, run
-import pdb
 
 if __name__ == '__main__':
 

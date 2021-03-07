@@ -395,7 +395,7 @@ class ASM_1(asm_model):
         """
         return  self._params['u_max_H'] \
                 * self._monod(comps[2], self._params['K_S']) \
-                * self._monod(self._bulk_DO, self._params['K_OH']) \
+                * self._monod(comps[0], self._params['K_OH']) \
                 * comps[9]
 
 
@@ -411,7 +411,7 @@ class ASM_1(asm_model):
         """
         return  self._params['u_max_H'] \
                 * self._monod(comps[2], self._params['K_S']) \
-                * self._monod(self._params['K_OH'], self._bulk_DO) \
+                * self._monod(self._params['K_OH'], comps[0]) \
                 * self._monod(comps[5], self._params['K_NO']) \
                 * self._params['cf_g'] \
                 * comps[9]
@@ -429,7 +429,7 @@ class ASM_1(asm_model):
         """
         return  self._params['u_max_A'] \
                 * self._monod(comps[3], self._params['K_NH']) \
-                * self._monod(self._bulk_DO, self._params['K_OA']) \
+                * self._monod(comps[0], self._params['K_OA']) \
                 * comps[10]
 
 
@@ -487,9 +487,9 @@ class ASM_1(asm_model):
         return  self._params['k_h'] \
                 * self._monod(comps[8] / comps[9], \
                                 self._params['K_X']) \
-                * (self._monod(self._bulk_DO, self._params['K_OH']) \
+                * (self._monod(comps[0], self._params['K_OH']) \
                     + self._params['cf_h'] \
-                    * self._monod(self._params['K_OH'], self._bulk_DO) \
+                    * self._monod(self._params['K_OH'], comps[0]) \
                     * self._monod(comps[5], self._params['K_NO'])) \
                 * comps[9]
 
@@ -730,7 +730,7 @@ class ASM_1(asm_model):
         # KLa to dynamically estimate residual DO
         if fix_DO:
             result = [0.0]
-        else:  #TODO: make 
+        else:  #TODO: what if the user provides a fix scfm of air?
             result = [(in_comps[0] - mo_comps[0]
                         + self._KLa * (DO_sat_T - self._comps[0])) / _HRT
                         + self._rate0_S_DO(mo_comps)]

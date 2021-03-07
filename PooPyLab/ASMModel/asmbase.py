@@ -31,7 +31,7 @@
 ## @file asmbase.py
 
 
-from ..ASMModel import constants
+#from ..ASMModel import constants
 
 class asm_model(object):
     """

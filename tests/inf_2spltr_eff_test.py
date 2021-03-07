@@ -23,19 +23,10 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/splitter/WAS/pipe classes.
 #
-#
-# Change Log:
-# 20201223 KZ: re-run after get_steady_state() interface update
-# 20201129 KZ: re-run after package structure update
-# 20191012 KZ: passed
-# 20191011 KZ: re-tested after add. of flow data source setting funcs.
-# 20190815 KZ: init and passed
-#
 
 from PooPyLab.unit_procs.streams import splitter, pipe, WAS
 from PooPyLab.unit_procs.streams import influent, effluent
 from PooPyLab.utils import pfd, run
-import pdb
 
 if __name__ == '__main__':
 
