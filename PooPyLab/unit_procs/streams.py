@@ -1388,6 +1388,22 @@ class influent(pipe):
         self._Alk = 6.0  # in mmol/L as CaCO3
         self._DO = 0.0 
 
+        # Fractionations of the influent. The fractions stored are for the raw
+        # influent wastewater without any active biomass.
+        # If influent with active biomass (X_BH, X_BA, etc.) is needed,
+        # a dedicated Bio-Augmentation unit should be used with only model
+        # components related to the biomass.
+        self._model_fracs = {   'ASM1': {   
+                                    'COD:BOD5': 2.04,
+                                    'SCOD:COD': 0.50,  # SCOD+PCOD = COD
+                                    'BSCOD:SCOD': 0.80,  # BSCOD + UBSCOD = SCOD
+                                    'BPCOD:PCOD': 0.70,  # BPCOD + UBPCOD = PCOD
+                                    'NH3N:TKN': 0.70
+                                }, 
+                                'ASM2d':{},  #TODO: define for ASM-2d
+                                'ASM3': {}   #TODO: define for ASM3
+                                }
+
         # Plant influent flow in M3/DAY
         # TODO: will be user-input from GUI. FROM THE GUI, USER
         #   will use MGD. DEFAULT VALUE = 10 MGD. 
@@ -1572,18 +1588,37 @@ class influent(pipe):
     #
     # (INSERT CODE HERE)
     #
-    def set_fractions(self):
+    def set_fractions(self, asm_ver, frac_name, frac_val):
         """
-        Sets fractions for converting WW constituents into model components.
+        Set fractions for converting WW constituents into model components.
 
-        PLACE HOLDER.
+        Args:
+            asm_ver:        ASM version: 'ASM1' | 'ASM2d' | 'ASM3'
+            frac_name:      name of the fractionation, ASM version dependent
+            frac_val:       new value of the fraction specified by 'frac_name'
+
+        Return:
+            None
         """
+
+        if asm_ver in self._model_fracs.keys()\
+                and frac_name in self._model_fracs[frac_name]\
+                and 0 <= frac_val <= 1.0:
+            self._model_fracs[asm_ver][frac_name] = frac_val
+        else:
+            print('ERROR in fraction value: FRACTIONS NOT UPDATED')
+            return None
+
+        
+
+         
 
         # TODO: set fractions for converting user measured influent
         # characteristics into ASM1 model components.
-        pass
 
-    def _convert_to_model_comps(self):
+        return None
+
+    def _convert_to_model_comps(self, asm_ver='ASM1'):
         """
         Fractions the wastewater constituents into model components.
 
@@ -1599,10 +1634,14 @@ class influent(pipe):
         very different conversions coefficients. Also, the fractions will need
         to be revised for models different from IWA ASM1.
 
+        Args:
+            asm_ver:    ASM Version: 'ASM1' | 'ASM2d' | 'ASM3'
+
         Return:
             list of model components for the influent characteristics user
             defined.
         """
+
 
         #TODO: the first set of conversion available here is for municipal 
         #   wastewater. Industrial wastewater may have completely different
