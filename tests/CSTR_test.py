@@ -36,5 +36,11 @@ if __name__ == '__main__':
 
     pfd.show(wwtp)
 
-    run.get_steady_state(wwtp, CSTR.SRT, False, False, 'BDF', True, 10)
+    #pdb.set_trace()
+    run.get_steady_state(wwtp, target_SRT=CSTR.SRT,
+                            verbose=False,
+                            diagnose=False,
+                            mn='BDF',
+                            fDO=True,
+                            DOsat=10)
 

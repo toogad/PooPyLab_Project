@@ -78,12 +78,12 @@ class asm_model(object):
         # temperature difference b/t what's used and baseline (20C), degC
         self._delta_t = self._temperature - 20
 
-        # oxygen transfer coefficient, mg/m3-day
+        # oxygen transfer coefficient, mg/L-day
         # placeholder for now, let
-        #   OUR = 80 mg/L-hr;
-        #   Saturation DO = 10 mg/L; and
+        #   OUR = 60 mg/L-hr;
+        #   Saturation DO = 9 mg/L; and
         #   DO in mixed liquor = 2 mg/L
-        self._KLa = 80 * 1000 * 24 / (10 - 2)
+        self._KLa = 60 * 24 / (9 - 2)
 
         return None
 

@@ -199,7 +199,10 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        if fix_DO:
+        # if the user fixes the DO of a aerobic reactor or explicitly set the
+        # DO to 0 (anoxic or anaerobic), then force the bulk DO into
+        # _mo_comps[0]
+        if fix_DO or self._sludge.get_bulk_DO() == 0:
             self._mo_comps[0] = self._sludge.get_bulk_DO()
             self._so_comps[0] = self._mo_comps[0]
 
@@ -211,7 +214,7 @@ class asm_reactor(pipe):
         self._solultion = solve_ivp(self._sludge._dCdt, [0, 1], self._mo_comps,
                     method=method_name,
                     args=(self._active_vol, self._total_inflow, self._in_comps,
-                            True, 10)
+                            fix_DO, 10)
                     )
         #print(self._solultion.y)
         self._sludge._comps = [yi[-1] for yi in self._solultion.y]

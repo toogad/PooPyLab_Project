@@ -728,11 +728,11 @@ class ASM_1(asm_model):
         # set DO rate to zero since DO is set to a fix conc., which is
         # recommended for steady state simulation; alternatively, use the given
         # KLa to dynamically estimate residual DO
-        if fix_DO:
+        if fix_DO or self._bulk_DO == 0:
             result = [0.0]
         else:  #TODO: what if the user provides a fix scfm of air?
-            result = [(in_comps[0] - mo_comps[0]
-                        + self._KLa * (DO_sat_T - self._comps[0])) / _HRT
+            result = [(in_comps[0] - mo_comps[0] ) / _HRT
+                        + self._KLa * (DO_sat_T - mo_comps[0])
                         + self._rate0_S_DO(mo_comps)]
 
         result.append((in_comps[1] - mo_comps[1]) / _HRT 
