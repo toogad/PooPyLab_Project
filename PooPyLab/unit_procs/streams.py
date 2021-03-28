@@ -1382,8 +1382,8 @@ class influent(pipe):
         self._TSS = 250.0
         self._VSS = 200.0
         self._TKN = 40.0
-        self._NH3 = 28.0
-        self._NO = 0.0
+        self._NH3N = 28.0
+        self._NOxN = 0.0
         self._TP = 10.0
         self._Alk = 6.0  # in mmol/L as CaCO3
         self._DO = 0.0 
@@ -1398,7 +1398,7 @@ class influent(pipe):
                                     'SCOD:COD': 0.50,  # SCOD+PCOD = COD
                                     'BSCOD:SCOD': 0.80,  # BSCOD + UBSCOD = SCOD
                                     'BPCOD:PCOD': 0.70,  # BPCOD + UBPCOD = PCOD
-                                    'NH3N:TKN': 0.70
+                                    'PORGN:VSS': 0.15
                                 }, 
                                 'ASM2d':{},  #TODO: define for ASM-2d
                                 'ASM3': {}   #TODO: define for ASM3
@@ -1590,7 +1590,7 @@ class influent(pipe):
     #
     def set_fractions(self, asm_ver, frac_name, frac_val):
         """
-        Set fractions for converting WW constituents into model components.
+        Set fractions to convert wastewater constituents into model components
 
         Args:
             asm_ver:        ASM version: 'ASM1' | 'ASM2d' | 'ASM3'
@@ -1601,21 +1601,51 @@ class influent(pipe):
             None
         """
 
+        _temp_comps = self._in_comps[:]
+
+
         if asm_ver in self._model_fracs.keys()\
-                and frac_name in self._model_fracs[frac_name]\
-                and 0 <= frac_val <= 1.0:
-            self._model_fracs[asm_ver][frac_name] = frac_val
-        else:
-            print('ERROR in fraction value: FRACTIONS NOT UPDATED')
-            return None
-
+                and frac_name in self._model_fracs[frac_name]:
+            if (frac_name == 'COD:BOD5' and frac_val > 1.0)\
+                    or  (frac_name != 'COD:BOD5' and 0 <= frac_val <= 1.0):
+                self._model_fracs[asm_ver][frac_name] = frac_val
+            else:
+                print('ERROR in COD fraction value: FRACTIONS NOT UPDATED')
+                return None
         
-
-         
-
-        # TODO: set fractions for converting user measured influent
-        # characteristics into ASM1 model components.
-
+        if asm_ver == 'ASM1':
+            # total COD
+            _TCOD = self._model_fracs['ASM1']['COD:BOD5'] * self._BOD5
+            # soluble COD
+            _SCOD = self._model_fracs['ASM1']['SCOD:COD'] * _TCOD
+            # particulate COD
+            _PCOD = _TCOD - _SCOD
+            # biodegradable soluble COD
+            _BSCOD = self._model_fracs['ASM1']['BSCOD:SCOD'] * _SCOD
+            # nonbiodegradable soluble COD
+            _NBSCOD = _SCOD - _BSCOD
+            # biodegradable particulate COD
+            _BPCOD = self._model_fracs['ASM1']['BPCOD:PCOD'] * _PCOD
+            # nonbiodegradable particulate COD
+            _NBPCOD = _PCOD - _BPCOD
+            # particulate organic N
+            _PORGN = self._model_fracs['ASM1']['PORGN:VSS'] * self._VSS
+            # soluble organic N
+            _SORGN = self._TKN - self._NH3N - _PORGN
+            # 
+            _temp_comps = [self._DO,
+                            _NBSCOD, _BSCOD, self._NH3N, _SORGN, self._NOxN,
+                            self._Alk,
+                            _NBPCOD, _BPCOD, 0, 0, 0, _PORGN]
+            # check if any negative values from the fractionation
+            for tc in _temp_comps:
+                if tc < 0:
+                    print('ERROR in fractions resulting in negative model
+                            components. Influent components NOT UPDATED')
+                    return None
+            self._in_comps = _temp_comps[:]
+            
+        # TODO: display a few checkpoints for user to consider the fractions
         return None
 
     def _convert_to_model_comps(self, asm_ver='ASM1'):
@@ -1671,7 +1701,7 @@ class influent(pipe):
         # influent TKN (mgN/L), NOT IN InfC
         Inf_TKN = self._TKN
         # influent Ammonia-N (mgN/L), 
-        Inf_S_NH = self._NH3
+        Inf_S_NH = self._NH3N
         # subdividing TKN into: 
         #  a) nonbiodegradable TKN 
         NonBiodegradable_TKN_Ratio = 0.03 # TODO: need to be configurable
@@ -1687,7 +1717,7 @@ class influent(pipe):
                     * (1.0 - Soluble_Biodegradable_OrgN_Ratio)
         
         # influent Nitrite + Nitrate (mgN/L)
-        Inf_S_NO = self._NO
+        Inf_S_NO = self._NOxN
         
         Inf_S_ALK = self._Alk
         
