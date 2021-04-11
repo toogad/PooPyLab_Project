@@ -1616,23 +1616,31 @@ class influent(pipe):
         if asm_ver == 'ASM1':
             # total COD
             _TCOD = self._model_fracs['ASM1']['COD:BOD5'] * self._BOD5
+
             # soluble COD
             _SCOD = self._model_fracs['ASM1']['SCOD:COD'] * _TCOD
+
             # particulate COD
             _PCOD = _TCOD - _SCOD
+
             # biodegradable soluble COD
             _BSCOD = self._model_fracs['ASM1']['BSCOD:SCOD'] * _SCOD
+
             # nonbiodegradable soluble COD
             _NBSCOD = _SCOD - _BSCOD
+
             # biodegradable particulate COD
             _BPCOD = self._model_fracs['ASM1']['BPCOD:PCOD'] * _PCOD
+
             # nonbiodegradable particulate COD
             _NBPCOD = _PCOD - _BPCOD
+
             # particulate organic N
             _PORGN = self._model_fracs['ASM1']['PORGN:VSS'] * self._VSS
+
             # soluble organic N
             _SORGN = self._TKN - self._NH3N - _PORGN
-            # 
+
             _temp_comps = [self._DO,
                             _NBSCOD, _BSCOD, self._NH3N, _SORGN, self._NOxN,
                             self._Alk,
@@ -1643,7 +1651,25 @@ class influent(pipe):
                     print('ERROR in fractions resulting in negative model
                             components. Influent components NOT UPDATED')
                     return None
+
             self._in_comps = _temp_comps[:]
+
+            print("New influent fractions set. Please review the following...")
+
+            print("Total COD = {}; Soluble COD = {}; Particulate COD = {}
+                    \n".format(_TCOD, _SCOD, _PCOD))
+            print("Biodegradable Sol. COD = {}; Non-Biodegradable Sol. COD =
+                    {}".format(_BSCOD, _NBSCOD))
+            print("Biodegradable Part. COD = {}; Non-Biodegradable Part. COD =
+                    {}".format(_BPCOD, _NBPCOD))
+            print("Total TKN = {}; NH3-N = {}".format(self_TKN, self._NH3N))
+            print("Soluble Org. N = {}; Part. Org. N = {}".format(_SORGN,
+                _PORGN))
+
+
+
+            
+
             
         # TODO: display a few checkpoints for user to consider the fractions
         return None
