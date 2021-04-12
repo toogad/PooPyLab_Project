@@ -1398,7 +1398,7 @@ class influent(pipe):
                                     'SCOD:COD': 0.50,  # SCOD+PCOD = COD
                                     'BSCOD:SCOD': 0.80,  # BSCOD + UBSCOD = SCOD
                                     'BPCOD:PCOD': 0.70,  # BPCOD + UBPCOD = PCOD
-                                    'PORGN:VSS': 0.15
+                                    'PORGN:VSS': 0.05
                                 }, 
                                 'ASM2d':{},  #TODO: define for ASM-2d
                                 'ASM3': {}   #TODO: define for ASM3
@@ -1605,7 +1605,7 @@ class influent(pipe):
 
 
         if asm_ver in self._model_fracs.keys()\
-                and frac_name in self._model_fracs[frac_name]:
+                and frac_name in self._model_fracs[asm_ver]:
             if (frac_name == 'COD:BOD5' and frac_val > 1.0)\
                     or  (frac_name != 'COD:BOD5' and 0 <= frac_val <= 1.0):
                 self._model_fracs[asm_ver][frac_name] = frac_val
@@ -1646,32 +1646,24 @@ class influent(pipe):
                             self._Alk,
                             _NBPCOD, _BPCOD, 0, 0, 0, _PORGN]
             # check if any negative values from the fractionation
+            print(_temp_comps)
             for tc in _temp_comps:
                 if tc < 0:
-                    print('ERROR in fractions resulting in negative model
-                            components. Influent components NOT UPDATED')
+                    print('ERROR in fractions resulting in negative model', 
+                            ' components. Influent components NOT UPDATED')
                     return None
 
             self._in_comps = _temp_comps[:]
 
             print("New influent fractions set. Please review the following...")
 
-            print("Total COD = {}; Soluble COD = {}; Particulate COD = {}
-                    \n".format(_TCOD, _SCOD, _PCOD))
-            print("Biodegradable Sol. COD = {}; Non-Biodegradable Sol. COD =
-                    {}".format(_BSCOD, _NBSCOD))
-            print("Biodegradable Part. COD = {}; Non-Biodegradable Part. COD =
-                    {}".format(_BPCOD, _NBPCOD))
-            print("Total TKN = {}; NH3-N = {}".format(self_TKN, self._NH3N))
-            print("Soluble Org. N = {}; Part. Org. N = {}".format(_SORGN,
-                _PORGN))
+            print("Total COD = {}; Soluble COD = {}; Particulate COD = {}".format(_TCOD, _SCOD, _PCOD))
+            print("Biodegradable Sol. COD = {}; Non-Biodegradable Sol. COD = {}".format(_BSCOD, _NBSCOD))
+            print("Biodegradable Part. COD = {}; Non-Biodegradable Part. COD = {}".format(_BPCOD, _NBPCOD))
+            print("Total TKN = {}; NH3-N = {}; OrgN = {}".format(self._TKN, self._NH3N, self._TKN - self._NH3N))
+            print("Soluble Org. N = {}; Part. Org. N = {}".format(_SORGN, _PORGN))
 
-
-
-            
-
-            
-        # TODO: display a few checkpoints for user to consider the fractions
+            #TODO: Add accounting for nonbiod sol. orgN and nonbiod part orgN
         return None
 
     def _convert_to_model_comps(self, asm_ver='ASM1'):
