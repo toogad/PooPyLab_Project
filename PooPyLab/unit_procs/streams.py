@@ -1601,8 +1601,6 @@ class influent(pipe):
             None
         """
 
-        _temp_comps = self._in_comps[:]
-
 
         if asm_ver in self._model_fracs.keys()\
                 and frac_name in self._model_fracs[asm_ver]:
@@ -1613,6 +1611,35 @@ class influent(pipe):
                 print('ERROR in COD fraction value: FRACTIONS NOT UPDATED')
                 return None
         
+        return None
+
+    def _convert_to_model_comps(self, asm_ver='ASM1'):
+        """
+        Fractions the wastewater constituents into model components.
+
+        Wastewater constituents often are measured in units such as Biochemical
+        Oxygen Demand (BOD), Total Suspended Solids (TSS), Volatile SS (VSS),
+        etc. Many mathematical models including IWA ASMs, however, measured
+        organic carbons in Chemical Oxygen Demand (COD). This applies to
+        soluble and particulate constituents. As a result, conversions between
+        the two are needed.
+
+        Currently this fuction is mainly set up to convert municipal
+        wastewater's constituents into IWA ASM1. Industrial wastewater can have
+        very different conversions coefficients. Also, the fractions will need
+        to be revised for models different from IWA ASM1.
+
+        Args:
+            asm_ver:    ASM Version: 'ASM1' | 'ASM2d' | 'ASM3'
+
+        Return:
+            list of model components for the influent characteristics user
+            defined.
+        """
+
+
+        _temp_comps = self._in_comps[:]
+
         if asm_ver == 'ASM1':
             # total COD
             _TCOD = self._model_fracs['ASM1']['COD:BOD5'] * self._BOD5
@@ -1651,9 +1678,7 @@ class influent(pipe):
                 if tc < 0:
                     print('ERROR in fractions resulting in negative model', 
                             ' components. Influent components NOT UPDATED')
-                    return None
-
-            self._in_comps = _temp_comps[:]
+                    return self._in_compos[:]  # nothing changed
 
             print("New influent fractions set. Please review the following...")
 
@@ -1664,89 +1689,61 @@ class influent(pipe):
             print("Soluble Org. N = {}; Part. Org. N = {}".format(_SORGN, _PORGN))
 
             #TODO: Add accounting for nonbiod sol. orgN and nonbiod part orgN
-        return None
-
-    def _convert_to_model_comps(self, asm_ver='ASM1'):
-        """
-        Fractions the wastewater constituents into model components.
-
-        Wastewater constituents often are measured in units such as Biochemical
-        Oxygen Demand (BOD), Total Suspended Solids (TSS), Volatile SS (VSS),
-        etc. Many mathematical models including IWA ASMs, however, measured
-        organic carbons in Chemical Oxygen Demand (COD). This applies to
-        soluble and particulate constituents. As a result, conversions between
-        the two are needed.
-
-        Currently this fuction is mainly set up to convert municipal
-        wastewater's constituents into IWA ASM1. Industrial wastewater can have
-        very different conversions coefficients. Also, the fractions will need
-        to be revised for models different from IWA ASM1.
-
-        Args:
-            asm_ver:    ASM Version: 'ASM1' | 'ASM2d' | 'ASM3'
-
-        Return:
-            list of model components for the influent characteristics user
-            defined.
-        """
+            return _temp_comps[:]
 
 
-        #TODO: the first set of conversion available here is for municipal 
-        #   wastewater. Industrial wastewater may have completely different
-        #   conversion factors and needs to be tested.
-        
-        # influent biodegradable COD, BOD/COD = 1.71 for typ. muni.WW
-        Inf_CODb = self._BOD5 * 1.71
-        # influent total COD, COD/BOD5 = 2.04 per BioWin
-        Inf_CODt = self._BOD5 * 2.04
-        # influent total innert COD, 
-        Inf_CODi = Inf_CODt - Inf_CODb
-        # influent soluble innert COD
-        Inf_S_I = 0.13 * Inf_CODt
-        # influent particulate innert COD
-        Inf_X_I = Inf_CODi - Inf_S_I
-        # influent particulate biodegradable COD
-        Inf_X_S = 1.6 * self._VSS - Inf_X_I
-        # influent soluble biodegradable COD
-        Inf_S_S = Inf_CODb - Inf_X_S
-        # influent Heterotrophs (mgCOD/L), 
-        Inf_X_BH = 0.0
-        # influent Autotrophs (mgCOD/L), 
-        Inf_X_BA = 0.0
-        # influent Biomass Debris (mgCOD/L)
-        Inf_X_D = 0.0
-        
-        # influent TKN (mgN/L), NOT IN InfC
-        Inf_TKN = self._TKN
-        # influent Ammonia-N (mgN/L), 
-        Inf_S_NH = self._NH3N
-        # subdividing TKN into: 
-        #  a) nonbiodegradable TKN 
-        NonBiodegradable_TKN_Ratio = 0.03 # TODO: need to be configurable
-        # NON-BIODEGRADABLE TKN WILL HAVE TO BE ADDED BACK TO THE EFFLUENT TN
-        Inf_nb_TKN = Inf_TKN * NonBiodegradable_TKN_Ratio
-        #  Grady 1999:
-        Soluble_Biodegradable_OrgN_Ratio = Inf_S_S / (Inf_S_S + Inf_X_S)
-        #  b) soluble biodegrable TKN,     
-        Inf_S_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
-                    * Soluble_Biodegradable_OrgN_Ratio
-        #  c) particulate biodegradable TKN
-        Inf_X_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
-                    * (1.0 - Soluble_Biodegradable_OrgN_Ratio)
-        
-        # influent Nitrite + Nitrate (mgN/L)
-        Inf_S_NO = self._NOxN
-        
-        Inf_S_ALK = self._Alk
-        
-        Inf_S_DO = self._DO
-        
-        _inf_concs = [Inf_S_DO, Inf_S_I, Inf_S_S, Inf_S_NH, Inf_S_NS, 
-                        Inf_S_NO, Inf_S_ALK, 
-                        Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
-                        Inf_X_NS]
-
-        return _inf_concs[:]
+##        # influent biodegradable COD, BOD/COD = 1.71 for typ. muni.WW
+##        Inf_CODb = self._BOD5 * 1.71
+##        # influent total COD, COD/BOD5 = 2.04 per BioWin
+##        Inf_CODt = self._BOD5 * 2.04
+##        # influent total innert COD, 
+##        Inf_CODi = Inf_CODt - Inf_CODb
+##        # influent soluble innert COD
+##        Inf_S_I = 0.13 * Inf_CODt
+##        # influent particulate innert COD
+##        Inf_X_I = Inf_CODi - Inf_S_I
+##        # influent particulate biodegradable COD
+##        Inf_X_S = 1.6 * self._VSS - Inf_X_I
+##        # influent soluble biodegradable COD
+##        Inf_S_S = Inf_CODb - Inf_X_S
+##        # influent Heterotrophs (mgCOD/L), 
+##        Inf_X_BH = 0.0
+##        # influent Autotrophs (mgCOD/L), 
+##        Inf_X_BA = 0.0
+##        # influent Biomass Debris (mgCOD/L)
+##        Inf_X_D = 0.0
+##        
+##        # influent TKN (mgN/L), NOT IN InfC
+##        Inf_TKN = self._TKN
+##        # influent Ammonia-N (mgN/L), 
+##        Inf_S_NH = self._NH3N
+##        # subdividing TKN into: 
+##        #  a) nonbiodegradable TKN 
+##        NonBiodegradable_TKN_Ratio = 0.03 # TODO: need to be configurable
+##        # NON-BIODEGRADABLE TKN WILL HAVE TO BE ADDED BACK TO THE EFFLUENT TN
+##        Inf_nb_TKN = Inf_TKN * NonBiodegradable_TKN_Ratio
+##        #  Grady 1999:
+##        Soluble_Biodegradable_OrgN_Ratio = Inf_S_S / (Inf_S_S + Inf_X_S)
+##        #  b) soluble biodegrable TKN,     
+##        Inf_S_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
+##                    * Soluble_Biodegradable_OrgN_Ratio
+##        #  c) particulate biodegradable TKN
+##        Inf_X_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
+##                    * (1.0 - Soluble_Biodegradable_OrgN_Ratio)
+##        
+##        # influent Nitrite + Nitrate (mgN/L)
+##        Inf_S_NO = self._NOxN
+##        
+##        Inf_S_ALK = self._Alk
+##        
+##        Inf_S_DO = self._DO
+##        
+##        _inf_concs = [Inf_S_DO, Inf_S_I, Inf_S_S, Inf_S_NH, Inf_S_NS, 
+##                        Inf_S_NO, Inf_S_ALK, 
+##                        Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
+##                        Inf_X_NS]
+##
+##        return _inf_concs[:]
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
 

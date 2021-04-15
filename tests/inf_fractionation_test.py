@@ -24,9 +24,7 @@
 #    Testing the influent fractionation.
 #
 
-from PooPyLab.unit_procs.streams import splitter, pipe, WAS
-from PooPyLab.unit_procs.streams import influent, effluent
-from PooPyLab.utils import pfd, run
+from PooPyLab.unit_procs.streams import influent
 
 if __name__ == "__main__":
 
@@ -38,5 +36,7 @@ if __name__ == "__main__":
     inf.set_fractions('ASM1', 'BPCOD:PCOD', 0.75)
     inf.set_fractions('ASM1', 'PORGN:VSS', 0.04)
 
-    inf.get_main_outlet_concs()
+    inf.blend_inlet_comps()
+    inf.discharge()
+    print(inf.get_main_outlet_concs())
 
