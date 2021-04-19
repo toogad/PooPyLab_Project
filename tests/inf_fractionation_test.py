@@ -25,10 +25,13 @@
 #
 
 from PooPyLab.unit_procs.streams import influent
+from PooPyLab.utils.run import input_inf_concs
 
 if __name__ == "__main__":
 
     inf = influent()
+
+    input_inf_concs('ASM1', inf)
 
     inf.set_fractions('ASM1', 'COD:BOD5', 3.0)
     inf.set_fractions('ASM1', 'SCOD:COD', 0.55)

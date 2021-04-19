@@ -37,7 +37,64 @@ from ..unit_procs.physchem import final_clarifier
 from ..utils.datatypes import flow_data_src
 from ..utils import pfd
 
-import pdb, cProfile
+import cProfile
+
+
+def input_inf_concs(asm_ver, inf_unit):
+    """
+    Input the influent concentrations.
+
+    The concentrations are measured as BOD5, TKN, NH3-N, NOx-N, TSS, VSS,
+    Alkalinity before they are fractionated into ASM model components such as
+    S_S, X_S, S_NH, etc.
+
+    Args:
+        asm_ver:    ASM version: ASM1 | ASM2d | ASM3
+        inf_unit:   influent unit whose constituents to be defined
+    
+    Return:
+        None
+
+    Note:
+        There are nine elements in inf_concs for ASM1:
+            inf_concs[0] : BOD5 
+            inf_concs[1] : TSS 
+            inf_concs[2] : VSS 
+            inf_concs[3] : TKN 
+            inf_concs[4] : NH3N 
+            inf_concs[5] : NOxN 
+            inf_concs[6] : TP 
+            inf_concs[7] : Alk, mmol/L as CaCO3
+            inf_concs[8] : DO 
+    """
+    print("Please define the influent constituents...")
+
+    inf_concs = []
+
+    neg = True
+    while neg:
+        inf_concs.append(eval(input('Carbonaceous BOD5 (mg/L) =')))
+        inf_concs.append(eval(input('Total Suspended Solids (mg/L) =')))
+        inf_concs.append(eval(input('Volatile Suspended Solids (mg/L) =')))
+        inf_concs.append(eval(input('Total Kjeldahl Nitrogen (mg/L) =')))
+        inf_concs.append(eval(input('Ammonium Nitrogen (mg/L) =')))
+        inf_concs.append(eval(input('Nitrite and Nitrate Nitrogen (mg/L) =')))
+        inf_concs.append(eval(input('Total Phosphorus (mg/L) =')))
+        inf_concs.append(eval(input('Alkalinity (mmol/L as CaCO3) =')))
+        inf_concs.append(eval(input('Dissolved Oxygen (mg/L) =')))
+
+        for conc in inf_concs:
+            if conc < 0:
+                print("Negative value detected. Please re-enter.")
+                neg = True
+                break
+            else:
+                neg = False
+
+    inf_unit.set_constituents(asm_ver, inf_concs)
+
+    return None
+
 
 def check_global_cnvg(wwtp):
     """
@@ -438,7 +495,7 @@ def _backward(me):
     """
     Set the flow data source by visiting process units against the flow paths.
 
-    This function is to be called by backward_set_flow(). It decide whether
+    This function is to be called by backward_set_flow(). It decides whether
     additional flow data sources can be decided based on (_mo_flow + _so_flow).
     If so, proceed and set the inflow and trace further upstream of "me".
 

@@ -1588,6 +1588,47 @@ class influent(pipe):
     #
     # (INSERT CODE HERE)
     #
+    def set_constituents(self, asm_ver='ASM1', inf_concs=[]):
+        """
+        Set the conventional influent constituents.
+
+        Usually called at top level when the entire inf_concs is defined and
+        validated.
+
+        Args:
+            asm_ver:        version of ASM: ASM1 | ASM2d | ASM3
+            inf_concs:      list of influent constituents (see Note)
+
+        Return:
+            None
+
+        Note:
+            There are nine elements in inf_concs for ASM1:
+                inf_concs[0] : self._BOD5 
+                inf_concs[1] : self._TSS 
+                inf_concs[2] : self._VSS 
+                inf_concs[3] : self._TKN 
+                inf_concs[4] : self._NH3N 
+                inf_concs[5] : self._NOxN 
+                inf_concs[6] : self._TP 
+                inf_concs[7] : self._Alk 
+                inf_concs[8] : self._DO 
+        """
+
+        if inf_concs:
+            self._BOD5 = inf_concs[0]
+            self._TSS = inf_concs[1]
+            self._VSS = inf_concs[2]
+            self._TKN = inf_concs[3]
+            self._NH3N = inf_concs[4]
+            self._NOxN = inf_concs[5]
+            self._TP = inf_concs[6]
+            self._Alk = inf_concs[7]
+            self._DO = inf_concs[8]
+            
+        return None
+
+
     def set_fractions(self, asm_ver, frac_name, frac_val):
         """
         Set fractions to convert wastewater constituents into model components
