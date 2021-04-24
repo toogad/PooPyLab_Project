@@ -1615,7 +1615,7 @@ class influent(pipe):
                 inf_concs[8] : self._DO 
         """
 
-        if inf_concs:
+        if asm_ver == 'ASM1' and inf_concs:
             self._BOD5 = inf_concs[0]
             self._TSS = inf_concs[1]
             self._VSS = inf_concs[2]
@@ -1654,7 +1654,7 @@ class influent(pipe):
         
         return None
 
-    def _convert_to_model_comps(self, asm_ver='ASM1'):
+    def _convert_to_model_comps(self, asm_ver='ASM1', verbose=False):
         """
         Fractions the wastewater constituents into model components.
 
@@ -1672,6 +1672,7 @@ class influent(pipe):
 
         Args:
             asm_ver:    ASM Version: 'ASM1' | 'ASM2d' | 'ASM3'
+            verbose:    bool for whether to print the influent model components
 
         Return:
             list of model components for the influent characteristics user
@@ -1713,21 +1714,22 @@ class influent(pipe):
                             _NBSCOD, _BSCOD, self._NH3N, _SORGN, self._NOxN,
                             self._Alk,
                             _NBPCOD, _BPCOD, 0, 0, 0, _PORGN]
+
             # check if any negative values from the fractionation
-            print(_temp_comps)
             for tc in _temp_comps:
                 if tc < 0:
                     print('ERROR in fractions resulting in negative model', 
                             ' components. Influent components NOT UPDATED')
-                    return self._in_compos[:]  # nothing changed
+                    return self._in_comps[:]  # nothing changed
 
-            print("New influent fractions set. Please review the following...")
 
-            print("Total COD = {}; Soluble COD = {}; Particulate COD = {}".format(_TCOD, _SCOD, _PCOD))
-            print("Biodegradable Sol. COD = {}; Non-Biodegradable Sol. COD = {}".format(_BSCOD, _NBSCOD))
-            print("Biodegradable Part. COD = {}; Non-Biodegradable Part. COD = {}".format(_BPCOD, _NBPCOD))
-            print("Total TKN = {}; NH3-N = {}; OrgN = {}".format(self._TKN, self._NH3N, self._TKN - self._NH3N))
-            print("Soluble Org. N = {}; Part. Org. N = {}".format(_SORGN, _PORGN))
+            if asm_ver == 'ASM1' and verbose:
+                print("Model = ASM1, Influent Fractions Summary::")
+                print("Total COD = {}; Soluble COD = {}; Particulate COD = {}".format(_TCOD, _SCOD, _PCOD))
+                print("Biodegradable Sol. COD = {}; Non-Biodegradable Sol. COD = {}".format(_BSCOD, _NBSCOD))
+                print("Biodegradable Part. COD = {}; Non-Biodegradable Part. COD = {}".format(_BPCOD, _NBPCOD))
+                print("Total TKN = {}; NH3-N = {}; OrgN = {}".format(self._TKN, self._NH3N, self._TKN - self._NH3N))
+                print("Soluble Org. N = {}; Part. Org. N = {}".format(_SORGN, _PORGN))
 
             #TODO: Add accounting for nonbiod sol. orgN and nonbiod part orgN
             return _temp_comps[:]
