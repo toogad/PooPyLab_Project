@@ -33,11 +33,14 @@ if __name__ == "__main__":
 
     input_inf_concs('ASM1', inf)
 
-    inf.set_fractions('ASM1', 'COD:BOD5', 3.0)
-    inf.set_fractions('ASM1', 'SCOD:COD', 0.55)
-    inf.set_fractions('ASM1', 'BSCOD:SCOD', 0.85)
-    inf.set_fractions('ASM1', 'BPCOD:PCOD', 0.75)
-    inf.set_fractions('ASM1', 'PORGN:VSS', 0.04)
+    inf.set_mainstream_flow(37800/2.0)
+    inf.set_fractions('ASM1', 'COD:BOD5', 1.0)
+    inf.set_fractions('ASM1', 'SCOD:COD', 0.5)
+    inf.set_fractions('ASM1', 'BSCOD:SCOD', 0.8)
+    inf.set_fractions('ASM1', 'BPCOD:PCOD', 0.7)
+    inf.set_fractions('ASM1', 'SON:SCOD', 0.025)
+    inf.set_fractions('ASM1', 'BSON:SON', 0.80)
+    inf.set_fractions('ASM1', 'BPON:PON', 0.75)
 
     inf.blend_inlet_comps()
     inf.discharge()
