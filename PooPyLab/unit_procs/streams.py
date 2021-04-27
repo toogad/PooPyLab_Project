@@ -482,6 +482,12 @@ class splitter(poopy_lab_obj):
         Note: This function does not totalize inlet flow. It only uses the
         current flow rates. It is adviced to call totalize_inflow() first.
 
+        Args:
+            None
+
+        Return:
+            Blended Inlet Concentrations (copy of the list)
+
         See:
             totalize_inflow()
         """
@@ -497,7 +503,7 @@ class splitter(poopy_lab_obj):
                         temp += unit.get_side_outlet_concs()[i]\
                                 * unit.get_side_outflow()
                 self._in_comps[i] = temp / self._total_inflow
-        return None
+        return self._in_comps[:]
     
 
     def update_combined_input(self):
@@ -1486,11 +1492,17 @@ class influent(pipe):
         into the model components such as substrate COD, slowly biodegradable
         COD, inert suspended solids, etc.
 
+        Args:
+            None
+
+        Return:
+            Copy of the blended influent components.
+
         See:
             _convert_to_model_comps().
         """
         self._in_comps = self._convert_to_model_comps(asm_ver='ASM1', verbose=False)
-        return None
+        return self._in_comps[:]
 
 
     def remove_upstream(self, discharger):
@@ -1762,58 +1774,6 @@ class influent(pipe):
             return _temp_comps[:]
 
 
-##        # influent biodegradable COD, BOD/COD = 1.71 for typ. muni.WW
-##        Inf_CODb = self._BOD5 * 1.71
-##        # influent total COD, COD/BOD5 = 2.04 per BioWin
-##        Inf_CODt = self._BOD5 * 2.04
-##        # influent total innert COD, 
-##        Inf_CODi = Inf_CODt - Inf_CODb
-##        # influent soluble innert COD
-##        Inf_S_I = 0.13 * Inf_CODt
-##        # influent particulate innert COD
-##        Inf_X_I = Inf_CODi - Inf_S_I
-##        # influent particulate biodegradable COD
-##        Inf_X_S = 1.6 * self._VSS - Inf_X_I
-##        # influent soluble biodegradable COD
-##        Inf_S_S = Inf_CODb - Inf_X_S
-##        # influent Heterotrophs (mgCOD/L), 
-##        Inf_X_BH = 0.0
-##        # influent Autotrophs (mgCOD/L), 
-##        Inf_X_BA = 0.0
-##        # influent Biomass Debris (mgCOD/L)
-##        Inf_X_D = 0.0
-##        
-##        # influent TKN (mgN/L), NOT IN InfC
-##        Inf_TKN = self._TKN
-##        # influent Ammonia-N (mgN/L), 
-##        Inf_S_NH = self._NH3N
-##        # subdividing TKN into: 
-##        #  a) nonbiodegradable TKN 
-##        NonBiodegradable_TKN_Ratio = 0.03 # TODO: need to be configurable
-##        # NON-BIODEGRADABLE TKN WILL HAVE TO BE ADDED BACK TO THE EFFLUENT TN
-##        Inf_nb_TKN = Inf_TKN * NonBiodegradable_TKN_Ratio
-##        #  Grady 1999:
-##        Soluble_Biodegradable_OrgN_Ratio = Inf_S_S / (Inf_S_S + Inf_X_S)
-##        #  b) soluble biodegrable TKN,     
-##        Inf_S_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
-##                    * Soluble_Biodegradable_OrgN_Ratio
-##        #  c) particulate biodegradable TKN
-##        Inf_X_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
-##                    * (1.0 - Soluble_Biodegradable_OrgN_Ratio)
-##        
-##        # influent Nitrite + Nitrate (mgN/L)
-##        Inf_S_NO = self._NOxN
-##        
-##        Inf_S_ALK = self._Alk
-##        
-##        Inf_S_DO = self._DO
-##        
-##        _inf_concs = [Inf_S_DO, Inf_S_I, Inf_S_S, Inf_S_NH, Inf_S_NS, 
-##                        Inf_S_NO, Inf_S_ALK, 
-##                        Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
-##                        Inf_X_NS]
-##
-##        return _inf_concs[:]
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
 
