@@ -36,11 +36,11 @@ if __name__ == "__main__":
     inf.set_mainstream_flow(37800/2.0)
     inf.set_fractions('ASM1', 'COD:BOD5', 3.1)
     inf.set_fractions('ASM1', 'SCOD:COD', 0.65)
-    inf.set_fractions('ASM1', 'BSCOD:SCOD', 0.7)
-    inf.set_fractions('ASM1', 'BPCOD:PCOD', 0.6)
-    inf.set_fractions('ASM1', 'SON:SCOD', 0.025)
-    inf.set_fractions('ASM1', 'BSON:SON', 0.80)
-    inf.set_fractions('ASM1', 'BPON:PON', 0.75)
+    inf.set_fractions('ASM1', 'RBCOD:SCOD', 0.7)  # readily biodeg. COD
+    inf.set_fractions('ASM1', 'SBCOD:PCOD', 0.6)  # slowly biodeg. COD
+    inf.set_fractions('ASM1', 'SON:SCOD', 0.01)
+    inf.set_fractions('ASM1', 'RBON:SON', 0.80)  # readily biodeg. org.N
+    inf.set_fractions('ASM1', 'SBON:PON', 0.75)  # slowly biodeg. org.N
 
     print(inf.blend_inlet_comps())
     inf.discharge()
