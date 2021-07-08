@@ -1,26 +1,22 @@
 # This file is part of PooPyLab.
 #
-# PooPyLab is a simulation software for biological wastewater treatment
-# processes using International Water Association Activated Sludge Models.
+# PooPyLab is a simulation software for biological wastewater treatment processes using International Water Association
+# Activated Sludge Models.
 #
 #    Copyright (C) Kai Zhang
 #
-#    PooPyLab is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    PooPyLab is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+#    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+#    later version.
 #
-#    PooPyLab is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+#    details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License along with PooPyLab. If not, see
+#    <http://www.gnu.org/licenses/>.
 #
 #
-#    This is the definition of the ASM1 model to be imported
-#    as part of the Reactor object
+#    This is the definition of the ASM1 model to be imported as part of the Reactor object
 #
 #
 
@@ -30,9 +26,8 @@
 Reference:
     Grady Jr. et al, 1999: Biological Wastewater Treatment, 2nd Ed.
 
-    IWA Task Group on Math. Modelling for Design and Operation of Biological
-    Wastewater Treatment, 2000. Activated Sludge Model No. 1, in Activated
-    Sludge Models ASM1, ASM2, ASM2d, and ASM 3.
+    IWA Task Group on Math. Modelling for Design and Operation of Biological Wastewater Treatment, 2000. Activated
+    Sludge Model No. 1, in Activated Sludge Models ASM1, ASM2, ASM2d, and ASM 3.
 """
 ## @namespace asm_1
 ## @file asm_1.py
@@ -123,11 +118,9 @@ class ASM_1(asm_model):
         # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
         self._kinetics_20C['u_max_A'] = 0.8
 
-        # Decay Rate of Autotrophs (b_A, 1/DAY)
-        # A wide range exists. Table 6.3 on Grady 1999 shows 0.096 (1/d). IWA's
-        # ASM report did not even show b_A on its table for typical value. ASIM
-        # software show a value of "0.000", probably cut off by the print
-        # function. I can only assume it was < 0.0005 (1/d) at 20C.
+        # Decay Rate of Autotrophs (b_A, 1/DAY) A wide range exists. Table 6.3 on Grady 1999 shows 0.096 (1/d). IWA's
+        # ASM report did not even show b_A on its table for typical value. ASIM software show a value of "0.000",
+        # probably cut off by the print function. I can only assume it was < 0.0005 (1/d) at 20C.
         #self._kinetics_20C['b_LA'] = 0.096
         self._kinetics_20C['b_LA'] = 0.0007
 
@@ -184,8 +177,7 @@ class ASM_1(asm_model):
         """
         Set the kinetic parameters/constants @ project temperature.
 
-        This function updates the self._params based on the model temperature
-        and DO.
+        This function updates the self._params based on the model temperature and DO.
 
         See:
             update();
@@ -194,22 +186,19 @@ class ASM_1(asm_model):
         """
 
         # Ideal Growth Rate of Heterotrophs (u_max_H, 1/DAY)
-        self._params['u_max_H'] = self._kinetics_20C['u_max_H']\
-                                * pow(1.072, self._delta_t)
+        self._params['u_max_H'] = self._kinetics_20C['u_max_H'] * pow(1.072, self._delta_t)
 
         # Decay Rate of Heterotrophs (b_H, 1/DAY)
-        self._params['b_LH'] = self._kinetics_20C['b_LH']\
-                                * pow(1.12, self._delta_t)
+        self._params['b_LH'] = self._kinetics_20C['b_LH'] * pow(1.12, self._delta_t)
 
         # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
-        self._params['u_max_A'] = self._kinetics_20C['u_max_A']\
-                                * pow(1.103, self._delta_t)
+        self._params['u_max_A'] = self._kinetics_20C['u_max_A'] * pow(1.103, self._delta_t)
 
         # Decay Rate of Autotrophs (b_A, 1/DAY)
-        self._params['b_LA'] = self._kinetics_20C['b_LA']\
-                                * pow(1.114, self._delta_t)
+        self._params['b_LA'] = self._kinetics_20C['b_LA'] * pow(1.114, self._delta_t)
 
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
+
         self._params['K_S'] = self._kinetics_20C['K_S']
 
         # Switch Coefficient for Dissolved O2 of Hetero. (K_OH, mgO2/L)
@@ -225,17 +214,14 @@ class ASM_1(asm_model):
         self._params['K_NO'] = self._kinetics_20C['K_NO']
 
         # Hydrolysis Rate (k_h, mgCOD/mgBiomassCOD-day)
-        self._params['k_h'] = self._kinetics_20C['k_h']\
-                                * pow(1.116, self._delta_t)
+        self._params['k_h'] = self._kinetics_20C['k_h'] * pow(1.116, self._delta_t)
 
         # Half Rate Conc. for Hetero. Growth on Part. COD
         # (K_X, mgCOD/mgBiomassCOD)
-        self._params['K_X'] = self._kinetics_20C['K_X']\
-                                * pow(1.116, self._delta_t)
+        self._params['K_X'] = self._kinetics_20C['K_X'] * pow(1.116, self._delta_t)
 
         # Ammonification of Org-N in biomass (k_a, L/mgBiomassCOD-day)
-        self._params['k_a'] = self._kinetics_20C['k_a']\
-                                * pow(1.072, self._delta_t)
+        self._params['k_a'] = self._kinetics_20C['k_a'] * pow(1.072, self._delta_t)
 
         # Yield of Hetero. Growth on COD (Y_H, mgBiomassCOD/mgCODremoved)
         self._params['Y_H'] = self._kinetics_20C['Y_H']
@@ -266,9 +252,7 @@ class ASM_1(asm_model):
         """
         Set the stoichiometrics for the model.
 
-        Note:
-            Make sure to match the .csv model template file in the
-            model_builder folder, Sep 04, 2019):
+        Note: Make sure to match the .csv model template file in the model_builder folder, Sep 04, 2019):
 
             _stoichs['x_y'] ==> x is process rate id, and y is component id
 
@@ -279,12 +263,10 @@ class ASM_1(asm_model):
         """
 
         # S_O for aerobic hetero. growth, as O2
-        self._stoichs['0_0'] = (self._params['Y_H'] - 1.0) \
-                                / self._params['Y_H']
+        self._stoichs['0_0'] = (self._params['Y_H'] - 1.0) / self._params['Y_H']
 
         # S_O for aerobic auto. growth, as O2
-        self._stoichs['2_0'] = (self._params['Y_A'] - 4.57) \
-                                / self._params['Y_A']
+        self._stoichs['2_0'] = (self._params['Y_A'] - 4.57) / self._params['Y_A']
  
         # S_S for aerobic hetero. growth, as COD
         self._stoichs['0_2'] = -1.0 / self._params['Y_H'] 
@@ -302,8 +284,7 @@ class ASM_1(asm_model):
         self._stoichs['1_3'] = -self._params['i_N_XB']
 
         # S_NH required for aerobic auto. growth, as N
-        self._stoichs['2_3'] = -self._params['i_N_XB'] \
-                                - 1.0 / self._params['Y_A']
+        self._stoichs['2_3'] = -self._params['i_N_XB'] - 1.0 / self._params['Y_A']
 
         # S_NH from ammonification, as N
         self._stoichs['5_3'] = 1.0
@@ -315,8 +296,7 @@ class ASM_1(asm_model):
         self._stoichs['7_4'] = 1.0
         
         # S_NO for anoxic hetero. growth, as N
-        self._stoichs['1_5'] = (self._params['Y_H'] - 1.0) \
-                                / (2.86 * self._params['Y_H'])
+        self._stoichs['1_5'] = (self._params['Y_H'] - 1.0) / (2.86 * self._params['Y_H'])
  
         # S_NO from nitrification, as N
         self._stoichs['2_5'] = 1.0 / self._params['Y_A']
@@ -325,13 +305,11 @@ class ASM_1(asm_model):
         self._stoichs['0_6'] = -self._params['i_N_XB'] / 14.0
 
         # S_ALK generated by anoxic hetero. growth, as mM CaCO3
-        self._stoichs['1_6'] = (1.0 - self._params['Y_H']) \
-                                / (14.0 * 2.86 * self._params['Y_H']) \
+        self._stoichs['1_6'] = (1.0 - self._params['Y_H']) / (14.0 * 2.86 * self._params['Y_H']) \
                                 - self._params['i_N_XB'] / 14.0
 
         # S_ALK consumed by aerobic auto. growth, as mM CaCO3
-        self._stoichs['2_6'] = -self._params['i_N_XB'] / 14 \
-                                - 1.0 / (7.0 * self._params['Y_A'])
+        self._stoichs['2_6'] = -self._params['i_N_XB'] / 14 - 1.0 / (7.0 * self._params['Y_A'])
 
         # S_ALK generated by ammonification, as mM CaCO3
         self._stoichs['5_6'] = 1.0 / 14.0
@@ -368,12 +346,10 @@ class ASM_1(asm_model):
         self._stoichs['4_11'] = self._params['f_D']
 
         # X_NS from hetero. decay, as N
-        self._stoichs['3_12'] = self._params['i_N_XB'] - self._params['f_D'] \
-                                * self._params['i_N_XD']
+        self._stoichs['3_12'] = self._params['i_N_XB'] - self._params['f_D'] * self._params['i_N_XD']
 
         # X_NS from auto. decay, as COD
-        self._stoichs['4_12'] = self._params['i_N_XB'] - self._params['f_D'] \
-                                * self._params['i_N_XD']
+        self._stoichs['4_12'] = self._params['i_N_XB'] - self._params['f_D'] * self._params['i_N_XD']
 
         # X_NS consumed in hydrolysis of part. TKN, as N
         self._stoichs['7_12'] = -1.0
@@ -485,11 +461,9 @@ class ASM_1(asm_model):
             float
         """
         return  self._params['k_h'] \
-                * self._monod(comps[8] / comps[9], \
-                                self._params['K_X']) \
+                * self._monod(comps[8] / comps[9], self._params['K_X']) \
                 * (self._monod(comps[0], self._params['K_OH']) \
-                    + self._params['cf_h'] \
-                    * self._monod(self._params['K_OH'], comps[0]) \
+                    + self._params['cf_h'] * self._monod(self._params['K_OH'], comps[0]) \
                     * self._monod(comps[5], self._params['K_NO'])) \
                 * comps[9]
 
@@ -520,8 +494,7 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return self._stoichs['0_0'] * self._r0_AerGH(comps)\
-                + self._stoichs['2_0'] * self._r2_AerGA(comps)
+        return self._stoichs['0_0'] * self._r0_AerGH(comps) + self._stoichs['2_0'] * self._r2_AerGA(comps)
 
 
     def _rate1_S_I(self, comps):

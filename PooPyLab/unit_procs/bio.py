@@ -1,26 +1,24 @@
 # This file is part of PooPyLab.
 #
-# PooPyLab is a simulation software for biological wastewater treatment
-# processes using International Water Association Activated Sludge Models.
-#    
+# PooPyLab is a simulation software for biological wastewater treatment processes using International Water Association
+# Activated Sludge Models.
+#
 #    Copyright (C) Kai Zhang
 #
-#    PooPyLab is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    PooPyLab is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+#    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+#    later version.
 #
-#    PooPyLab is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+#    details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License along with PooPyLab. If not, see
+#    <http://www.gnu.org/licenses/>.
 #
-# This is the definition of class related to biological processes. 
-# 
-# ----------------------------------------------------------------------------
+#
+#    This is the definition of the ASM1 model to be imported as part of the Reactor object
+#
+#
 
 
 """Defines classes for biological reactors used in an WWTP.
@@ -46,11 +44,10 @@ class asm_reactor(pipe):
     """
     Bioreactor using ASM kinetics, derived as a "pipe" w/ active volume.
 
-    Current design only uses ASM 1 model. Will need to add flexibility for
-    using ASM 2d, ASM 3, and user revised versions of them.
+    Current design only uses ASM 1 model. Will need to add flexibility for using ASM 2d, ASM 3, and user revised       
+    versions of them.                                                                                                  
 
-    The "asm_reactor" contain sludge mixed liquor of a certain kinetics
-    described by the chosen model.
+    The "asm_reactor" contain sludge mixed liquor of a certain kinetics described by the chosen model.                 
 
     The integration of the model is also done by the "asm_reactor".
     """
@@ -153,10 +150,9 @@ class asm_reactor(pipe):
         """
         Pass the total flow and blended components to the downstreams.
 
-        This function is re-implemented for "asm_reactor". Because of the
-        biological reactions "happening" in the "asm_reactor", integration of
-        the model (Note 1) is carried out here before sending the results to
-        the down stream.
+        This function is re-implemented for "asm_reactor". Because of the biological reactions "happening" in the      
+        "asm_reactor", integration of the model (Note 1) is carried out here before sending the results to the down    
+        stream.                                                                                                        
 
         Args:
             method_name: "BDF", "RK45", "Radau", etc.(see Note 2 below)
@@ -165,32 +161,23 @@ class asm_reactor(pipe):
             self._sludge._comps
 
         Notes:
-            1) It is highly recommended the model components are arranged
-            such that all the soluble ones are ahead of the particulate ones
-            in the array. Generally, soluble components requires smaller    
-            time steps than particulate ones. This kind of arrangement will
-            enable quick identification of soluble/particulate components that
-            may have very different suitable time step during integration.  
-            Using appropriate but different time steps for the soluble and
-            particulate components is required for fast integrations with
-            correct results. This is how the ODE partitioning method suggested
-            in the IWA ASM1 report works. Although PooPyLab doesn't apply this
-            relaxation scheme as of now, arranging the model components in such
-            partitioned way will allow future exploration of optimization
-            approaches.
 
-            2) There are a few integration methods attempted for PooPyLab:
-            Euler, Runge-Kutta 4th order, Runge-Kutta-Felhberg 4/5,
-            RK-Dormand-Prince-4/5, and the ODE system partitioning scheme
-            suggested in the IWA ASM1 report.  After much study, it is decided
-            to settle with scipy.integrate.solve_ivp routine for now so that
-            the rest of the PooPyLab development can progress, while KZ
-            continues in his study of BDF methods and attempts for a home brew
-            version.  
-            Euler, RK4, RKF45, RKDP45, and Partitioned ODE methods
-            have been coded and tested in the past but no longer in use as of
-            now, except for RKF45. The unused code is moved to
-            bio_py_funcs_not_used.txt for archiving.
+            1) It is highly recommended the model components are arranged such that all the soluble ones are ahead     
+            of the particulate ones in the array. Generally, soluble components requires smaller time steps than       
+            particulate ones. This kind of arrangement will enable quick identification of soluble/particulate         
+            components that may have very different suitable time step during integration. Using appropriate but       
+            different time steps for the soluble and particulate components is required for fast integrations          
+            with correct results. This is how the ODE partitioning method suggested in the IWA ASM1 report works.      
+            Although PooPyLab doesn't apply this relaxation scheme as of now, arranging the model components in such   
+            partitioned way will allow future exploration of optimization approaches.                                  
+
+            2) There are a few integration methods attempted for PooPyLab: Euler, Runge-Kutta 4th order,               
+            Runge-Kutta-Felhberg 4/5, RK-Dormand-Prince-4/5, and the ODE system partitioning scheme suggested in the   
+            IWA ASM1 report. After much study, it is decided to settle with scipy.integrate.solve_ivp routine for now  
+            so that the rest of the PooPyLab development can progress, while KZ continues in his study of BDF methods  
+            and attempts for a home brew version. Euler, RK4, RKF45, RKDP45, and Partitioned ODE methods have been     
+            coded and tested in the past but no longer in use as of now, except for RKF45. The unused code is moved to 
+            bio_py_funcs_not_used.txt for archiving.                                                                   
 
         See:
             _runge_kutta_fehlberg_45()
@@ -199,9 +186,8 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        # if the user fixes the DO of a aerobic reactor or explicitly set the
-        # DO to 0 (anoxic or anaerobic), then force the bulk DO into
-        # _mo_comps[0]
+        # if the user fixes the DO of a aerobic reactor or explicitly set the DO to 0 (anoxic or anaerobic), then      
+        # force the bulk DO into _mo_comps[0]                                                                          
         if fix_DO or self._sludge.get_bulk_DO() == 0:
             self._mo_comps[0] = self._sludge.get_bulk_DO()
             self._so_comps[0] = self._mo_comps[0]
@@ -231,12 +217,11 @@ class asm_reactor(pipe):
         """
         Assign the intial guess to the unit before simulation.
 
-        This function is re-implemented for "asm_reactor" which contains the
-        "sludge" whose kinetics are described by the model. 
+        This function is re-implemented for "asm_reactor" which contains the "sludge" whose kinetics are described by  
+        the model.                                                                                                     
 
-        When passing the initial guess into an "asm_reactor", the reactor's
-        inlet, mainstream outlet, and the "sludge" in it all get the same list
-        of model component concentrations.
+        When passing the initial guess into an "asm_reactor", the reactor's inlet, mainstream outlet, and the "sludge" 
+        in it all get the same list of model component concentrations.                                                 
 
         Args:
             initial_guess:  list of model components
@@ -311,8 +296,7 @@ class asm_reactor(pipe):
         """
         Set the wastewater temperature and dissolved O2 for the model.
 
-        This function updates the model conditions for the "sludge" the
-        "asm_reactor" contains.
+        This function updates the model conditions for the "sludge" the "asm_reactor" contains.                        
 
         Args:
             ww_temp:    wastewtaer temperature in degC;
@@ -369,8 +353,7 @@ class asm_reactor(pipe):
         # number of model components
         _nc = len(self._mo_comps)
 
-        # update the step size using the current step size and the scalar from
-        # previous round of RK4 vs RK5 comparison
+        # update the step size using the current step size and the scalar from previous round of RK4 vs RK5 comparison 
         h = self._step
 
         #f1 should've been calculated in _runge_kutta_fehlberg_45()
@@ -380,61 +363,40 @@ class asm_reactor(pipe):
         k1 = [h * f1[j] for j in range(_nc)]
 
 
-        _w2 = [self._sludge._comps[j] + k1[j] / 4
-                for j in range(_nc)]
+        _w2 = [self._sludge._comps[j] + k1[j] / 4 for j in range(_nc)]
 
-        f2 = self._sludge._dCdt_kz(_w2,
-                                self._active_vol,
-                                self._total_inflow,
-                                self._in_comps)
+        f2 = self._sludge._dCdt_kz(_w2, self._active_vol, self._total_inflow, self._in_comps)
 
         k2 = [h * f2[j] for j in range(_nc)]
 
 
         # 3/32 = 0.09375; 9/32 = 0.28125
-        _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j]
-                for j in range(_nc)]
+        _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j] for j in range(_nc)]
 
-        f3 = self._sludge._dCdt_kz(_w3,
-                                self._active_vol,
-                                self._total_inflow,
-                                self._in_comps)
+        f3 = self._sludge._dCdt_kz(_w3, self._active_vol, self._total_inflow, self._in_comps)                          
 
         k3 = [h * f3[j] for j in range(_nc)]
 
         
-        _w4 = [self._sludge._comps[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j]
-                + 7296/2197 * k3[j]
-                for j in range(_nc)]
+        _w4 = [self._sludge._comps[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j] + 7296/2197 * k3[j] for j in range(_nc)]
 
-        f4 = self._sludge._dCdt_kz(_w4,
-                                self._active_vol,
-                                self._total_inflow,
-                                self._in_comps)
+        f4 = self._sludge._dCdt_kz(_w4, self._active_vol, self._total_inflow, self._in_comps)                          
 
         k4 = [h * f4[j] for j in range(_nc)]
 
 
-        _w5 = [self._sludge._comps[j] + 439/216 * k1[j] - 8 * k2[j]
-                + 3680/513 * k3[j] - 845/4104 * k4[j]
+        _w5 = [self._sludge._comps[j] + 439/216 * k1[j] - 8 * k2[j] + 3680/513 * k3[j] - 845/4104 * k4[j]
                 for j in range(_nc)]
 
-        f5 = self._sludge._dCdt_kz(_w5,
-                                self._active_vol,
-                                self._total_inflow,
-                                self._in_comps)
+        f5 = self._sludge._dCdt_kz(_w5, self._active_vol, self._total_inflow, self._in_comps)                          
 
         k5 = [h * f5[j] for j in range(_nc)]
 
 
-        _w6 = [self._sludge._comps[j] - 8/27 * k1[j] + 2 * k2[j]
-                - 3544/2565 * k3[j] + 1859/4104 * k4[j] - 11/40 * k5[j]
+        _w6 = [self._sludge._comps[j] - 8/27 * k1[j] + 2 * k2[j] - 3544/2565 * k3[j] + 1859/4104 * k4[j] - 11/40 * k5[j]
                 for j in range(_nc)]
 
-        f6 = self._sludge._dCdt_kz(_w6,
-                                self._active_vol,
-                                self._total_inflow,
-                                self._in_comps)
+        f6 = self._sludge._dCdt_kz(_w6, self._active_vol, self._total_inflow, self._in_comps)                          
 
         k6 = [h * f6[j] for j in range(_nc)]
 
@@ -468,8 +430,7 @@ class asm_reactor(pipe):
 
         #return _err
 
-        delta = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
-                    - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j])
+        delta = [(1/360.0 * k1[j] - 128/4275.0 * k3[j] - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j])
                     for j in range(_nc)]
 
         scale = [ self._atol + self._rtol * self._mo_comps[i]

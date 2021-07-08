@@ -1,34 +1,31 @@
-#   This file is part of PooPyLab.
+# This file is part of PooPyLab.
 #
-#    PooPyLab is a simulation software for biological wastewater treatment
-#    processes using the International Water Association Activated Sludge
-#    Models.
-#   
+# PooPyLab is a simulation software for biological wastewater treatment processes using International Water Association
+# Activated Sludge Models.
+#
 #    Copyright (C) Kai Zhang
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    PooPyLab is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+#    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+#    later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+#    details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License along with PooPyLab. If not, see
+#    <http://www.gnu.org/licenses/>.
 #
 #
-# --------------------------------------------------------------------
-#   Definition of the base class for WWTP components.
+#    This is the definition of the ASM1 model to be imported as part of the Reactor object
 #
+#
+
 
 
 """ Definitions of common interface for all PooPyLab objects.
 
-The documentations for the abstract interface here are also abstract. Please
-see more details in specific implementations.
+The documentations for the abstract interface here are also abstract. Please see more details in specific
+implementations.
 """
 ## @namespace base
 ## @file base.py
@@ -113,8 +110,7 @@ class poopy_lab_obj(object):
     @abstractmethod
     def get_upstream(self):
         """ 
-        Get the dict that stores all the upstream units that feed into
-        the current one.
+        Get the dict that stores all the upstream units that feed into the current one.
         """
         pass
 
@@ -132,8 +128,9 @@ class poopy_lab_obj(object):
         """
         Calculate the flow weighted average model component concentrations.
 
-        Note: This function does not totalize inlet flow. It only uses the
-        current flow rates. It is adviced to call totalize_inflow() first.
+        Note: 
+        This function does not totalize inlet flow. It only uses the current flow rates. It is adviced to call
+        totalize_inflow() first.
         """
         pass
 
