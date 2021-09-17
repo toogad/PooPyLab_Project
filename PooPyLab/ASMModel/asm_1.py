@@ -96,6 +96,12 @@ class ASM_1(asm_model):
         # ASM model components
         self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
 
+        # Intermediate results of rate expressions, M/L^3/T
+        # The list is to help speed up the calculation by reducing redundant calls of individual rate expressions in
+        # multiple mass balance equations for the model components.
+        # ASM1 has 8 bio processes.
+        self._rate_res = [0.0] * 8
+
         return None
 
 
@@ -247,7 +253,7 @@ class ASM_1(asm_model):
         return None
 
 
-    # STOCHIOMETRIC MATRIX 
+    # STOCHIOMETRIC MATRIX
     def _set_stoichs(self):
         """
         Set the stoichiometrics for the model.
@@ -369,10 +375,13 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return  self._params['u_max_H'] \
-                * self._monod(comps[2], self._params['K_S']) \
-                * self._monod(comps[0], self._params['K_OH']) \
-                * comps[9]
+        self._rate_res[0] = \
+            (self._params['u_max_H']
+                * self._monod(comps[2], self._params['K_S'])
+                * self._monod(comps[0], self._params['K_OH'])
+                * comps[9])
+
+        return self._rate_res[0]
 
 
     def _r1_AxGH(self, comps):
@@ -385,12 +394,15 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return  self._params['u_max_H'] \
-                * self._monod(comps[2], self._params['K_S']) \
-                * self._monod(self._params['K_OH'], comps[0]) \
-                * self._monod(comps[5], self._params['K_NO']) \
-                * self._params['cf_g'] \
-                * comps[9]
+        self._rate_res[1] = \
+            (self._params['u_max_H']
+                * self._monod(comps[2], self._params['K_S'])
+                * self._monod(self._params['K_OH'], comps[0])
+                * self._monod(comps[5], self._params['K_NO'])
+                * self._params['cf_g']
+                * comps[9])
+
+        return self._rate_res[1]
 
 
     def _r2_AerGA(self, comps):
@@ -403,10 +415,13 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return  self._params['u_max_A'] \
+        self._rate_res[2] = \
+            (self._params['u_max_A']\
                 * self._monod(comps[3], self._params['K_NH']) \
                 * self._monod(comps[0], self._params['K_OA']) \
-                * comps[10]
+                * comps[10])
+
+        return self._rate_res[2]
 
 
     def _r3_DLH(self, comps):
@@ -419,7 +434,9 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return  self._params['b_LH'] * comps[9]
+        self._rate_res[3] = self._params['b_LH'] * comps[9]
+
+        return self._rate_res[3]
 
 
     def _r4_DLA(self, comps):
@@ -432,7 +449,9 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return  self._params['b_LA'] * comps[10]
+        self._rate_res[4] = self._params['b_LA'] * comps[10]
+        
+        return self._rate_res[4]
 
 
     def _r5_AmmSN(self, comps):
@@ -445,9 +464,9 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return  self._params['k_a'] \
-                * comps[4] \
-                * comps[9]
+        self._rate_res[5] = self._params['k_a'] * comps[4] * comps[9]
+
+        return self._rate_res[5]
 
 
     def _r6_HydX(self, comps):
@@ -460,12 +479,15 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return  self._params['k_h'] \
-                * self._monod(comps[8] / comps[9], self._params['K_X']) \
-                * (self._monod(comps[0], self._params['K_OH']) \
-                    + self._params['cf_h'] * self._monod(self._params['K_OH'], comps[0]) \
-                    * self._monod(comps[5], self._params['K_NO'])) \
-                * comps[9]
+        self._rate_res[6] = \
+            (self._params['k_h']
+                * self._monod(comps[8] / comps[9], self._params['K_X'])
+                * (self._monod(comps[0], self._params['K_OH'])
+                    + self._params['cf_h'] * self._monod(self._params['K_OH'], comps[0])
+                    * self._monod(comps[5], self._params['K_NO']))
+                * comps[9])
+
+        return self._rate_res[6]
 
 
     def _r7_HydXN(self, comps):
@@ -478,31 +500,33 @@ class ASM_1(asm_model):
         Return:
             float
         """
-        return self._r6_HydX(comps) * comps[12] / comps[8]
+        self._rate_res[7] = self._rate_res[6] * comps[12] / comps[8]
+
+        return self._rate_res[7]
 
 
 
     # OVERALL PROCESS RATE EQUATIONS FOR INDIVIDUAL COMPONENTS
 
-    def _rate0_S_DO(self, comps):
+    def _rate0_S_DO(self):
         """
         Overall process rate for dissolved O2 (mgCOD/L/d).
 
         Args:
-            comps:  list of current model components (concentrations).
+            None
 
         Return:
             float
         """
-        return self._stoichs['0_0'] * self._r0_AerGH(comps) + self._stoichs['2_0'] * self._r2_AerGA(comps)
+        return self._stoichs['0_0'] * self._rate_res[0] + self._stoichs['2_0'] * self._rate_res[2]
 
 
-    def _rate1_S_I(self, comps):
+    def _rate1_S_I(self):
         """
         Overall process rate for inert soluble COD (mgCOD/L/d).
 
         Args:
-            comps:  list of current model components (concentrations).
+            None
 
         Return:
             0.0
@@ -510,21 +534,22 @@ class ASM_1(asm_model):
         return 0.0
 
 
-    def _rate2_S_S(self, comps):
+    def _rate2_S_S(self):
         """
         Overall process rate for soluble biodegradable COD (mgCOD/L/d).
 
         Args:
-            comps:  list of current model components (concentrations).
+            None
 
         Return:
             float
         """
-        return self._stoichs['0_2'] * self._r0_AerGH(comps)\
-                + self._stoichs['1_2'] * self._r1_AxGH(comps)\
-                + self._stoichs['6_2'] * self._r6_HydX(comps)
+        return (self._stoichs['0_2'] * self._rate_res[0]
+                + self._stoichs['1_2'] * self._rate_res[1]
+                + self._stoichs['6_2'] * self._rate_res[6])
 
 
+    #TODO: CONTINUE HERE 
     def _rate3_S_NH(self, comps):
         """
         Overall process rate for ammonia nitrogen (mgN/L/d).
