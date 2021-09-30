@@ -51,7 +51,7 @@ def input_inf_concs(asm_ver, inf_unit):
     Args:
         asm_ver:    ASM version: ASM1 | ASM2d | ASM3
         inf_unit:   influent unit whose constituents to be defined
-    
+
     Return:
         None
 
@@ -137,7 +137,7 @@ def show_concs(wwtp):
     #    self._comps[10]: X_BA
     #    self._comps[11]: X_D
     #    self._comps[12]: X_NS
- 
+
     col_name = ['FLOW',
                 'S_DO', 'S_I', 'S_S', 'S_NH', 'S_NS', 'S_NO', 'S_ALK',
                 'X_I', 'X_S', 'X_BH', 'X_BA', 'X_D', 'X_NS']
@@ -147,14 +147,12 @@ def show_concs(wwtp):
 
     for elem in wwtp:
         print(elem.__name__, '::')
-        print('__main  {:>12.3f}'.format(elem.get_main_outflow()), 
-                end='')
+        print('__main  {:>12.3f}'.format(elem.get_main_outflow()), end='')
         for msconc in elem.get_main_outlet_concs():
             print('{:>12.3f}'.format(msconc), end='')
         print()
         if elem.has_sidestream():
-            print('__side  {:>12.3f}'.format(elem.get_side_outflow()),
-                    end='')
+            print('__side  {:>12.3f}'.format(elem.get_side_outflow()), end='')
             for ssconc in elem.get_side_outlet_concs():
                 print("{:>12.3f}".format(ssconc), end='')
             print()
@@ -248,23 +246,19 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
             * params['Y_A'] / (1.0 + params['b_LA'] * SRT_OXIC)
 
     # daily heterotrphic debris production, unit: gCOD/day
-    daily_heter_debris_prod = daily_heter_biomass_prod \
-            * (params['f_D'] * params['b_LH'] * SRT_OXIC)
+    daily_heter_debris_prod = daily_heter_biomass_prod * (params['f_D'] * params['b_LH'] * SRT_OXIC)
 
     # daily autotrophic debris production, unit: gCOD/day
-    daily_auto_debris_prod = daily_auto_biomass_prod \
-            * (params['f_D'] * params['b_LA'] * SRT_OXIC)
+    daily_auto_debris_prod = daily_auto_biomass_prod * (params['f_D'] * params['b_LA'] * SRT_OXIC)
 
-    
+
     # treat the entire plant's reactor vol. as a single hypothetical CSTR
     _hyp_cstr_vol = _wwtp_active_vol(reactors)
 
     # initial guesses of X_BH, X_BA, and X_D
     init_X_BH = SRT_OXIC * daily_heter_biomass_prod / _hyp_cstr_vol
     init_X_BA = SRT_OXIC * daily_auto_biomass_prod / _hyp_cstr_vol
-    init_X_D = SRT_OXIC \
-            * (daily_heter_debris_prod + daily_auto_debris_prod) \
-            / _hyp_cstr_vol
+    init_X_D = SRT_OXIC * (daily_heter_debris_prod + daily_auto_debris_prod) / _hyp_cstr_vol
 
     # TODO: ALWAYS make sure the indecies are correct as per the model
     init_S_DO = 2.0  # assume full aerobic for the hypothetical CSTR
@@ -279,8 +273,7 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     # init_X_BH above
     # init_X_BA above
     # init_X_D above
-    init_X_NS = params['i_N_XB'] * (init_X_BH + init_X_BA)\
-                + params['i_N_XD'] * init_X_D
+    init_X_NS = params['i_N_XB'] * (init_X_BH + init_X_BA) + params['i_N_XD'] * init_X_D
 
     return [init_S_DO, init_S_I, init_S_S, init_S_NH, init_S_NS, init_S_NO,
             init_S_ALK,
@@ -384,24 +377,20 @@ def forward_set_flow(wwtp):
     # find potential starters
     for _u in wwtp:
         _in_fds, _mo_fds, _so_fds = _u.get_flow_data_src()
-        
-        _in_f_known = (_in_fds == flow_data_src.UPS 
-                        or _in_fds == flow_data_src.PRG)
 
-        _mo_f_known = (_mo_fds == flow_data_src.UPS
-                        or _mo_fds == flow_data_src.PRG)
+        _in_f_known = (_in_fds == flow_data_src.UPS or _in_fds == flow_data_src.PRG)
 
-        _so_f_known = (_so_fds == flow_data_src.UPS
-                        or _so_fds == flow_data_src.PRG)
+        _mo_f_known = (_mo_fds == flow_data_src.UPS or _mo_fds == flow_data_src.PRG)
+
+        _so_f_known = (_so_fds == flow_data_src.UPS or _so_fds == flow_data_src.PRG)
 
         if (_in_f_known or _mo_f_known or _so_f_known):
             _starters.append(_u)
 
     for _s in _starters:
         _forward(_s, _visited)
-    
-    return None
 
+    return None
 
 
 def _BFS(_to_visit, _visited, mn, fDO, DOsat):
@@ -433,7 +422,7 @@ def _BFS(_to_visit, _visited, mn, fDO, DOsat):
             if _next_s not in _visited:
                 _to_visit.append(_next_s)
         _next_m = _next.get_downstream_main()
-        if _next_m not in _visited and _next_m != None:
+        if _next_m not in _visited and _next_m is not None:
             _to_visit.append(_next_m)
         return _BFS(_to_visit, _visited, mn, fDO, DOsat)
     else:
@@ -490,7 +479,7 @@ def _sum_of_known_inflows(me, my_inlet_of_unknown_flow):
                 _sum += _inlet.get_side_outflow()
     return _sum
 
-     
+
 def _backward(me):
     """
     Set the flow data source by visiting process units against the flow paths.
@@ -541,10 +530,10 @@ def _backward(me):
                 return None
         else:
             return None
-     
+
     _my_inlet = me.get_upstream()
     _my_inlet_allow = []
-    if _my_inlet != None:
+    if _my_inlet is not None:
         _my_inlet_allow = [u for u in _my_inlet 
                 if ((u.get_flow_data_src()[1] == flow_data_src.TBD
                     or u.get_flow_data_src()[1] == flow_data_src.DNS)
@@ -553,13 +542,12 @@ def _backward(me):
                     ((u.get_flow_data_src()[2] == flow_data_src.TBD
                     or u.get_flow_data_src()[2] == flow_data_src.DNS)
                     and u.get_downstream_side() == me)]
-    
+
     _freedom = len(_my_inlet_allow)
     if _freedom == 0:  # all inlets have been set with flow source
         return None
     elif _freedom > 1:  # too many units for setting flows
-        print('ERROR:{} has {} upstream units' 
-                'with undefined flows.'.format(me.__name__, _freedom))
+        print('ERROR:{} has {} upstream units with undefined flows.'.format(me.__name__, _freedom))
     else:
         _target = _my_inlet_allow[0]
         _known_sum = _sum_of_known_inflows(me, _target)
@@ -597,12 +585,12 @@ def backward_set_flow(start=[]):
     """
     for _u in start:
         _backward(_u)
-    
+
     return None
 
 
 def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
-                        mn='BDF', fDO=True, DOsat=10):
+                    mn='BDF', fDO=True, DOsat=10):
     """
     Integrate the entire plant towards a steady state at the target SRT.
 
@@ -673,11 +661,8 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
     # TODO: what if there are multiple influent units?
     if len(_reactors):
         _params = _reactors[0].get_model_params()
-        _seed = initial_guess(_params, 
-                                _reactors,
-                                _inf[0].get_main_outflow(), 
-                                _inf[0].get_main_outlet_concs())
-        format_sd = '{:<.3f}, ' * len(_seed) 
+        _seed = initial_guess(_params, _reactors, _inf[0].get_main_outflow(), _inf[0].get_main_outlet_concs())
+        format_sd = '{:<.3f}, ' * len(_seed)
         print('Initial guess =', format_sd.format(*_seed), '\n\n')
         for _r in wwtp:
             _r.assign_initial_guess(_seed)

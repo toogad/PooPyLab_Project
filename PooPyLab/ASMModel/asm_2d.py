@@ -39,7 +39,7 @@ from ..ASMModel import constants
 from .asmbase import asm_model
 
 
-class ASM_1(asm_model):
+class ASM_2d(asm_model):
     """
     Kinetics and stoichiometrics of the IWA ASM 2d model.
     """
@@ -63,7 +63,7 @@ class ASM_1(asm_model):
             _set_stoichs().
         """
 
-        asm_model.__init__(self) 
+        asm_model.__init__(self)
         self.__class__.__id += 1
 
         self._set_ideal_kinetics_20C_to_defaults()
@@ -79,7 +79,7 @@ class ASM_1(asm_model):
         self.update(ww_temp, DO)
 
         # The Components the ASM components IN THE REACTOR
-        # For ASM #1:
+        # For ASM #2d:
         #
         #    self._comps[0]: S_DO as COD
         #    self._comps[1]: S_I
