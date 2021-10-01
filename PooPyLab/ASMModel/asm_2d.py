@@ -71,11 +71,11 @@ class ASM_2d(asm_model):
         # wastewater temperature used in the model, degC
         self._temperature = ww_temp
         # mixed liquor bulk dissolved oxygen, mg/L
-        self._bulk_DO = DO 
+        self._bulk_DO = DO
 
         # temperature difference b/t what's used and baseline (20C), degC
         self._delta_t = self._temperature - 20
-        
+
         self.update(ww_temp, DO)
 
         # The Components the ASM components IN THE REACTOR
@@ -258,8 +258,11 @@ class ASM_2d(asm_model):
         return None
 
 
-    # STOCHIOMETRIC MATRIX 
+    # STOCHIOMETRIC MATRIX
+
+
     def _set_stoichs(self):
+
         """
         Set the stoichiometrics for the model.
 
@@ -282,12 +285,12 @@ class ASM_2d(asm_model):
         # S_O for aerobic auto. growth, as O2
         self._stoichs['2_0'] = (self._params['Y_A'] - 4.57) \
                                 / self._params['Y_A']
- 
+
         # S_S for aerobic hetero. growth, as COD
-        self._stoichs['0_2'] = -1.0 / self._params['Y_H'] 
+        self._stoichs['0_2'] = -1.0 / self._params['Y_H']
 
         # S_S for anoxic hetero. growth, as COD
-        self._stoichs['1_2'] = -1.0 / self._params['Y_H']  
+        self._stoichs['1_2'] = -1.0 / self._params['Y_H']
 
         # S_S for hydrolysis of part. substrate
         self._stoichs['6_2'] = 1.0
@@ -310,11 +313,11 @@ class ASM_2d(asm_model):
 
         # S_NS from hydrolysis of part.TKN, as N
         self._stoichs['7_4'] = 1.0
-        
+
         # S_NO for anoxic hetero. growth, as N
         self._stoichs['1_5'] = (self._params['Y_H'] - 1.0) \
                                 / (2.86 * self._params['Y_H'])
- 
+
         # S_NO from nitrification, as N
         self._stoichs['2_5'] = 1.0 / self._params['Y_A']
 
@@ -380,6 +383,8 @@ class ASM_2d(asm_model):
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
     #
+
+
     def _r0_AerGH(self, comps):
         """
         Aerobic Growth Rate of Heterotrophs (mgCOD/L/day).
@@ -390,7 +395,7 @@ class ASM_2d(asm_model):
         Return:
             float
         """
-        return  self._params['u_max_H'] \
+        return self._params['u_max_H'] \
                 * self._monod(comps[2], self._params['K_S']) \
                 * self._monod(comps[0], self._params['K_OH']) \
                 * comps[9]
@@ -406,7 +411,7 @@ class ASM_2d(asm_model):
         Return:
             float
         """
-        return  self._params['u_max_H'] \
+        return self._params['u_max_H'] \
                 * self._monod(comps[2], self._params['K_S']) \
                 * self._monod(self._params['K_OH'], comps[0]) \
                 * self._monod(comps[5], self._params['K_NO']) \
@@ -417,14 +422,14 @@ class ASM_2d(asm_model):
     def _r2_AerGA(self, comps):
         """
         Aerobic Growth Rate of Autotrophs (mgCOD/L/day).
-        
+
         Args:
             comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return  self._params['u_max_A'] \
+        return self._params['u_max_A'] \
                 * self._monod(comps[3], self._params['K_NH']) \
                 * self._monod(comps[0], self._params['K_OA']) \
                 * comps[10]
@@ -440,7 +445,7 @@ class ASM_2d(asm_model):
         Return:
             float
         """
-        return  self._params['b_LH'] * comps[9]
+        return self._params['b_LH'] * comps[9]
 
 
     def _r4_DLA(self, comps):
@@ -453,20 +458,20 @@ class ASM_2d(asm_model):
         Return:
             float
         """
-        return  self._params['b_LA'] * comps[10]
+        return self._params['b_LA'] * comps[10]
 
 
     def _r5_AmmSN(self, comps):
         """
         Ammonification Rate of Soluable Organic N (mgN/L/day).
-        
+
         Args:
             comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return  self._params['k_a'] \
+        return self._params['k_a'] \
                 * comps[4] \
                 * comps[9]
 
@@ -481,12 +486,12 @@ class ASM_2d(asm_model):
         Return:
             float
         """
-        return  self._params['k_h'] \
-                * self._monod(comps[8] / comps[9], \
+        return self._params['k_h'] \
+                * self._monod(comps[8] / comps[9],
                                 self._params['K_X']) \
-                * (self._monod(comps[0], self._params['K_OH']) \
-                    + self._params['cf_h'] \
-                    * self._monod(self._params['K_OH'], comps[0]) \
+                * (self._monod(comps[0], self._params['K_OH'])
+                    + self._params['cf_h']
+                    * self._monod(self._params['K_OH'], comps[0])
                     * self._monod(comps[5], self._params['K_NO'])) \
                 * comps[9]
 
@@ -506,6 +511,7 @@ class ASM_2d(asm_model):
 
 
     # OVERALL PROCESS RATE EQUATIONS FOR INDIVIDUAL COMPONENTS
+
 
     def _rate0_S_DO(self, comps):
         """
@@ -702,7 +708,7 @@ class ASM_2d(asm_model):
         Overall mass balance:
         dComp/dt == InfFlow / Actvol * (in_comps - mo_comps) + GrowthRate
                  == (in_comps - mo_comps) / HRT + GrowthRate
- 
+
         Args:
             t:          time for use in ODE integration routine, d
             mo_comps:   list of model component for mainstream outlet, mg/L.
@@ -714,25 +720,25 @@ class ASM_2d(asm_model):
 
         Return:
             dC/dt of the system ([float])
-        
+
         ASM1 Components:
             0_S_DO, 1_S_I, 2_S_S, 3_S_NH, 4_S_NS, 5_S_NO, 6_S_ALK,
             7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
         '''
 
         _HRT = vol / flow
-        
+
         # set DO rate to zero since DO is set to a fix conc., which is
         # recommended for steady state simulation; alternatively, use the given
         # KLa to dynamically estimate residual DO
         if fix_DO or self._bulk_DO == 0:
             result = [0.0]
         else:  #TODO: what if the user provides a fix scfm of air?
-            result = [(in_comps[0] - mo_comps[0] ) / _HRT
+            result = [(in_comps[0] - mo_comps[0]) / _HRT
                         + self._KLa * (DO_sat_T - mo_comps[0])
                         + self._rate0_S_DO(mo_comps)]
 
-        result.append((in_comps[1] - mo_comps[1]) / _HRT 
+        result.append((in_comps[1] - mo_comps[1]) / _HRT
                         + self._rate1_S_I(mo_comps))
 
         result.append((in_comps[2] - mo_comps[2]) / _HRT
@@ -769,5 +775,3 @@ class ASM_2d(asm_model):
                         + self._rate12_X_NS(mo_comps))
 
         return result[:]
-
-
