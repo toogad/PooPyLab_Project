@@ -22,7 +22,7 @@
 
 
 
-"""Definition of the IWA Activated Sludge Model #1.
+"""Definition of the IWA Activated Sludge Model #2d.
 
 Reference:
     Grady Jr. et al, 1999: Biological Wastewater Treatment, 2nd Ed.
