@@ -47,6 +47,32 @@ def set_model_params(all_rows=[]):
     return _params
 
 
+def set_model_stoichs(all_rows=[], num_comps=13):
+    """ Initialize the stoichiometrics."""
+
+    starting_row_index = 4
+
+    # count the number of rate equations first
+    row_counter = 0
+    while (all_rows[row_counter][0] != 'END_ST'):
+        row_counter += 1
+
+    num_eqs = row_counter - starting_row_index
+
+
+    # the _stoichs stores the stoichiometrics in the form of a 2-d array of text;
+    # the 1st index of _stoichs is the id of the model component, starting at 0
+    # and the 2nd index of _stoichs is the id of the rate equation, starting at 0
+    _stoichs = []
+
+    for comp_id in range(num_comps):
+        _stoichs.append([0]*num_eqs)
+        for eq_id in range(num_eqs):
+            _stoichs[comp_id][eq_id] = all_rows[starting_row_index + eq_id][comp_id]
+
+    return _stoichs, num_eqs
+
+
 if __name__ == '__main__':
 
     import csv
@@ -63,12 +89,18 @@ if __name__ == '__main__':
     print()
 
     model_comps = set_model_components(csv_rows)
+    num_comps = len(model_comps)
 
+    print('Found', num_comps, 'Model Components:')
     print(model_comps)
 
     model_params = set_model_params(csv_rows)
-
     print(model_params)
+
+    model_stoichs, num_eqs = set_model_stoichs(csv_rows, num_comps)
+
+    print('Found', num_eqs, 'Rate Equations')
+    print(model_stoichs)
 
 
 
