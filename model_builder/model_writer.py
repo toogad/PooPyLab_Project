@@ -26,11 +26,10 @@ def get_model_components(all_rows):
     """ Initialize lists for model components and their names."""
 
     _num_comps = len([cell for cell in all_rows[0] if cell != ''])
-    _comp_vals = [0.0] * _num_comps  # this may be unnecessary
     _comps = []
 
     for i in range(_num_comps):
-        _comps.append([_comp_vals[i], all_rows[1][i], all_rows[2][i], all_rows[3][i]])
+        _comps.append([all_rows[1][i], all_rows[2][i], all_rows[3][i]])
 
     return _comps
 
@@ -74,7 +73,7 @@ def get_model_stoichs(all_rows=[], num_comps=13):
 
 
 def get_rate_equations(all_rows=[], num_comps=13, num_eqtns=8):
-    """ Construct the rate equations from their individual terms """
+    """ Extract the rate equation's individual terms """
 
     # The definition of rate equations starting at Row 5 (Row Index = 4), three (3) columns down from the last model
     # component and its stoichiometric column
