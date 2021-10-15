@@ -40,14 +40,15 @@ from scipy.integrate import solve_ivp
 
 # ----------------------------------------------------------------------------
 
+
 class asm_reactor(pipe):
     """
     Bioreactor using ASM kinetics, derived as a "pipe" w/ active volume.
 
-    Current design only uses ASM 1 model. Will need to add flexibility for using ASM 2d, ASM 3, and user revised       
-    versions of them.                                                                                                  
+    Current design only uses ASM 1 model. Will need to add flexibility for using ASM 2d, ASM 3, and user revised
+    versions of them.
 
-    The "asm_reactor" contain sludge mixed liquor of a certain kinetics described by the chosen model.                 
+    The "asm_reactor" contain sludge mixed liquor of a certain kinetics described by the chosen model.
 
     The integration of the model is also done by the "asm_reactor".
     """
@@ -71,7 +72,7 @@ class asm_reactor(pipe):
             None
         """
 
-        pipe.__init__(self) 
+        pipe.__init__(self)
         self.__class__.__id += 1
         self.__name__ = 'ASMReactor_' + str(self.__id)
 
@@ -119,6 +120,8 @@ class asm_reactor(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE
     #
+
+
     def is_converged(self, limit=0.01):
         """
         Check for asm_reactor's steady state.
@@ -150,9 +153,9 @@ class asm_reactor(pipe):
         """
         Pass the total flow and blended components to the downstreams.
 
-        This function is re-implemented for "asm_reactor". Because of the biological reactions "happening" in the      
-        "asm_reactor", integration of the model (Note 1) is carried out here before sending the results to the down    
-        stream.                                                                                                        
+        This function is re-implemented for "asm_reactor". Because of the biological reactions "happening" in the
+        "asm_reactor", integration of the model (Note 1) is carried out here before sending the results to the down
+        stream.
 
         Args:
             method_name: "BDF", "RK45", "Radau", etc.(see Note 2 below)
@@ -162,22 +165,22 @@ class asm_reactor(pipe):
 
         Notes:
 
-            1) It is highly recommended the model components are arranged such that all the soluble ones are ahead     
-            of the particulate ones in the array. Generally, soluble components requires smaller time steps than       
-            particulate ones. This kind of arrangement will enable quick identification of soluble/particulate         
-            components that may have very different suitable time step during integration. Using appropriate but       
-            different time steps for the soluble and particulate components is required for fast integrations          
-            with correct results. This is how the ODE partitioning method suggested in the IWA ASM1 report works.      
-            Although PooPyLab doesn't apply this relaxation scheme as of now, arranging the model components in such   
-            partitioned way will allow future exploration of optimization approaches.                                  
+            1) It is highly recommended the model components are arranged such that all the soluble ones are ahead
+            of the particulate ones in the array. Generally, soluble components requires smaller time steps than
+            particulate ones. This kind of arrangement will enable quick identification of soluble/particulate
+            components that may have very different suitable time step during integration. Using appropriate but
+            different time steps for the soluble and particulate components is required for fast integrations
+            with correct results. This is how the ODE partitioning method suggested in the IWA ASM1 report works.
+            Although PooPyLab doesn't apply this relaxation scheme as of now, arranging the model components in such
+            partitioned way will allow future exploration of optimization approaches.
 
-            2) There are a few integration methods attempted for PooPyLab: Euler, Runge-Kutta 4th order,               
-            Runge-Kutta-Felhberg 4/5, RK-Dormand-Prince-4/5, and the ODE system partitioning scheme suggested in the   
-            IWA ASM1 report. After much study, it is decided to settle with scipy.integrate.solve_ivp routine for now  
-            so that the rest of the PooPyLab development can progress, while KZ continues in his study of BDF methods  
-            and attempts for a home brew version. Euler, RK4, RKF45, RKDP45, and Partitioned ODE methods have been     
-            coded and tested in the past but no longer in use as of now, except for RKF45. The unused code is moved to 
-            bio_py_funcs_not_used.txt for archiving.                                                                   
+            2) There are a few integration methods attempted for PooPyLab: Euler, Runge-Kutta 4th order,
+            Runge-Kutta-Felhberg 4/5, RK-Dormand-Prince-4/5, and the ODE system partitioning scheme suggested in the
+            IWA ASM1 report. After much study, it is decided to settle with scipy.integrate.solve_ivp routine for now
+            so that the rest of the PooPyLab development can progress, while KZ continues in his study of BDF methods
+            and attempts for a home brew version. Euler, RK4, RKF45, RKDP45, and Partitioned ODE methods have been
+            coded and tested in the past but no longer in use as of now, except for RKF45. The unused code is moved to
+            bio_py_funcs_not_used.txt for archiving.
 
         See:
             _runge_kutta_fehlberg_45()
@@ -186,8 +189,8 @@ class asm_reactor(pipe):
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._mo_comps[:]
 
-        # if the user fixes the DO of a aerobic reactor or explicitly set the DO to 0 (anoxic or anaerobic), then      
-        # force the bulk DO into _mo_comps[0]                                                                          
+        # if the user fixes the DO of a aerobic reactor or explicitly set the DO to 0 (anoxic or anaerobic), then
+        # force the bulk DO into _mo_comps[0]
         if fix_DO or self._sludge.get_bulk_DO() == 0:
             self._mo_comps[0] = self._sludge.get_bulk_DO()
             self._so_comps[0] = self._mo_comps[0]

@@ -37,6 +37,8 @@ if __name__ == '__main__':
     pfd.show(wwtp)
 
     run.get_steady_state(wwtp, FOUR_STG_BARDEN.SRT,
+                            verbose=False,
+                            diagnose=True,
                             mn='BDF',
                             fDO=True,
                             DOsat=10)

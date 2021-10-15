@@ -28,8 +28,6 @@
 ## @file asmbase.py
 
 
-#from ..ASMModel import constants
-
 class asm_model(object):
     """
     Common interface for all IWA Activated Sludge Models
@@ -55,8 +53,8 @@ class asm_model(object):
         # wastewater temperature used in the model, degC
         self._temperature = ww_temp
         # mixed liquor bulk dissolved oxygen, mg/L
-        self._bulk_DO = DO 
-        
+        self._bulk_DO = DO
+
         # define the model parameters and stochoimetrics as dict() so that it
         # is easier to keep track of names and values
 
@@ -199,7 +197,7 @@ class asm_model(object):
             update().
         """
         pass
-        
+
 
     def _set_stoichs(self):
         """
@@ -220,7 +218,7 @@ class asm_model(object):
         """
         pass
 
-        
+
     def _monod(self, term_in_num_denum, term_only_in_denum):
         """
         Template for Monod kinetics or switches.
@@ -231,7 +229,7 @@ class asm_model(object):
             Monod switch of Dissol. O2 on Autotrophs;
             Monod kinetic of Ammonia-N on Autotrophs;
             Monod kinetic of NOx-N on Autotrophs.
-        
+
         Args:
             term_in_num_denum:      the term in both numerator & denumerator
             term_only_in_denum:     the term only in numerator
@@ -249,7 +247,7 @@ class asm_model(object):
         Overall mass balance:
         dComp/dt == InfFlow / Actvol * (in_comps - mo_comps) + GrowthRate
                  == (in_comps - mo_comps) / HRT + GrowthRate
- 
+
         Args:
             t:          time for use in ODE integration routine, d
             mo_comps:   list of model component for mainstream outlet, mg/L.
@@ -259,7 +257,7 @@ class asm_model(object):
 
         Return:
             dC/dt of the system ([float])
-        
+
         ASM1 Components:
             0_S_DO, 1_S_I, 2_S_S, 3_S_NH, 4_S_NS, 5_S_NO, 6_S_ALK,
             7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
