@@ -75,17 +75,20 @@ def get_model_stoichs(all_rows=[], num_comps=13):
 def get_rate_equations(all_rows=[], num_comps=13, num_eqtns=8):
     """ Extract the rate equation's individual terms """
 
-    # The definition of rate equations starting at Row 5 (Row Index = 4), three (3) columns down from the last model
-    # component and its stoichiometric column
-    eqs_start_row_index = 4
-    eqs_start_col_index = (num_comps - 1) + 3  # convert to index
+    # The definition of rate equations starting at Row 3 (Row Index = 2), one (1) column down from the last model
+    # component and its stoichiometric column: term type row and term unit row included
+    eqs_start_row_index = 2
 
-    # _rate_eqs stores the rate equations in the form of a 2-d array of text;
-    # the 1st index of _rate_eqs is the id of the rate equations, starting at 0
-    # and the 2nd index of _rate_eqs is the id of the individual terms in the rate equations, starting at 0
+    # looks stupidly redundant, but for readability: convert to index
+    eqs_start_col_index = (num_comps - 1) + 1
+
+    # _rate_eqs stores the rate equations in the form of a 2-d array of text:
+    # the 1st row defines the types of the individual terms in the rate equations at the corresponding index;
+    # the 2nd row of _rate_eqs is the unit of the individual rate equation terms;
     _rate_eqs = []
 
-    for row in all_rows[eqs_start_row_index:eqs_start_row_index + num_eqtns]:
+    # all_rows[] indexing: added 2 due to the term type row and the term unit row
+    for row in all_rows[eqs_start_row_index:(eqs_start_row_index + 2 + num_eqtns)]:
         _rate_eqs.append(row[eqs_start_col_index:])
 
     return _rate_eqs
@@ -100,71 +103,70 @@ def create_model_class_init(model_name='User_Defined_Model', csv_file='template_
 
     _filename = model_name + '.py'
 
-    _tab = ' '*4
+    _tab = ' ' * 4
 
     with open(_filename, 'w') as asmfile:
-        asmfile.write('#  This file defines the model named ' + model_name + '\n')
-        asmfile.write('#\n')
-        asmfile.write('#  Created Using:            PooPyLab Model Builder\n')
-        asmfile.write('#  User Specified Model in:  ' + csv_file + '\n')
-        asmfile.write('#  Created at:               ' + _dt_stamp.strftime("%H:%M:%S %Y-%B-%d") + '\n')
-        asmfile.write('#\n\n\n')
+        asmwrite = asmfile.write
 
-        asmfile.write('from .asmbase import asm_model' + '\n'*3)
+        asmwrite('#  This file defines the model named ' + model_name + '\n')
+        asmwrite('#\n')
+        asmwrite('#  Created Using:            PooPyLab Model Builder\n')
+        asmwrite('#  User Specified Model in:  ' + csv_file + '\n')
+        asmwrite('#  Created at:               ' + _dt_stamp.strftime("%H:%M:%S %Y-%B-%d") + '\n')
+        asmwrite('#\n\n\n')
 
-        asmfile.write('class ' + model_name + '(asm_model):' + '\n')
-        asmfile.write(_tab + 'def __init__(self, ww_temp=20, DO=2):' + '\n')
-        asmfile.write(_tab*2 + '"""\n')
-        asmfile.write(_tab*2 + 'Args:\n')
-        asmfile.write(_tab*3 + 'ww_temp:    wastewater temperature, degC;\n')
-        asmfile.write(_tab*3 + 'DO:         dissoved oxygen, mg/L\n\n')
-        asmfile.write(_tab*2 + 'Return:\n')
-        asmfile.write(_tab*3 + 'None\n')
-        asmfile.write(_tab*2 + 'See:\n')
-        asmfile.write(_tab*3 + '_set_ideal_kinetics_20C();\n')
-        asmfile.write(_tab*3 + '_set_params();\n')
-        asmfile.write(_tab*3 + '_set_stoichs().\n')
-        asmfile.write(_tab*2 + '"""\n\n')
+        asmwrite('from .asmbase import asm_model' + '\n'*3)
 
-        asmfile.write(_tab*2 + 'asm_model.__init__(self)' + '\n')
-        asmfile.write(_tab*2 + 'self.__class__.__id += 1' + '\n\n')
+        asmwrite('class ' + model_name + '(asm_model):' + '\n')
+        asmwrite(_tab + 'def __init__(self, ww_temp=20, DO=2):' + '\n')
+        asmwrite(_tab*2 + '"""\n')
+        asmwrite(_tab*2 + 'Args:\n')
+        asmwrite(_tab*3 + 'ww_temp:    wastewater temperature, degC;\n')
+        asmwrite(_tab*3 + 'DO:         dissoved oxygen, mg/L\n\n')
+        asmwrite(_tab*2 + 'Return:\n')
+        asmwrite(_tab*3 + 'None\n')
+        asmwrite(_tab*2 + 'See:\n')
+        asmwrite(_tab*3 + '_set_ideal_kinetics_20C();\n')
+        asmwrite(_tab*3 + '_set_params();\n')
+        asmwrite(_tab*3 + '_set_stoichs().\n')
+        asmwrite(_tab*2 + '"""\n\n')
 
-        asmfile.write(_tab*2 + 'self._set_ideal_kinetics_20C_to_defaults()' + '\n\n')
+        asmwrite(_tab*2 + 'asm_model.__init__(self)' + '\n')
+        asmwrite(_tab*2 + 'self.__class__.__id += 1' + '\n\n')
 
-        asmfile.write(_tab*2 + '# wastewater temperature used in the model, degC' + '\n')
-        asmfile.write(_tab*2 + 'self._temperature = ww_temp' + '\n\n')
+        asmwrite(_tab*2 + 'self._set_ideal_kinetics_20C_to_defaults()' + '\n\n')
 
-        asmfile.write(_tab*2 + '# mixed liquor bulk dissolved oxygen, mg/L' + '\n')
-        asmfile.write(_tab*2 + 'self._bulk_DO = DO' + '\n\n')
+        asmwrite(_tab*2 + '# wastewater temperature used in the model, degC' + '\n')
+        asmwrite(_tab*2 + 'self._temperature = ww_temp' + '\n\n')
 
-        asmfile.write(_tab*2 + "# temperature difference b/t what's used and baseline (20C), degC" + '\n')
-        asmfile.write(_tab*2 + 'self._delta_t = self._temperature - 20' + '\n\n')
+        asmwrite(_tab*2 + '# mixed liquor bulk dissolved oxygen, mg/L' + '\n')
+        asmwrite(_tab*2 + 'self._bulk_DO = DO' + '\n\n')
 
-        asmfile.write(_tab*2 + 'self.update(ww_temp, DO)' + '\n\n')
+        asmwrite(_tab*2 + "# temperature difference b/t what's used and baseline (20C), degC" + '\n')
+        asmwrite(_tab*2 + 'self._delta_t = self._temperature - 20' + '\n\n')
 
-        asmfile.write(_tab*2 + '# ' + model_name + ' model components' + '\n')
-        asmfile.write(_tab*2 + 'self._comps = [0.0] * ' + str(num_comps) + '\n\n')
+        asmwrite(_tab*2 + 'self.update(ww_temp, DO)' + '\n\n')
 
-        asmfile.write(_tab*2 + '# Intermediate results of rate expressions, M/L^3/T' + '\n')
-        asmfile.write(_tab*2 + '# The list is to help speed up the calculation by reducing redundant' + '\n')
-        asmfile.write(_tab*2 + '# calls of individual rate expressions in multiple mass balance equations' + '\n')
-        asmfile.write(_tab*2 + '# for the model components.' + '\n')
-        asmfile.write(_tab*2 + '# ' + model_name + ' has ' + str(num_eqs) + ' bio processes.' + '\n')
-        asmfile.write(_tab*2 + 'self._rate_res = [0.0] * ' + str(num_eqs) + '\n\n')
+        asmwrite(_tab*2 + '# ' + model_name + ' model components' + '\n')
+        asmwrite(_tab*2 + 'self._comps = [0.0] * ' + str(num_comps) + '\n\n')
+
+        asmwrite(_tab*2 + '# Intermediate results of rate expressions, M/L^3/T' + '\n')
+        asmwrite(_tab*2 + '# The list is to help speed up the calculation by reducing redundant' + '\n')
+        asmwrite(_tab*2 + '# calls of individual rate expressions in multiple mass balance equations' + '\n')
+        asmwrite(_tab*2 + '# for the model components.' + '\n')
+        asmwrite(_tab*2 + '# ' + model_name + ' has ' + str(num_eqs) + ' bio processes.' + '\n')
+        asmwrite(_tab*2 + 'self._rate_res = [0.0] * ' + str(num_eqs) + '\n\n')
 
         #TODO: NEED TO HAVE THE MONOD TERMS PARSED FIRST
         # Intermediate results of Monod or Inhibition Terms
         #    self._monods = [1.0] * 7
         #TODO_END
 
-        asmfile.write(_tab*2 + 'return None' + '\n')
-
+        asmwrite(_tab*2 + 'return None' + '\n')
 
     asmfile.close()
 
     return None
-
-
 
 
 if __name__ == '__main__':
