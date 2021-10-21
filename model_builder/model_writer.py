@@ -94,6 +94,18 @@ def get_rate_equations(all_rows=[], num_comps=13, num_eqtns=8):
     return _rate_eqs
 
 
+def check_monod_term(term=''):
+    """ check if the target term is in the form of a Monod or Inhibition term """
+
+    if '/' in term:
+        numerator, denominator = term.split('/')
+    else:
+        return False
+
+
+    return
+
+
 def create_model_class_init(model_name='User_Defined_Model', csv_file='template_asm1.csv', num_comps=13, num_eqs=8):
     """ create the file that store the model components, stoichiometry, and parameters/constants """
 
