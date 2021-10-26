@@ -94,16 +94,125 @@ def get_rate_equations(all_rows=[], num_comps=13, num_eqtns=8):
     return _rate_eqs
 
 
-def check_monod_term(term=''):
-    """ check if the target term is in the form of a Monod or Inhibition term """
+def find_num_denom(term='A/(K+A)'):
+    """ find the numerator and denominator in an expression term, if any.
 
-    if '/' in term:
-        numerator, denominator = term.split('/')
-    else:
-        return False
+    Args:
+        term:   expression term to be analyzed (string)
 
+    Return:
+        numerator and denominator of the term
+
+    See:
+        parse_monod()
+    """
+
+    if '/' not in term:
+        print('Please present the Monod term in the format of "A/(K+A)" and retry.')
+        return '', ''
+
+    _tsplt = term.split('/')
+
+    _n = len(_tsplt)
+    _main_divider_loc = _n // 2
+
+    _numerator = ''.join([_t + '/' for _t in _tsplt[:_main_divider_loc]]).rstrip('/')
+
+    _denominator = ''.join([_t + '/' for _t in _tsplt[_main_divider_loc:]]).rstrip('/')
+
+    return _numerator, _denominator
+
+
+def pop_to_left_parenth(stack=[], index_left_parenth=0):
+    """ pop the stack until the index of the paired left paranthesis.
+
+    Args:
+        stack:      list of symbols and terms collected;
+        index_left_parenth: the ending index of the first '(' to be encounter when poping the stack
+
+    Return:
+        part of stack (as a list) that is within a pair of '(' and ')'
+
+    See:
+        _reorg()
+    """
+
+    _res = []
+
+    while len(stack) > index_left_parenth:
+        _res.insert(0, stack.pop())
+
+    return _res
+
+
+def is_operan(char=''):
+    """ check whether a character is '+', '-', '*', or '/' """
+
+    return (char == '+' or char == '-' or char == '*' or char == '/')
+
+
+def has_operan(term=[]):
+    """ check whether a term contain '+', '-', '*', or '/' """
+
+    return ('+' in term or '-' in term or '*' in term or '/' in term)
+
+
+def _reorg(expr='(K+A)', start=0, left_parenth_indices=[], chunk=[], res=[]):
+    """ re-organize the expr for detection of the numerator and denominator
+
+    1) Remove the blanks;
+    2) Remove the useless redundant '(' and ')' pairs;
+
+    Args:
+        expr:   the expression term (string);
+        start:  starting position in expr for the current round of evaluation (int);
+        left_paranth_indices: a list of left half of paranthesis '(' in the res stack;
+        chunk:  a list sub-string in expr that can be stored as a group;
+        res:    result list
+
+    Return:
+        None
+
+    See:
+        parse_monod();
+        pop_to_left_paranth();
+        is_operan();
+        has_operan();
+        find_num_denom();
+    """
+
+    if start == len(expr):
+        return
+
+    _char = expr[start]
+
+    if _char != ' ':
+        res.append(_char)
+        if _char == '(':
+            left_parenth_indices.append(len(res)-1)
+        elif _char == ')':
+            chunk += pop_to_left_parenth(res, left_parenth_indices.pop())
+            if not has_operan(chunk):
+                chunk = chunk[1:-1]
+            res.append(''.join(chunk))
+            chunk.clear()
+        elif not(_char.isalpha() or _char.isnumeric() or _char == '_' or is_operan(_char)):
+            print('Found invalid a character in the expression. Parsing aborted.')
+            return
+
+    _reorg(expr, start+1, left_parenth_indices, chunk, res)
 
     return
+
+
+def parse_monod(monod_term=''):
+    """ wrapper for the _reorg() function """
+
+    res = []
+
+    _reorg(monod_term, 0, [], [], res)
+
+    return ''.join(res)
 
 
 def create_model_class_init(model_name='User_Defined_Model', csv_file='template_asm1.csv', num_comps=13, num_eqs=8):
