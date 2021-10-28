@@ -94,7 +94,7 @@ def get_rate_equations(all_rows=[], num_comps=13, num_eqtns=8):
     return _rate_eqs
 
 
-def _find_num_denom(term='A/(K+A)'):
+def find_num_denom(term='A/(K+A)'):
     """ find the numerator and denominator in an expression term, if any.
 
     Args:
@@ -178,7 +178,7 @@ def _reorg(expr='(K+A)', start=0, left_parenth_indices=[], chunk=[], res=[]):
         _pop_to_left_paranth();
         _is_operan();
         _has_operan();
-        _find_num_denom();
+        find_num_denom();
     """
 
     if start == len(expr):
@@ -308,18 +308,18 @@ if __name__ == '__main__':
     num_comps = len(model_comps)
 
     print('Found', num_comps, 'Model Components:')
-    print(model_comps)
+    print(model_comps, '\n')
 
     model_params = get_model_params(csv_rows)
     num_params = len(model_params)
     print('Found', num_params, 'Model Parameters/Constants:')
-    print(model_params)
+    print(model_params, '\n')
 
     model_stoichs, num_eqs = get_model_stoichs(csv_rows, num_comps)
-    print(model_stoichs)
+    print(model_stoichs, '\n')
 
     print('Found', num_eqs, 'Rate Equations:')
     model_rate_eqs = get_rate_equations(csv_rows, num_comps, num_eqs)
-    print(model_rate_eqs)
+    print(model_rate_eqs, '\n')
 
     create_model_class_init('KZTest', 'template_asm1.csv', num_comps, num_eqs)
