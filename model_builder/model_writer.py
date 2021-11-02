@@ -127,7 +127,7 @@ def _pop_to_left_parenth(stack=[], index_left_parenth=0):
     """ pop the stack until the index of the paired left paranthesis.
 
     Args:
-        stack:      list of symbols and terms collected;
+        stack:              list of symbols and terms collected;
         index_left_parenth: the ending index of the first '(' to be encounter when poping the stack
 
     Return:
