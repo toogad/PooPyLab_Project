@@ -1,48 +1,67 @@
 #!/usr/bin/python3
 
 class expr_tree_node():
-    def __init__(self, char=''):
-        self.text = char
-        self.lt_child = None
-        self.rt_child = None
+    def __init__(self, txt='', leftchild=None, rightchild=None):
+        self.string = txt
+        self.left = leftchild
+        self.right = rightchild
+        self.priority = (txt == '*' or txt == '/')  # 1 if * or /; 0 otherwise
         return None
 
 
-def _is_operator(char=''):
+def is_operator(char=''):
     """ check whether a character is '+', '-', '*', or '/' """
 
     return (char == '+' or char == '-' or char == '*' or char == '/')
 
 
-def _has_operator(term=[]):
+def has_operator(term=[]):
     """ check whether a term contain '+', '-', '*', or '/' """
 
     return ('+' in term or '-' in term or '*' in term or '/' in term)
 
 
-def _is_parenthesis(char=''):
-    if char == '(':
-        return 1
-    elif char == ')':
-        return 2
-    else:
-        return 0
+def create_var(expr='', start=0):
+    var = ''
+    operator = ''
+    for ch in expr[start:]:
+        if ch.isalpha() or ch.isnumeric() or ch == '_':
+            var += ch
+        elif is_operator(ch):
+            operator = ch
+            break
+        elif ch != ' ':
+            print("INVALID CHARACTER DETECTED. ABORTED PROCESS.")
+            return '', 0, ''
+
+    return var, len(var) + len(operator), operator
 
 
-def create_node(text='', left_child=None, right_child=None):
-    _newnode = expr_tree_node()
-    _newnode.text = text
-    _newnode.lt_child = left_child
-    _newnode.rt_child = right_child
-    return _newnode
+def build_tree(expr='A-B+K-C*D+E/F*G', start=0, unfinished=[], treetop=None):
+    if start >= len(expr):
+        return treetop
+
+    var, offset, operator = create_var(expr, start)
+
+    newchild = expr_tree_node(var, None, None)
+    newparent = expr_tree_node(operator, newchild, build_tree(expr, start+offset, unfinished, treetop))
+
+    if treetop is None:
+        treetop = newparent
+        unfinished.append(newparent)
+        newparent.rt_child = build_tree(expr, start+offset, unfinished, treetop)
+        return treetop
+
+    if len(unfinished):
+        if unfinished[-1].priority == newparent.priority:
+            v = unfinished.pop()
+            v.right = newchild
+            treetop = newparent
+            treetop.left = v
+        else
 
 
-def build_tree(expr='A-B+C*D+E/F*G', start=0, stack=[], treetop=None):
-    _scan = ''
-             
 
-            
-            
     return
 
 if __name__ == '__main__':
