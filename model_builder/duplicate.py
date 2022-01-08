@@ -34,7 +34,7 @@ def found_empty_operator(node_var, treetop, unfinished):
     u = unfinished.pop()
     u.right = node_var
     node_var.parent = u
-    return
+    return treetop, unfinished
 
 
 def found_empty_treetop(node_var, node_ops, treetop, unfinished):
@@ -42,7 +42,7 @@ def found_empty_treetop(node_var, node_ops, treetop, unfinished):
     node_ops.left = node_var
     node_var.parent = node_ops
     unfinished = [node_ops]
-    return
+    return treetop, unfinished
 
 
 def connect_nodes(node_var, node_ops, treetop, unfinished):
@@ -69,62 +69,10 @@ def connect_nodes(node_var, node_ops, treetop, unfinished):
         node_var.parent = u
         treetop = [node_ops]
         unfinished = [treetop[0]]
-    return
+    return treetop, unfinished
 
 # ===========Common Definitions End=========================
 
-
-
-def get_tree(expr=' A -B+K -  C  *D+E/F*G'):
-    global_treetop = []
-    global_unfinished = []
-    parenth_index = []
-    temp = ''
-
-    index = 0
-
-    while index < len(expr):
-        ch = expr[index]
-
-        if ch == '(':
-            node_var = _convert_expr_to_bin_subtree(temp[:-1])
-            node_ops = expr_tree_node(temp[-1])
-            node_var.priority = -len(parenth_index)
-            temp = ''
-            parenth_index.append(index)
-        elif ch.isalpha() or ch.isnumeric() or ch == '_' or is_operator(ch):
-            temp += ch
-        elif ch == ')':
-            node_var = _convert_expr_to_bin_subtree(temp)
-            if index == len(expr):
-                node_ops = expr_tree_node('')
-            else:
-                index += 1
-                node_ops = expr_tree_node(expr[index])
-            node_var.priority = -len(parenth_index)
-            parenth_index.pop()
-            node_ops.priority = -len(parenth_index)
-            temp = ''
-        elif ch != ' ':
-            print("INVALID CHARACTER DETECTED. ABORTED PROCESS.")
-
-        global_treetop = _add_to_tree(node_var, node_ops, global_treetop, global_unfinished)
-
-    return global_treetop[0]
-
-
-def _add_to_tree(node_var, node_ops, treetop, unfinished):
-    if node_ops.content == '':
-        _found_empty_operator(node_var, treetop, unfinished)
-        return treetop[0]
-
-    if len(treetop) == 0:
-        _found_empty_treetop(node_var, node_ops, treetop, unfinished)
-        return treetop[0]
-
-    _connect_nodes(node_var, node_ops, treetop, unfinished)
-
-    return treetop[0]
 
 
 def subtree_get_var_ops(expr='', start=0):
@@ -155,16 +103,16 @@ def build_subtree(expr='A-B+K-C*D+E/F*G', start=0, treetop=[], unfinished=[]):
     node_ops = expr_tree_node(operator)
 
     if node_ops.content == '':
-        found_empty_operator(node_var, treetop, unfinished)
+        treetop, unfinished = found_empty_operator(node_var, treetop, unfinished)
         return treetop[0]
 
     new_start = start + offset
 
     if len(treetop) == 0:
-        found_empty_treetop(node_var, node_ops, treetop, unfinished)
+        treetop, unfinished = found_empty_treetop(node_var, node_ops, treetop, unfinished)
         return build_subtree(expr, new_start, treetop, unfinished)
 
-    connect_nodes(node_var, node_ops, treetop, unfinished)
+    treetop, unfinished = connect_nodes(node_var, node_ops, treetop, unfinished)
 
     return build_subtree(expr, new_start, treetop, unfinished)
 
@@ -173,8 +121,8 @@ def convert_expr_to_bin_subtree(expr=' A -B+K -  C  *D+E/F*G'):
     start = 0
     treetop = []
     unfinished = []
-    #pdb.set_trace()
     print(expr)
+    #pdb.set_trace()
     res = build_subtree(expr, start, treetop, unfinished)
     return res
 
@@ -204,8 +152,9 @@ if __name__ == '__main__':
     #print('Numerator =', numerator, '; Denominator =', denominator)
     #print('Numerator is a sub-term in Denominator:', numerator in denominator)
 
+    import pdb
     mytop = convert_expr_to_bin_subtree()
     print("regen:")
     print_tree(mytop)
 
-    
+ 
