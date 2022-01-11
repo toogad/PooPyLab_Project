@@ -20,13 +20,11 @@ class expr_tree_node():
 
 def is_operator(char=''):
     """ check whether a character is '+', '-', '*', or '/' """
-
     return (char == '+' or char == '-' or char == '*' or char == '/')
 
 
 def has_operator(term=[]):
     """ check whether a term contain '+', '-', '*', or '/' """
-
     return ('+' in term or '-' in term or '*' in term or '/' in term)
 
 
@@ -76,9 +74,18 @@ def _connect_nodes(node_var, node_ops, treetop, unfinished):
 
 
 
-def create_node(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )', start=0, left_paren_count=0, queue=[]):
+def build_tree(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )'):
+    start = 0
+    left_paren_count = 0
+    queue = []
+    print(expr)
+    return create_nodes(expr, start, left_paren_count, queue)
+
+
+def create_nodes(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )', start=0, left_paren_count=0, queue=[]):
     temp = ''
-    local_treetop = expr_tree_node('')
+    treetop = []
+    unfinished = []
     while start < len(expr):
         ch = expr[start]
         start += 1
@@ -86,80 +93,52 @@ def create_node(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )', start=0, left_
             temp += ch
         elif is_operator(ch):
             node_var = expr_tree_node(temp)
+            node_var.priority -= left_paren_count
             node_ops = expr_tree_node(ch)
+            node_ops.priority -= left_paren_count
             queue.append(node_var)
             queue.append(node_ops)
             temp = ''
         elif ch == '(':
             left_paren_count += 1
             next_level_queue = []
-            node_var = create_node(expr, start, left_paren_count, next_level_queue)
+            node_var = create_nodes(expr, start, left_paren_count, next_level_queue)
         elif ch == ')':
-            local_treetop = convert_queue_to_node(queue)
-            local_treetop.priority = -left_paren_count
+            treetop = [convert_queue_to_node(queue, [], [])]
+            #treetop[0].priority = -left_paren_count
             left_paren_count -= 1
-            return local_treetop
+            return treetop[0]
         elif ch != ' ':
             print("INVALID CHARACTER DETECTED. ABORTED PROCESS.")
 
-    return local_treetop
+    treetop = convert_queue_to_node(queue, treetop, unfinished)
+    return treetop[0]
 
 
-def convert_queue_to_node(queue=[]):
-    #TODO: fill in here
-    return
+def convert_queue_to_node(queue=[], local_treetop=[], unfinished=[]):
 
+    if len(queue):
+        node_var = queue[0]
+        queue.pop(0)
+    else:  # the queue is empty
+        return None
 
-def subtree_get_var_ops(expr='', start=0):
-    variable = ''
-    operator = ''
-    counter = 0
-    for ch in expr[start:]:
-        counter += 1
-        if ch.isalpha() or ch.isnumeric() or ch == '_':
-            variable += ch
-        elif is_operator(ch):
-            operator = ch
-            break
-        elif ch != ' ':
-            print("INVALID CHARACTER DETECTED. ABORTED PROCESS.")
-            return '', 0, ''
+    # if the queue is not empty yet, get another node as "node_ops"
+    if len(queue):
+        node_ops = queue[0]
+        queue.pop(0)
+    else:  # reached the end of the queue
+        local_treetop, unfinished = _found_empty_operator(node_var, local_treetop, unfinished)
+        return local_treetop
 
-    return variable, counter, operator
+    if len(local_treetop) == 0:
+        local_treetop, unfinished = _found_empty_treetop(node_var, node_ops, local_treetop, unfinished)
+        return convert_queue_to_node(queue, local_treetop, unfinished)
 
+    local_treetop, unfinished = _connect_nodes(node_var, node_ops, local_treetop, unfinished)
 
-def build_subtree(expr='A-B+K-C*D+E/F*G', start=0, treetop=[], unfinished=[]):
-    if start >= len(expr):
-        return treetop[0]
+    return convert_queue_to_node(queue, local_treetop, unfinished)
 
-    var, offset, operator = subtree_get_var_ops(expr, start)
-
-    node_var = expr_tree_node(var)
-    node_ops = expr_tree_node(operator)
-
-    if node_ops.content == '':
-        treetop, unfinished = _found_empty_operator(node_var, treetop, unfinished)
-        return treetop[0]
-
-    new_start = start + offset
-
-    if len(treetop) == 0:
-        treetop, unfinished = _found_empty_treetop(node_var, node_ops, treetop, unfinished)
-        return build_subtree(expr, new_start, treetop, unfinished)
-
-    treetop, unfinished = _connect_nodes(node_var, node_ops, treetop, unfinished)
-
-    return build_subtree(expr, new_start, treetop, unfinished)
-
-
-def convert_expr_to_bin_subtree(expr=' A -B+K -  C  *D+E/F*G'):
-    start = 0
-    treetop = []
-    unfinished = []
-    #pdb.set_trace()
-    print(expr)
-    res = build_subtree(expr, start, treetop, unfinished)
-    return res
 
 
 def print_tree(treetop):
@@ -187,8 +166,10 @@ if __name__ == '__main__':
     #print('Numerator =', numerator, '; Denominator =', denominator)
     #print('Numerator is a sub-term in Denominator:', numerator in denominator)
 
-    mytop = convert_expr_to_bin_subtree()
+    #mytop = convert_expr_to_bin_subtree()
+    mytop = build_tree()
     print("regen:")
     print_tree(mytop)
 
+    
     
