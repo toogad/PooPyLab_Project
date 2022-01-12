@@ -76,19 +76,21 @@ def _connect_nodes(node_var, node_ops, treetop, unfinished):
 
 def build_tree(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )'):
     start = 0
+    global_pos = 0
     left_paren_count = 0
     queue = []
     print(expr)
-    return create_nodes(expr, start, left_paren_count, queue)
+    #pdb.set_trace()
+    return create_nodes(expr, start, global_pos, left_paren_count, queue)
 
 
-def create_nodes(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )', start=0, left_paren_count=0, queue=[]):
+def create_nodes(expr='B*A/(Z*(D+C*F)/K-(G+H)*V)', start=0, global_pos=0, left_paren_count=0, queue=[]):
     temp = ''
     treetop = []
     unfinished = []
     while start < len(expr):
         ch = expr[start]
-        start += 1
+        global_pos += 1
         if ch.isalpha() or ch.isnumeric() or ch == '_':
             temp += ch
         elif is_operator(ch):
@@ -100,28 +102,36 @@ def create_nodes(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )', start=0, left
             queue.append(node_ops)
             temp = ''
         elif ch == '(':
-            left_paren_count += 1
+            next_left_paren_count = left_paren_count + 1
             next_level_queue = []
-            node_var = create_nodes(expr, start, left_paren_count, next_level_queue)
+            node_var, global_pos = create_nodes(expr, start+1, global_pos, next_left_paren_count, next_level_queue)
+            queue.append(node_var)
         elif ch == ')':
-            treetop = [convert_queue_to_node(queue, [], [])]
+            node_var = expr_tree_node(temp)
+            node_var.priority -= left_paren_count
+            queue.append(node_var)
+            temp = ''
+            treetop = convert_queue_to_node(queue, [], [])
+            queue.append(treetop[0])
             #treetop[0].priority = -left_paren_count
             left_paren_count -= 1
-            return treetop[0]
+            return treetop[0], global_pos
         elif ch != ' ':
             print("INVALID CHARACTER DETECTED. ABORTED PROCESS.")
+        start = global_pos
+        #print([_.content for _ in queue])
 
     treetop = convert_queue_to_node(queue, treetop, unfinished)
-    return treetop[0]
+    return treetop[0], global_pos
 
 
 def convert_queue_to_node(queue=[], local_treetop=[], unfinished=[]):
-
+    #print("Inside queue to node: ", [_.content for _ in queue])
     if len(queue):
         node_var = queue[0]
         queue.pop(0)
-    else:  # the queue is empty
-        return None
+    else:
+        return local_treetop
 
     # if the queue is not empty yet, get another node as "node_ops"
     if len(queue):
@@ -142,6 +152,7 @@ def convert_queue_to_node(queue=[], local_treetop=[], unfinished=[]):
 
 
 def print_tree(treetop):
+    #pdb.set_trace()
     if treetop is None:
         return
     print(treetop.content)
@@ -166,8 +177,9 @@ if __name__ == '__main__':
     #print('Numerator =', numerator, '; Denominator =', denominator)
     #print('Numerator is a sub-term in Denominator:', numerator in denominator)
 
+    import pdb
     #mytop = convert_expr_to_bin_subtree()
-    mytop = build_tree()
+    mytop, _ = build_tree()
     print("regen:")
     print_tree(mytop)
 
