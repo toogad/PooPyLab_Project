@@ -76,57 +76,55 @@ def _connect_nodes(node_var, node_ops, treetop, unfinished):
 
 def build_tree(expr=' B *  A / (Z*  ( D+ C* F )/ K - (G+H)*V )'):
     start = 0
-    global_pos = 0
     left_paren_count = 0
     queue = []
     print(expr)
-    #pdb.set_trace()
-    return create_nodes(expr, start, global_pos, left_paren_count, queue)
+    return create_nodes(expr, start, left_paren_count, queue)
 
 
-def create_nodes(expr='B*A/(Z*(D+C*F)/K-(G+H)*V)', start=0, global_pos=0, left_paren_count=0, queue=[]):
+def create_nodes(expr='B*A/(Z*(D+C*F)/K-(G+H)*V)', start=0, left_paren_count=0, queue=[]):
     temp = ''
     treetop = []
     unfinished = []
     while start < len(expr):
         ch = expr[start]
-        global_pos += 1
+        start += 1
         if ch.isalpha() or ch.isnumeric() or ch == '_':
             temp += ch
         elif is_operator(ch):
-            node_var = expr_tree_node(temp)
-            node_var.priority -= left_paren_count
+            if temp != '':
+                queue.append(expr_tree_node(temp))
             node_ops = expr_tree_node(ch)
-            node_ops.priority -= left_paren_count
-            queue.append(node_var)
             queue.append(node_ops)
             temp = ''
         elif ch == '(':
             next_left_paren_count = left_paren_count + 1
             next_level_queue = []
-            node_var, global_pos = create_nodes(expr, start+1, global_pos, next_left_paren_count, next_level_queue)
+            node_var, start = create_nodes(expr, start, next_left_paren_count, next_level_queue)
             queue.append(node_var)
         elif ch == ')':
-            node_var = expr_tree_node(temp)
-            node_var.priority -= left_paren_count
-            queue.append(node_var)
+            if temp != '':
+                queue.append(expr_tree_node(temp))
             temp = ''
             treetop = convert_queue_to_node(queue, [], [])
             queue.append(treetop[0])
-            #treetop[0].priority = -left_paren_count
+            treetop[0].priority = -left_paren_count
             left_paren_count -= 1
-            return treetop[0], global_pos
+            return treetop[0], start
         elif ch != ' ':
             print("INVALID CHARACTER DETECTED. ABORTED PROCESS.")
-        start = global_pos
-        #print([_.content for _ in queue])
+
+    if temp != '':
+        queue.append(expr_tree_node(temp))
 
     treetop = convert_queue_to_node(queue, treetop, unfinished)
-    return treetop[0], global_pos
+    return treetop[0], start
 
 
 def convert_queue_to_node(queue=[], local_treetop=[], unfinished=[]):
-    #print("Inside queue to node: ", [_.content for _ in queue])
+    if len(queue) == 1 and len(unfinished) == 0:
+        return queue[:]
+
     if len(queue):
         node_var = queue[0]
         queue.pop(0)
@@ -152,7 +150,6 @@ def convert_queue_to_node(queue=[], local_treetop=[], unfinished=[]):
 
 
 def print_tree(treetop):
-    #pdb.set_trace()
     if treetop is None:
         return
     print(treetop.content)
@@ -164,24 +161,13 @@ def print_tree(treetop):
 
 if __name__ == '__main__':
 
-    #from model_writer import parse_monod, find_num_denom
-
-    #monod = '  ((  (((X_S)) /(X_BH+(   S_O   )))))  / (( K _  X  +(  (X_S ) /  X_BH))  ) '
+    monod = '  ((  (((X_S)) /(X_BH+(   S_O   )))))  / (( K _  X  +(  (X_S ) /  X_BH))  ) '
     #combo = ' ( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O) * S_NO / (K_NO+S_NO))'
-    #print('Monod term before parsing:', combo)
 
-    #parsed = parse_monod(combo)
-    #print(parsed)
-
-    #numerator, denominator = find_num_denom(parsed)
-    #print('Numerator =', numerator, '; Denominator =', denominator)
-    #print('Numerator is a sub-term in Denominator:', numerator in denominator)
-
-    import pdb
     #mytop = convert_expr_to_bin_subtree()
-    mytop, _ = build_tree()
+    #mytop, _ = build_tree('(D+C*F)/K')
+    ##mytop, _ = build_tree()
+    #mytop, _ = build_tree(combo)
+    mytop, _ = build_tree(monod)
     print("regen:")
     print_tree(mytop)
-
-    
-    
