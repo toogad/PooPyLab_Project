@@ -23,18 +23,10 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent classes.
 #
-#
-# Change Log:
-# 20201129 KZ: re-run after package structure update
-# 20191011 KZ: re-run test after flow data source setting funcs
-# 20191004 KZ: re-run test after revision on final_clarifier 
-# 20190919 KZ: init and passed
-#
 
 from PooPyLab.unit_procs.streams import splitter, pipe, WAS
 from PooPyLab.unit_procs.streams import influent, effluent
 from PooPyLab.utils import pfd, run
-import pdb
 
 if __name__ == '__main__':
 
@@ -96,7 +88,7 @@ if __name__ == '__main__':
 
         run.backward_set_flow([_WAS[0], _eff[0]])
 
-        run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
         if run.check_global_cnvg(wwtp):
             break

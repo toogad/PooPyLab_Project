@@ -21,32 +21,34 @@
 #
 
 
-"""Definition of the IWA Activated Sludge Model #1.
+
+"""Definition of the IWA Activated Sludge Model #2d.
 
 Reference:
     Grady Jr. et al, 1999: Biological Wastewater Treatment, 2nd Ed.
 
-    IWA Task Group on Math. Modelling for Design and Operation of Biological Wastewater Treatment, 2000. Activated
-    Sludge Model No. 1, in Activated Sludge Models ASM1, ASM2, ASM2d, and ASM 3.
+    IWA Task Group on Math. Modelling for Design and Operation of Biological
+    Wastewater Treatment, 2000. Activated Sludge Model No. 1, in Activated
+    Sludge Models ASM1, ASM2, ASM2d, and ASM 3.
 """
-## @namespace asm_1
-## @file asm_1.py
+## @namespace asm_2d
+## @file asm_2d.py
 
 
 from ..ASMModel import constants
 from .asmbase import asm_model
 
 
-class ASM_1(asm_model):
+class ASM_2d(asm_model):
     """
-    Kinetics and stoichiometrics of IWA ASM 1 model.
+    Kinetics and stoichiometrics of the IWA ASM 2d model.
     """
 
     __id = 0
 
     def __init__(self, ww_temp=20, DO=2):
         """
-        Initialize the ASM 1 model with water temperature and dissolved O2.
+        Initialize the model with water temperature and dissolved O2.
 
         Args:
             ww_temp:    wastewater temperature, degC;
@@ -77,7 +79,7 @@ class ASM_1(asm_model):
         self.update(ww_temp, DO)
 
         # The Components the ASM components IN THE REACTOR
-        # For ASM #1:
+        # For ASM #2d:
         #
         #    self._comps[0]: S_DO as COD
         #    self._comps[1]: S_I
@@ -95,15 +97,6 @@ class ASM_1(asm_model):
         #
         # ASM model components
         self._comps = [0.0] * constants._NUM_ASM1_COMPONENTS
-
-        # Intermediate results of Monod or Inhibition Terms
-        self._monods = [1.0] * 7
-
-        # Intermediate results of rate expressions, M/L^3/T
-        # The list is to help speed up the calculation by reducing redundant calls of individual rate expressions in
-        # multiple mass balance equations for the model components.
-        # ASM1 has 8 bio processes.
-        self._rate_res = [0.0] * 8
 
         return None
 
@@ -127,9 +120,11 @@ class ASM_1(asm_model):
         # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
         self._kinetics_20C['u_max_A'] = 0.8
 
-        # Decay Rate of Autotrophs (b_A, 1/DAY) A wide range exists. Table 6.3 on Grady 1999 shows 0.096 (1/d). IWA's
-        # ASM report did not even show b_A on its table for typical value. ASIM software show a value of "0.000",
-        # probably cut off by the print function. I can only assume it was < 0.0005 (1/d) at 20C.
+        # Decay Rate of Autotrophs (b_A, 1/DAY)
+        # A wide range exists. Table 6.3 on Grady 1999 shows 0.096 (1/d). IWA's
+        # ASM report did not even show b_A on its table for typical value. ASIM
+        # software show a value of "0.000", probably cut off by the print
+        # function. I can only assume it was < 0.0005 (1/d) at 20C.
         #self._kinetics_20C['b_LA'] = 0.096
         self._kinetics_20C['b_LA'] = 0.0007
 
@@ -186,7 +181,8 @@ class ASM_1(asm_model):
         """
         Set the kinetic parameters/constants @ project temperature.
 
-        This function updates the self._params based on the model temperature and DO.
+        This function updates the self._params based on the model temperature
+        and DO.
 
         See:
             update();
@@ -195,19 +191,22 @@ class ASM_1(asm_model):
         """
 
         # Ideal Growth Rate of Heterotrophs (u_max_H, 1/DAY)
-        self._params['u_max_H'] = self._kinetics_20C['u_max_H'] * pow(1.072, self._delta_t)
+        self._params['u_max_H'] = self._kinetics_20C['u_max_H']\
+                                * pow(1.072, self._delta_t)
 
         # Decay Rate of Heterotrophs (b_H, 1/DAY)
-        self._params['b_LH'] = self._kinetics_20C['b_LH'] * pow(1.12, self._delta_t)
+        self._params['b_LH'] = self._kinetics_20C['b_LH']\
+                                * pow(1.12, self._delta_t)
 
         # Ideal Growth Rate of Autotrophs (u_max_A, 1/DAY)
-        self._params['u_max_A'] = self._kinetics_20C['u_max_A'] * pow(1.103, self._delta_t)
+        self._params['u_max_A'] = self._kinetics_20C['u_max_A']\
+                                * pow(1.103, self._delta_t)
 
         # Decay Rate of Autotrophs (b_A, 1/DAY)
-        self._params['b_LA'] = self._kinetics_20C['b_LA'] * pow(1.114, self._delta_t)
+        self._params['b_LA'] = self._kinetics_20C['b_LA']\
+                                * pow(1.114, self._delta_t)
 
         # Half Growth Rate Concentration of Heterotrophs (K_s, mgCOD/L)
-
         self._params['K_S'] = self._kinetics_20C['K_S']
 
         # Switch Coefficient for Dissolved O2 of Hetero. (K_OH, mgO2/L)
@@ -223,14 +222,17 @@ class ASM_1(asm_model):
         self._params['K_NO'] = self._kinetics_20C['K_NO']
 
         # Hydrolysis Rate (k_h, mgCOD/mgBiomassCOD-day)
-        self._params['k_h'] = self._kinetics_20C['k_h'] * pow(1.116, self._delta_t)
+        self._params['k_h'] = self._kinetics_20C['k_h']\
+                                * pow(1.116, self._delta_t)
 
         # Half Rate Conc. for Hetero. Growth on Part. COD
         # (K_X, mgCOD/mgBiomassCOD)
-        self._params['K_X'] = self._kinetics_20C['K_X'] * pow(1.116, self._delta_t)
+        self._params['K_X'] = self._kinetics_20C['K_X']\
+                                * pow(1.116, self._delta_t)
 
         # Ammonification of Org-N in biomass (k_a, L/mgBiomassCOD-day)
-        self._params['k_a'] = self._kinetics_20C['k_a'] * pow(1.072, self._delta_t)
+        self._params['k_a'] = self._kinetics_20C['k_a']\
+                                * pow(1.072, self._delta_t)
 
         # Yield of Hetero. Growth on COD (Y_H, mgBiomassCOD/mgCODremoved)
         self._params['Y_H'] = self._kinetics_20C['Y_H']
@@ -257,11 +259,16 @@ class ASM_1(asm_model):
 
 
     # STOCHIOMETRIC MATRIX
+
+
     def _set_stoichs(self):
+
         """
         Set the stoichiometrics for the model.
 
-        Note: Make sure to match the .csv model template file in the model_builder folder, Sep 04, 2019):
+        Note:
+            Make sure to match the .csv model template file in the
+            model_builder folder, Sep 04, 2019):
 
             _stoichs['x_y'] ==> x is process rate id, and y is component id
 
@@ -272,10 +279,12 @@ class ASM_1(asm_model):
         """
 
         # S_O for aerobic hetero. growth, as O2
-        self._stoichs['0_0'] = (self._params['Y_H'] - 1.0) / self._params['Y_H']
+        self._stoichs['0_0'] = (self._params['Y_H'] - 1.0) \
+                                / self._params['Y_H']
 
         # S_O for aerobic auto. growth, as O2
-        self._stoichs['2_0'] = (self._params['Y_A'] - 4.57) / self._params['Y_A']
+        self._stoichs['2_0'] = (self._params['Y_A'] - 4.57) \
+                                / self._params['Y_A']
 
         # S_S for aerobic hetero. growth, as COD
         self._stoichs['0_2'] = -1.0 / self._params['Y_H']
@@ -293,7 +302,8 @@ class ASM_1(asm_model):
         self._stoichs['1_3'] = -self._params['i_N_XB']
 
         # S_NH required for aerobic auto. growth, as N
-        self._stoichs['2_3'] = -self._params['i_N_XB'] - 1.0 / self._params['Y_A']
+        self._stoichs['2_3'] = -self._params['i_N_XB'] \
+                                - 1.0 / self._params['Y_A']
 
         # S_NH from ammonification, as N
         self._stoichs['5_3'] = 1.0
@@ -305,7 +315,8 @@ class ASM_1(asm_model):
         self._stoichs['7_4'] = 1.0
 
         # S_NO for anoxic hetero. growth, as N
-        self._stoichs['1_5'] = (self._params['Y_H'] - 1.0) / (2.86 * self._params['Y_H'])
+        self._stoichs['1_5'] = (self._params['Y_H'] - 1.0) \
+                                / (2.86 * self._params['Y_H'])
 
         # S_NO from nitrification, as N
         self._stoichs['2_5'] = 1.0 / self._params['Y_A']
@@ -314,11 +325,13 @@ class ASM_1(asm_model):
         self._stoichs['0_6'] = -self._params['i_N_XB'] / 14.0
 
         # S_ALK generated by anoxic hetero. growth, as mM CaCO3
-        self._stoichs['1_6'] = (1.0 - self._params['Y_H']) / (14.0 * 2.86 * self._params['Y_H']) \
+        self._stoichs['1_6'] = (1.0 - self._params['Y_H']) \
+                                / (14.0 * 2.86 * self._params['Y_H']) \
                                 - self._params['i_N_XB'] / 14.0
 
         # S_ALK consumed by aerobic auto. growth, as mM CaCO3
-        self._stoichs['2_6'] = -self._params['i_N_XB'] / 14 - 1.0 / (7.0 * self._params['Y_A'])
+        self._stoichs['2_6'] = -self._params['i_N_XB'] / 14 \
+                                - 1.0 / (7.0 * self._params['Y_A'])
 
         # S_ALK generated by ammonification, as mM CaCO3
         self._stoichs['5_6'] = 1.0 / 14.0
@@ -355,10 +368,12 @@ class ASM_1(asm_model):
         self._stoichs['4_11'] = self._params['f_D']
 
         # X_NS from hetero. decay, as N
-        self._stoichs['3_12'] = self._params['i_N_XB'] - self._params['f_D'] * self._params['i_N_XD']
+        self._stoichs['3_12'] = self._params['i_N_XB'] - self._params['f_D'] \
+                                * self._params['i_N_XD']
 
         # X_NS from auto. decay, as COD
-        self._stoichs['4_12'] = self._params['i_N_XB'] - self._params['f_D'] * self._params['i_N_XD']
+        self._stoichs['4_12'] = self._params['i_N_XB'] - self._params['f_D'] \
+                                * self._params['i_N_XD']
 
         # X_NS consumed in hydrolysis of part. TKN, as N
         self._stoichs['7_12'] = -1.0
@@ -368,89 +383,156 @@ class ASM_1(asm_model):
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
     #
-    def _reaction_rate(self, comps):
+
+
+    def _r0_AerGH(self, comps):
         """
-        Normalized reaction rates for the biological processes.
+        Aerobic Growth Rate of Heterotrophs (mgCOD/L/day).
 
         Args:
             comps:  list of current model components (concentrations).
 
         Return:
-            list of process rates M/L^3/T in self._rate_res[]
+            float
         """
+        return self._params['u_max_H'] \
+                * self._monod(comps[2], self._params['K_S']) \
+                * self._monod(comps[0], self._params['K_OH']) \
+                * comps[9]
 
-        # Monod term for Heterotroph's substrate
-        self._monods[0] = self._monod(comps[2], self._params['K_S'])
 
-        # Monod term for Heterotroph's O2
-        self._monods[1] = self._monod(comps[0], self._params['K_OH'])
+    def _r1_AxGH(self, comps):
+        """
+        Anoxic Growth Rate of Heterotrophs (mgCOD/L/day).
 
-        # Monod term for Heterotroph's NOx-N
-        self._monods[2] = self._monod(comps[5], self._params['K_NO'])
+        Args:
+            comps:  list of current model components (concentrations).
 
-        # O2 Inhibition term for anoxic Heterotrophs
-        self._monods[3] = self._monod(self._params['K_OH'], comps[0])
+        Return:
+            float
+        """
+        return self._params['u_max_H'] \
+                * self._monod(comps[2], self._params['K_S']) \
+                * self._monod(self._params['K_OH'], comps[0]) \
+                * self._monod(comps[5], self._params['K_NO']) \
+                * self._params['cf_g'] \
+                * comps[9]
 
-        # Monod term for Autotroph's NH3-N
-        self._monods[4] = self._monod(comps[3], self._params['K_NH'])
 
-        # Monod term for Autotroph's O2
-        self._monods[5] = self._monod(comps[0], self._params['K_OA'])
+    def _r2_AerGA(self, comps):
+        """
+        Aerobic Growth Rate of Autotrophs (mgCOD/L/day).
 
-        # Monod term for Hydrolysis
-        self._monods[6] = self._monod(comps[8] / comps[9], self._params['K_X'])
+        Args:
+            comps:  list of current model components (concentrations).
 
-        # Aerobic Growth Rate of Heterotrophs (mgCOD/L/day).
-        self._rate_res[0] = self._params['u_max_H'] * self._monods[0] * self._monods[1] * comps[9]
+        Return:
+            float
+        """
+        return self._params['u_max_A'] \
+                * self._monod(comps[3], self._params['K_NH']) \
+                * self._monod(comps[0], self._params['K_OA']) \
+                * comps[10]
 
-        # Anoxic Growth Rate of Heterotrophs (mgCOD/L/day).
-        self._rate_res[1] = self._params['u_max_H'] * self._monods[0] * self._monods[1] \
-                            * self._monods[2] * self._params['cf_g'] * comps[9]
 
-        # Aerobic Growth Rate of Autotrophs (mgCOD/L/day).
-        self._rate_res[2] = self._params['u_max_A'] * self._monods[4] * self._monods[5] * comps[10]
+    def _r3_DLH(self, comps):
+        """
+        Death and Lysis Rate of Heterotrophs (mgCOD/L/day).
 
-        # Death and Lysis Rate of Heterotrophs (mgCOD/L/day).
-        self._rate_res[3] = self._params['b_LH'] * comps[9]
+        Args:
+            comps:  list of current model components (concentrations).
 
-        # Death and Lysis Rate of Autotrophs (mgCOD/L/day).
-        self._rate_res[4] = self._params['b_LA'] * comps[10]
+        Return:
+            float
+        """
+        return self._params['b_LH'] * comps[9]
 
-        # Ammonification Rate of Soluable Organic N (mgN/L/day).
-        self._rate_res[5] = self._params['k_a'] * comps[4] * comps[9]
 
-        # Hydrolysis Rate of Particulate Organics (mgCOD/L/day).
-        self._rate_res[6] = self._params['k_h'] * self._monods[6] \
-                * (self._monods[1] + self._params['cf_h'] * self._monods[3] * self._monods[2] * comps[9])
+    def _r4_DLA(self, comps):
+        """
+        Death and Lysis Rate of Autotrophs (mgCOD/L/day).
 
-        # Hydrolysis Rate of Particulate Organic N (mgN/L/day).
-        self._rate_res[7] = self._rate_res[6] * comps[12] / comps[8]
+        Args:
+            comps:  list of current model components (concentrations).
 
-        return self._rate_res[:]
+        Return:
+            float
+        """
+        return self._params['b_LA'] * comps[10]
+
+
+    def _r5_AmmSN(self, comps):
+        """
+        Ammonification Rate of Soluable Organic N (mgN/L/day).
+
+        Args:
+            comps:  list of current model components (concentrations).
+
+        Return:
+            float
+        """
+        return self._params['k_a'] \
+                * comps[4] \
+                * comps[9]
+
+
+    def _r6_HydX(self, comps):
+        """
+        Hydrolysis Rate of Particulate Organics (mgCOD/L/day).
+
+        Args:
+            comps:  list of current model components (concentrations).
+
+        Return:
+            float
+        """
+        return self._params['k_h'] \
+                * self._monod(comps[8] / comps[9],
+                                self._params['K_X']) \
+                * (self._monod(comps[0], self._params['K_OH'])
+                    + self._params['cf_h']
+                    * self._monod(self._params['K_OH'], comps[0])
+                    * self._monod(comps[5], self._params['K_NO'])) \
+                * comps[9]
+
+
+    def _r7_HydXN(self, comps):
+        """
+        Hydrolysis Rate of Particulate Organic N (mgN/L/day).
+
+        Args:
+            comps:  list of current model components (concentrations).
+
+        Return:
+            float
+        """
+        return self._r6_HydX(comps) * comps[12] / comps[8]
+
 
 
     # OVERALL PROCESS RATE EQUATIONS FOR INDIVIDUAL COMPONENTS
 
 
-    def _rate0_S_DO(self):
+    def _rate0_S_DO(self, comps):
         """
         Overall process rate for dissolved O2 (mgCOD/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return self._stoichs['0_0'] * self._rate_res[0] + self._stoichs['2_0'] * self._rate_res[2]
+        return self._stoichs['0_0'] * self._r0_AerGH(comps)\
+                + self._stoichs['2_0'] * self._r2_AerGA(comps)
 
 
-    def _rate1_S_I(self):
+    def _rate1_S_I(self, comps):
         """
         Overall process rate for inert soluble COD (mgCOD/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             0.0
@@ -458,87 +540,87 @@ class ASM_1(asm_model):
         return 0.0
 
 
-    def _rate2_S_S(self):
+    def _rate2_S_S(self, comps):
         """
         Overall process rate for soluble biodegradable COD (mgCOD/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['0_2'] * self._rate_res[0]
-                + self._stoichs['1_2'] * self._rate_res[1]
-                + self._stoichs['6_2'] * self._rate_res[6])
+        return self._stoichs['0_2'] * self._r0_AerGH(comps)\
+                + self._stoichs['1_2'] * self._r1_AxGH(comps)\
+                + self._stoichs['6_2'] * self._r6_HydX(comps)
 
 
-    def _rate3_S_NH(self):
+    def _rate3_S_NH(self, comps):
         """
         Overall process rate for ammonia nitrogen (mgN/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['0_3'] * self._rate_res[0]
-                + self._stoichs['1_3'] * self._rate_res[1]
-                + self._stoichs['2_3'] * self._rate_res[2]
-                + self._stoichs['5_3'] * self._rate_res[5])
+        return self._stoichs['0_3'] * self._r0_AerGH(comps)\
+                + self._stoichs['1_3'] * self._r1_AxGH(comps)\
+                + self._stoichs['2_3'] * self._r2_AerGA(comps)\
+                + self._stoichs['5_3'] * self._r5_AmmSN(comps)
 
 
-    def _rate4_S_NS(self):
+    def _rate4_S_NS(self, comps):
         """
         Overall process rate for soluble organic nitrogen (mgN/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['5_4'] * self._rate_res[5]
-                + self._stoichs['7_4'] * self._rate_res[7])
+        return self._stoichs['5_4'] * self._r5_AmmSN(comps)\
+                + self._stoichs['7_4'] * self._r7_HydXN(comps)
 
 
-    def _rate5_S_NO(self):
+    def _rate5_S_NO(self, comps):
         """
         Overall process rate for nitrite/nitrate nitrogen (mgN/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['1_5'] * self._rate_res[1]
-                + self._stoichs['2_5'] * self._rate_res[2])
+        return self._stoichs['1_5'] * self._r1_AxGH(comps)\
+                + self._stoichs['2_5'] * self._r2_AerGA(comps)
 
 
-    def _rate6_S_ALK(self):
+    def _rate6_S_ALK(self, comps):
         """
         Overall process rate for alkalinity (mg/L/d as CaCO3)
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['0_6'] * self._rate_res[0]
-                + self._stoichs['1_6'] * self._rate_res[1]
-                + self._stoichs['2_6'] * self._rate_res[2]
-                + self._stoichs['5_6'] * self._rate_res[5])
+        return self._stoichs['0_6'] * self._r0_AerGH(comps)\
+                + self._stoichs['1_6'] * self._r1_AxGH(comps)\
+                + self._stoichs['2_6'] * self._r2_AerGA(comps)\
+                + self._stoichs['5_6'] * self._r5_AmmSN(comps)
 
 
-    def _rate7_X_I(self):
+    def _rate7_X_I(self, comps):
         """
         Overall process rate for inert particulate COD (mgCOD/L/d)
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             0.0
@@ -546,77 +628,77 @@ class ASM_1(asm_model):
         return 0.0
 
 
-    def _rate8_X_S(self):
+    def _rate8_X_S(self, comps):
         """
         Overall process rate for particulate biodegradable COD (mgCOD/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['3_8'] * self._rate_res[3]
-                + self._stoichs['4_8'] * self._rate_res[4]
-                + self._stoichs['6_8'] * self._rate_res[6])
+        return self._stoichs['3_8'] * self._r3_DLH(comps)\
+                + self._stoichs['4_8'] * self._r4_DLA(comps)\
+                + self._stoichs['6_8'] * self._r6_HydX(comps)
 
 
-    def _rate9_X_BH(self):
+    def _rate9_X_BH(self, comps):
         """
         Overall process rate for heterotrophic biomass (mgCOD/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['0_9'] * self._rate_res[0]
-                + self._stoichs['1_9'] * self._rate_res[1]
-                + self._stoichs['3_9'] * self._rate_res[3])
+        return self._stoichs['0_9'] * self._r0_AerGH(comps)\
+                + self._stoichs['1_9'] * self._r1_AxGH(comps)\
+                + self._stoichs['3_9'] * self._r3_DLH(comps)
 
 
-    def _rate10_X_BA(self):
+    def _rate10_X_BA(self, comps):
         """
         Overall process rate for autotrophic biomass (mgCOD/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['2_10'] * self._rate_res[2]
-                + self._stoichs['4_10'] * self._rate_res[4])
+        return self._stoichs['2_10'] * self._r2_AerGA(comps)\
+                + self._stoichs['4_10'] * self._r4_DLA(comps)
 
 
-    def _rate11_X_D(self):
+    def _rate11_X_D(self, comps):
         """
         Overall process rate for biomass debris (mgCOD/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['3_11'] * self._rate_res[3]
-                + self._stoichs['4_11'] * self._rate_res[4])
+        return self._stoichs['3_11'] * self._r3_DLH(comps)\
+                + self._stoichs['4_11'] * self._r4_DLA(comps)
 
 
-    def _rate12_X_NS(self):
+    def _rate12_X_NS(self, comps):
         """
         Overall process rate for particulate organic nitrogen (mgN/L/d).
 
         Args:
-            None
+            comps:  list of current model components (concentrations).
 
         Return:
             float
         """
-        return (self._stoichs['3_12'] * self._rate_res[3]
-                + self._stoichs['4_12'] * self._rate_res[4]
-                + self._stoichs['7_12'] * self._rate_res[7])
+        return self._stoichs['3_12'] * self._r3_DLH(comps)\
+                + self._stoichs['4_12'] * self._r4_DLA(comps)\
+                + self._stoichs['7_12'] * self._r7_HydXN(comps)
 
 
     def _dCdt(self, t, mo_comps, vol, flow, in_comps, fix_DO, DO_sat_T):
@@ -644,9 +726,6 @@ class ASM_1(asm_model):
             7_X_I, 8_X_S, 9_X_BH, 10_X_BA, 11_X_D, 12_X_NS
         '''
 
-        # Get all the Monod/Inhibition terms as well as the normalized reaction rates first
-        self._reaction_rate(mo_comps)
-
         _HRT = vol / flow
 
         # set DO rate to zero since DO is set to a fix conc., which is
@@ -657,43 +736,42 @@ class ASM_1(asm_model):
         else:  #TODO: what if the user provides a fix scfm of air?
             result = [(in_comps[0] - mo_comps[0]) / _HRT
                         + self._KLa * (DO_sat_T - mo_comps[0])
-                        + self._rate0_S_DO()]
+                        + self._rate0_S_DO(mo_comps)]
 
         result.append((in_comps[1] - mo_comps[1]) / _HRT
-                        + self._rate1_S_I())
+                        + self._rate1_S_I(mo_comps))
 
         result.append((in_comps[2] - mo_comps[2]) / _HRT
-                        + self._rate2_S_S())
+                        + self._rate2_S_S(mo_comps))
 
         result.append((in_comps[3] - mo_comps[3]) / _HRT
-                        + self._rate3_S_NH())
+                        + self._rate3_S_NH(mo_comps))
 
         result.append((in_comps[4] - mo_comps[4]) / _HRT
-                        + self._rate4_S_NS())
+                        + self._rate4_S_NS(mo_comps))
 
         result.append((in_comps[5] - mo_comps[5]) / _HRT
-                        + self._rate5_S_NO())
+                        + self._rate5_S_NO(mo_comps))
 
         result.append((in_comps[6] - mo_comps[6]) / _HRT
-                        + self._rate6_S_ALK())
+                        + self._rate6_S_ALK(mo_comps))
 
         result.append((in_comps[7] - mo_comps[7]) / _HRT
-                        + self._rate7_X_I())
+                        + self._rate7_X_I(mo_comps))
 
         result.append((in_comps[8] - mo_comps[8]) / _HRT
-                        + self._rate8_X_S())
+                        + self._rate8_X_S(mo_comps))
 
         result.append((in_comps[9] - mo_comps[9]) / _HRT
-                        + self._rate9_X_BH())
+                        + self._rate9_X_BH(mo_comps))
 
         result.append((in_comps[10] - mo_comps[10]) / _HRT
-                        + self._rate10_X_BA())
+                        + self._rate10_X_BA(mo_comps))
 
         result.append((in_comps[11] - mo_comps[11]) / _HRT
-                        + self._rate11_X_D())
+                        + self._rate11_X_D(mo_comps))
 
         result.append((in_comps[12] - mo_comps[12]) / _HRT
-                        + self._rate12_X_NS())
+                        + self._rate12_X_NS(mo_comps))
 
         return result[:]
-

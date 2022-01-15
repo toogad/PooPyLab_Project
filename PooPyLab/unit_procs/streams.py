@@ -1,26 +1,23 @@
 # This file is part of PooPyLab.
 #
-# PooPyLab is a simulation software for biological wastewater treatment
-# processes using International Water Association Activated Sludge Models.
-#    
+# PooPyLab is a simulation software for biological wastewater treatment processes using International Water
+# Association Activated Sludge Models.
+#
 #    Copyright (C) Kai Zhang
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+#    General Public License as published by the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+#    the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+#    License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License along with this program. If not, see
+#    <http://www.gnu.org/licenses/>.
 #
 #
-# This file defines the following classes related to streams:
-#       pipe, influent, effluent, splitter, WAS.
+# This file defines the following classes related to streams: pipe, influent, effluent, splitter, WAS.
 #
 # ----------------------------------------------------------------------------
 
@@ -40,6 +37,8 @@
 ## @namespace streams
 ## @file streams.py
 
+import math
+
 from ..unit_procs.base import poopy_lab_obj
 from ..utils.datatypes import flow_data_src
 from ..ASMModel import constants
@@ -51,26 +50,22 @@ class splitter(poopy_lab_obj):
     """
     Stream element with an inlet, a mainstream outlet, and a sidestream outlet.
 
-    There are three connection points for the flows to get in and out of a
-    splitter: an inlet, a mainstream outlet, and a sidestream outlet.
+    There are three connection points for the flows to get in and out of a splitter: an inlet, a mainstream
+    outlet, and a sidestream outlet.
 
     General Functions:
 
-        It is assumed that there is no significant biochemical reactions
-        happening across a splitter unit. It only maintains the flow balance
-        around the three connections. Therefore, the model components (as
-        concentrations) are identical for all the connections after proper flow
-        and load updates.
+        It is assumed that there is no significant biochemical reactions happening across a splitter unit.
+        It only maintains the flow balance around the three connections. Therefore, the model components (as
+        concentrations) are identical for all the connections after proper flow and load updates.
 
-        Flow balance is maintained using the flow data source tags of two of
-        the three connection points (see below for more details).
+        Flow balance is maintained using the flow data source tags of two of the three connection points (see
+        below for more details).
 
     Special Functions:
 
-        When specified as an SRT (solids retention time) controller, a splitter
-        would have to be connected with a WAS (waste activated sludge) unit at
-        its sidestream.
-    """
+        When specified as an SRT (solids retention time) controller, a splitter would have to be connected
+    with a WAS (waste activated sludge) unit at its sidestream. """
 
     __id = 0
 
@@ -121,11 +116,20 @@ class splitter(poopy_lab_obj):
         self._so_flow = 0.0
         ## total inlet flow, m3/d
         self._total_inflow = 0.0
-        
+
+        # site elevation, meter above MSL
+        self._elev = 100.0
+        # water salinity, GRAM/L
+        self._salinity = 1.0
+        # water temperature, degC
+        self._ww_temp = 20.0
+        # saturated DO conc. under the side condition
+        self._DO_sat_T = self.get_saturated_DO()
+
         ## flag on whether this splitter is SRT controller
         self._SRT_controller = False
         
-        # influent/main_outlet/side_oulet model components:
+        # inlet/main_outlet/side_oulet model components:
         #    _comps[0]: S_DO as DO
         #    _comps[1]: S_I
         #    _comps[2]: S_S
@@ -165,19 +169,16 @@ class splitter(poopy_lab_obj):
         """
         Set the flow data source of the branch specified by the user. 
 
-        This function helps to decide how a stream process unit (splitter,
-        pipe, influent, effluent, WAS, etc.) performs flow balance
-        calculations.
+        This function helps to decide how a stream process unit (splitter, pipe, influent, effluent, WAS,
+        etc.) performs flow balance calculations.
 
-        For instance, if the user defines both the mainstream and sidestream
-        outlet flow rates, then the inlet flow rate will be calculated as the
-        sum of the two branches. As another example, if the user only defines
-        the sidestream branch flow rate, then the mainstream branch flow will
-        be determined as (total_inflow - sidestream_outflow).
+        For instance, if the user defines both the mainstream and sidestream outlet flow rates, then the
+        inlet flow rate will be calculated as the sum of the two branches. As another example, if the user
+        only defines the sidestream branch flow rate, then the mainstream branch flow will be determined as
+        (total_inflow - sidestream_outflow).
 
-        When setting the flow data source of a branch, the function will check
-        to see whether the flow data sources for the other two brachnes can
-        also be determined.
+        When setting the flow data source of a branch, the function will check to see whether the flow data
+        sources for the other two brachnes can also be determined.
 
         Args:
             branch:     'Main'|'Side'|'Inlet'
@@ -275,8 +276,7 @@ class splitter(poopy_lab_obj):
         """
         Assign the intial guess to the unit before simulation.
 
-        All three branches of a stream element will get the same model
-        components.
+        All three branches of a stream element will get the same model components.
 
         Args:
             init_guess_lst: list of model components (concentrations)
@@ -295,16 +295,16 @@ class splitter(poopy_lab_obj):
         """
         Return the convergence status of the unit.
 
-        This function checks the absolute changes of flows and concentrations 
-        between last round of simulation and current. If all changes are within 
-        the tolerance limit, it flags the self._converged True.
+        This function checks the absolute changes of flows and concentrations between last round of
+        simulation and current. If all changes are within the tolerance limit, it flags the self._converged
+        True.
 
-        The same absolute changes will be used in evaluting the convergence of
-        splitter, clarifier, pipe, effluent, WAS, and other unit processes that
-        do not have splicit definitions of change rate terms (dy/dt = f(...)).
+        The same absolute changes will be used in evaluting the convergence of splitter, clarifier, pipe,
+        effluent, WAS, and other unit processes that do not have splicit definitions of change rate terms
+        (dy/dt = f(...)).
 
-        This function is redefined for unit processes like asm_reactor whose
-        models have specific dy/dt terms.
+        This function is redefined for unit processes like asm_reactor whose models have specific dy/dt
+        terms.
 
         Args:
             limit: Limit within which the simulation is considered converged
@@ -316,29 +316,10 @@ class splitter(poopy_lab_obj):
             _check_conc_cnvg()
         """
 
-        #print(self.__name__)
-        #print('prev mo/so = {}, {}'.format(self._prev_mo_comps,
-        #    self._prev_so_comps))
-
-#        _mo_cnvg = self._check_conc_cnvg(self._mo_comps,
-#                                        self._prev_mo_comps,
-#                                        limit)
-#                  
-#        _so_cnvg = self._check_conc_cnvg(self._so_comps,
-#                                        self._prev_so_comps,
-#                                        limit)
-#
-#        _conc_cnvg = not (False in _mo_cnvg or False in _so_cnvg)
         _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow)
                         <  limit)
 
-        #self._converged = _conc_cnvg and _flow_cnvg
         self._converged = _flow_cnvg
-
-        #print('{} cnvg: flow {}, main {}, side{}'.format(
-        #        self.__name__, _flow_cnvg, _mo_cnvg, _so_cnvg))
-
-        #print('{} cnvg: flow {}'.format(self.__name__, _flow_cnvg))
 
         return self._converged
 
@@ -373,24 +354,22 @@ class splitter(poopy_lab_obj):
         """
         Add the discharger's branch to inlet.
 
-        This function add an upstream unit's (discharger's) outlet, as
-        specified by the ups_branch parameter, to the current inlet.
+        This function add an upstream unit's (discharger's) outlet, as specified by the ups_branch parameter,
+        to the current inlet.
 
-        The function first checks whether the specified discharger is already
-        in self._inlet. If so, does nothing. Otherwise, add the discharger into
-        self._inlet and put 0.0 m3/d as a place holder for the corresponding
-        flow rate.
+        The function first checks whether the specified discharger is already in self._inlet. If so, does
+        nothing. Otherwise, add the discharger into self._inlet and put 0.0 m3/d as a place holder for the
+        corresponding flow rate.
 
-        An error message will display if upst_branch is neither 'Main' nor
-        'Side'. And the specified discharger will NOT be added to self._inlet
-        as a result.
+        An error message will display if upst_branch is neither 'Main' nor 'Side'. And the specified
+        discharger will NOT be added to self._inlet as a result.
 
-        After adding the discharger into self._inlet. This function calls the
-        discharger's set_downstream_main()/set_downstream_side() to connect its
-        mainstream/sidestream outlet to the current unit's inlet.
+        After adding the discharger into self._inlet. This function calls the discharger's
+        set_downstream_main()/set_downstream_side() to connect its mainstream/sidestream outlet to the
+        current unit's inlet.
 
-        Upon sucessful addition of the specified discharger and its branch, the
-        self._has_discharger flag is set to True.
+        Upon sucessful addition of the specified discharger and its branch, the self._has_discharger flag is
+        set to True.
 
         Args:
             discharger: the process unit to be added to self._inlet;
@@ -448,17 +427,14 @@ class splitter(poopy_lab_obj):
 
         There are scenarios to be managed here:
 
-            1) When the mainstream outlet branch's flow is to be calculated
-            using the total inflow (self._upstream_set_mo_flow == True): The
-            total inflow is calculated using the individual flows specified in
-            self._inlet; and
+            1) When the mainstream outlet branch's flow is to be calculated using the total inflow
+            (self._upstream_set_mo_flow == True): The total inflow is calculated using the individual flows
+            specified in self._inlet; and
 
-            2) When both flow rates for the mainstream and sidestream outlet
-            branches have been specified (either by user or simulation run
-            time), i.e. self._upstream_set_mo_flow == False: the total inflow
-            will be the sum of the two branches. This calculated total inflow
-            is to be passed upstream by the main loop to maintain the WWTP's
-            flow balance.
+            2) When both flow rates for the mainstream and sidestream outlet branches have been specified
+            (either by user or simulation run time), i.e. self._upstream_set_mo_flow == False: the total
+            inflow will be the sum of the two branches. This calculated total inflow is to be passed upstream
+            by the main loop to maintain the WWTP's flow balance.
 
         Args:
             None
@@ -487,8 +463,14 @@ class splitter(poopy_lab_obj):
         """
         Calculate the flow weighted average model component concentrations.
 
-        Note: This function does not totalize inlet flow. It only uses the
-        current flow rates. It is adviced to call totalize_inflow() first.
+        Note: This function does not totalize inlet flow. It only uses the current flow rates. It is adviced
+        to call totalize_inflow() first.
+
+        Args:
+            None
+
+        Return:
+            Blended Inlet Concentrations (copy of the list)
 
         See:
             totalize_inflow()
@@ -505,7 +487,7 @@ class splitter(poopy_lab_obj):
                         temp += unit.get_side_outlet_concs()[i]\
                                 * unit.get_side_outflow()
                 self._in_comps[i] = temp / self._total_inflow
-        return None
+        return self._in_comps[:]
     
 
     def update_combined_input(self):
@@ -521,18 +503,14 @@ class splitter(poopy_lab_obj):
         """
         Remove an existing discharger from inlet.
 
-        This function first checks whether the specified discharger to be
-        removed exists in self._inlet:
+        This function first checks whether the specified discharger to be removed exists in self._inlet:
 
-            If so, proceed and remove it from self._inlet. Then it finds
-            out which branch of the discharger is originally connected to
-            current unit's inlet, inform the original discharger to update its
-            corresponding branch's connection. The _has_discharger flag will be
-            checked and updated when an upstream discharger is removed
-            successfully.
+            If so, proceed and remove it from self._inlet. Then it finds out which branch of the discharger
+            is originally connected to current unit's inlet, inform the original discharger to update its
+            corresponding branch's connection. The _has_discharger flag will be checked and updated when an
+            upstream discharger is removed successfully.
 
-            If not, an error message will be displayed and nothing will be
-            removed from the self._inlet.
+            If not, an error message will be displayed and nothing will be removed from the self._inlet.
 
         Args:
             discharger: An inlet unit to be removed.
@@ -559,18 +537,16 @@ class splitter(poopy_lab_obj):
 
     def set_downstream_main(self, rcvr):
         """
-        Define the downstream main outlet by specifying the receiving process
-        unit.
+        Define the downstream main outlet by specifying the receiving process unit.
 
-        An influent unit can not receive any flow from the current unit. An
-        error message will be displayed if the specified receiver is of the
-        influent type.
+        An influent unit can not receive any flow from the current unit. An error message will be displayed
+        if the specified receiver is of the influent type.
 
-        If the specified receiver is already connected to the current unit's
-        mainstream outlet branch, nothing will be done.
+        If the specified receiver is already connected to the current unit's mainstream outlet branch,
+        nothing will be done.
 
-        Successful connection of the receiver and current unit's mainstream
-        outlet will set the _mo_connected flag to True.
+        Successful connection of the receiver and current unit's mainstream outlet will set the _mo_connected
+        flag to True.
 
         Args:
             rcvr: A receiver of the current unit's mainstream outlet flow.
@@ -633,13 +609,11 @@ class splitter(poopy_lab_obj):
         Define the mainstream outlet flow.
 
 
-        If the specified flow is less than 0 m3/d, the current unit's
-        mainstream outlet flow will be set to 0 m3/d. An error message will
-        display.
+        If the specified flow is less than 0 m3/d, the current unit's mainstream outlet flow will be set to 0
+        m3/d. An error message will display.
 
-        Upon successful setting of the mainstream flow rate, the mainstream
-        outlet's flow data source will be set to flow_data_src.PRG, and the
-        _upstream_set_mo_flow flag False.
+        Upon successful setting of the mainstream flow rate, the mainstream outlet's flow data source will be
+        set to flow_data_src.PRG, and the _upstream_set_mo_flow flag False.
 
         Args:
             flow: flow rate in m3/d, shall be no less than 0.
@@ -697,15 +671,14 @@ class splitter(poopy_lab_obj):
         """
         Define the downstream side outlet's connection.
         
-        An influent unit can not receive any flow from the current unit. An
-        error message will be displayed if the specified receiver is of the
-        influent type.
+        An influent unit can not receive any flow from the current unit. An error message will be displayed
+        if the specified receiver is of the influent type.
 
-        If the specified receiver is already connected to the current unit's
-        sidestream outlet branch, nothing will be done.
+        If the specified receiver is already connected to the current unit's sidestream outlet branch,
+        nothing will be done.
 
-        Successful connection of the receiver and current unit's sidestream
-        outlet will set the _so_connected flag to True.
+        Successful connection of the receiver and current unit's sidestream outlet will set the _so_connected
+        flag to True.
 
         Args:
             rcvr: receiver of the current unit's sidestream outlet flow.
@@ -759,11 +732,10 @@ class splitter(poopy_lab_obj):
         """
         Define the flow rate for the sidestream.
 
-        If the specified flow is less than 0 m3/d, n error message will
-        display.
+        If the specified flow is less than 0 m3/d, n error message will display.
 
-        Upon successful setting of the sidestream flow rate, the sidestream
-        outlet's flow data source will be set to flow_data_src.PRG.
+        Upon successful setting of the sidestream flow rate, the sidestream outlet's flow data source will be
+        set to flow_data_src.PRG.
 
         Args:
             flow: flow rate in m3/d, shall be no less than 0.
@@ -834,8 +806,7 @@ class splitter(poopy_lab_obj):
         """
         Specify the flow from the discharger.
 
-        Please see the _discharge_main_outlet() and _discharge_side_outlet()
-        for the use of this function.
+        Please see the _discharge_main_outlet() and _discharge_side_outlet() for the use of this function.
 
         Args:
             dschgr: discharger
@@ -856,10 +827,9 @@ class splitter(poopy_lab_obj):
         """
         Pass the flow and concentrations to the main outlet.
 
-        This function identifies the process unit connected to the mainstream
-        outlet, then call its set_flow() and update_combined_input() so that
-        the flow and concentrations from the current unit is passed onto the
-        mainstream outlet.
+        This function identifies the process unit connected to the mainstream outlet, then call its
+        set_flow() and update_combined_input() so that the flow and concentrations from the current unit is
+        passed onto the mainstream outlet.
 
         See:    
             discharge();
@@ -878,10 +848,9 @@ class splitter(poopy_lab_obj):
         """
         Pass the flow and concentrations to the side outlet.
 
-        This function identifies the process unit connected to the sidestream
-        outlet, then call its set_flow() and update_combined_input() so that
-        the flow and concentrations from the current unit is passed onto the
-        sidestream outlet.
+        This function identifies the process unit connected to the sidestream outlet, then call its
+        set_flow() and update_combined_input() so that the flow and concentrations from the current unit is
+        passed onto the sidestream outlet.
 
         See:    
             discharge();
@@ -896,13 +865,25 @@ class splitter(poopy_lab_obj):
         return None
  
  
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
-        Record the main- and sidestream outlet concentrations from the previous
-        iteration. Update the concentrations for the two outlet branches. Pass
-        the flows and concentrations onto the downstream units.
+        Record the main- and sidestream outlet concentrations from the previous iteration. Update the
+        concentrations for the two outlet branches. Pass the flows and concentrations onto the downstream
+        units.
+
+        Args:
+            method_name:    integration method as per scipy.integrate.solveivp;
+            fix_DO:         whether to simulate w/ a fix DO setpoint;
+            DO_sat_T:       saturated DO conc. under the site conditions (mg/L)
+
+        Return:
+            None
+
+        Note: For discharge() in the splitter/pipe/influent/effluent/WAS classes, the arguments of
+        method_name, fix_DO, and DO_sat_T are pretty much dummies because it is assumed that there is no
+        reaction of any kind in these types of process units.
 
         See:
             _branch_flow_helper();
@@ -1013,6 +994,80 @@ class splitter(poopy_lab_obj):
         return self.get_TN(br) - self.get_pN(br)
 
 
+    def update_proj_conditions(self, ww_temp=20, elev=100, salinity=1.0):
+        """
+        Update the site conditions for the process unit.
+
+        Args:
+            ww_temp:    water/wastewater temperature, degC
+            elev:       site elevation above mean sea level, meter
+            salinity:   salinity of w/ww, GRAM/L
+
+        Return:
+            None
+
+        See:
+            get_saturated_DO().
+        """
+        if ww_temp > 4 and ww_temp <= 40\
+                and elev >= 0 and elev <= 3000\
+                and salinity >= 0:
+            self._ww_temp = ww_temp
+            self._elev = elev
+            self._salinity = salinity
+            self._DO_sat_T = self.get_saturated_DO()
+        else:
+            print(self.__name__, ' ERROR IN NEW PROJECT CONDITIONS. NO UPDATES')
+
+        return None
+
+
+    def get_saturated_DO(self):
+        """
+        Calculate the saturated DO conc. based on current project conditions.
+
+        Current project conditions are defined in self._ww_temp, self._elev, and self._salinity
+
+        Reference: 
+            USCIS Office of Water Quality Technical Memorandum 2011.03 Change to Solubility Equations
+            for Oxygen in Water
+
+        Args:
+            None
+
+        Return:
+            O2 Solubility (saturation conc.), mg/L
+        """
+        
+        T = self._ww_temp + 273.15  # convert degC to degK
+
+        # first, estimate the DO_sat_0 at 0 salinity and 1 atm, which is done by
+        # using the Benson-Krause equations:
+        DO_sat_0 = math.exp(
+                    - 139.34411 + 1.575701E5 / T 
+                    - 6.642308E7 / T**2 + 1.2438E10 / T**3
+                    - 8.621949E11 / T**4)
+        
+        # second, estimate the salinity factor, Fs
+        Fs = math.exp(-self._salinity * (0.017674 - 10.754/T + 2140.7/T**2))
+
+        # third, estimate the pressure factor, Fp
+        Patm_in_bar = 1.01325 * (1 - 2.25577E-5 * self._elev)**5.25588
+
+        theta_0 = 0.000975 - 1.426E-5 * self._ww_temp\
+                    + 6.436E-8 * self._ww_temp**2
+
+        vapor_pres_water = math.exp(11.8571 - 3840.7 / T - 216961.0 / T**2)
+
+        Fp = (Patm_in_bar - vapor_pres_water) * (1.0 - theta_0 * Patm_in_bar)\
+                / (1.0 - vapor_pres_water) / (1.0 - theta_0)
+
+        # finally, calculate the DO_sat for the site conditions
+        DO_sat_T = DO_sat_0 * Fs * Fp
+
+        return DO_sat_T
+
+
     def _branch_flow_helper(self):
         """
         Calculate 1 of the 3 branches' flow based on the other 2.
@@ -1023,9 +1078,9 @@ class splitter(poopy_lab_obj):
         2) Main outlet flow (_mo_flow) can be set by
           2A) upstream automatically
           2B) direct user/run_time input
-        3) Inlet flow is dependent on the two outlet branches' settings back
-        tracing will be required to make sure flows are balanced if both main
-        and side outlet flows are set either by user or run time SRT control.
+        3) Inlet flow is dependent on the two outlet branches' settings back tracing will be required to make
+        sure flows are balanced if both main and side outlet flows are set either by user or run time SRT
+        control.
 
         See:
             set_flow_data_src(),
@@ -1076,7 +1131,7 @@ class splitter(poopy_lab_obj):
 
         return _cnvg[:]
 
-#
+    #
     # END OF COMMON INTERFACE DEFINITIONS
  
     
@@ -1086,12 +1141,10 @@ class splitter(poopy_lab_obj):
         """
         Set the current splitter as an Solids Retention Time controller.
 
-        There are specific rules for connected an SRT controlling splitter.
-        Once set, the splitter shall have a sidestream connected to a pipe
-        followed by a WAS (waste activated sludge) unit.
+        There are specific rules for connected an SRT controlling splitter. Once set, the splitter shall have
+        a sidestream connected to a pipe followed by a WAS (waste activated sludge) unit.
 
-        Once set True, the sidestream flow will be determined during simulation
-        by the downstream WAS unit.
+        Once set True, the sidestream flow will be determined during simulation by the downstream WAS unit.
 
         Args:
             setting: True/False
@@ -1148,11 +1201,9 @@ class pipe(splitter):
     """
     A derived "splitter" class with a blinded sidestream.
 
-    No biochemical reactions are modelled in the pipe class. A pipe is only
-    used to connect process units.
+    No biochemical reactions are modelled in the pipe class. A pipe is only used to connect process units.
 
-    A pipe can have multiple upstream dischargers but only one downstream
-    (main) receiver.
+    A pipe can have multiple upstream dischargers but only one downstream (main) receiver.
     """
 
     __id = 0
@@ -1161,13 +1212,12 @@ class pipe(splitter):
         """
         A few special steps are taken when initializing a "pipe":
 
-            1) Its sidestream is connected to None, with the sidestream flow is
-            fixed at 0 m3/d, and the _so_flow_defined set to True;
+            1) Its sidestream is connected to None, with the sidestream flow is fixed at 0 m3/d, and the
+            _so_flow_defined set to True;
 
             2) Its _has_sidestream flag is fixed to False;
 
-            3) Its sidestream flow data source (_so_flow_ds) is set to
-            flow_data_src.PRG;
+            3) Its sidestream flow data source (_so_flow_ds) is set to flow_data_src.PRG. 
         """
         
         splitter.__init__(self)
@@ -1202,8 +1252,8 @@ class pipe(splitter):
         """
         Calculate 1 of the 3 branches' flow based on the other 2.
 
-        For a "pipe", the sidestream flow is set to 0 m3/d. The mainstream
-        outlet flow always equals to the total inlet flow.
+        For a "pipe", the sidestream flow is set to 0 m3/d. The mainstream outlet flow always equals to the
+        total inlet flow.
         """
         if self._upstream_set_mo_flow:
             self._mo_flow = self._total_inflow
@@ -1216,8 +1266,8 @@ class pipe(splitter):
         """
         Define the downstream side outlet's connection.
 
-        A "pipe" has no sidestream (set to "None"). This function is
-        essentially by-passed with a warning message if called.
+        A "pipe" has no sidestream (set to "None"). This function is essentially by-passed with a warning
+        message if called.
         """
         print("WARN:", self.__name__, "has no sidestream.")
         return None
@@ -1227,9 +1277,8 @@ class pipe(splitter):
         """
         Define the flow rate for the sidestream.
 
-        This function is bypassed for a "pipe" whose sidestream is set to
-        "None" and sidestream flow 0 m3/d. A warning message is displayed if
-        called.
+        This function is bypassed for a "pipe" whose sidestream is set to "None" and sidestream flow 0 m3/d.
+        A warning message is displayed if called.
         """
         print("WARN:", self.__name__,"has sidestream flow of ZERO.")
         return None
@@ -1268,7 +1317,7 @@ class influent(pipe):
 
         4) convergence is irrelevant here;
 
-        5) is the source of flow/load to the WWTP.
+        5) is the only source of flow/load to the WWTP.
         """
 
         pipe.__init__(self)
@@ -1302,11 +1351,29 @@ class influent(pipe):
         self._TSS = 250.0
         self._VSS = 200.0
         self._TKN = 40.0
-        self._NH3 = 28.0
-        self._NO = 0.0
+        self._NH3N = 28.0
+        self._NOxN = 0.0
         self._TP = 10.0
         self._Alk = 6.0  # in mmol/L as CaCO3
         self._DO = 0.0 
+
+        # Fractionations of the influent. The fractions stored are for the raw
+        # influent wastewater without any active biomass.
+        # If influent with active biomass (X_BH, X_BA, etc.) is needed,
+        # a dedicated Bio-Augmentation unit should be used with only model
+        # components related to the biomass.
+        self._model_fracs = {   'ASM1': {   
+                                    'COD:BOD5': 2.04,
+                                    'SCOD:COD': 0.50,  #SCOD+PCOD = COD
+                                    'RBCOD:SCOD': 0.80,  #RBCOD + UBSCOD = SCOD
+                                    'SBCOD:PCOD': 0.70,  #SBCOD + UBPCOD = PCOD
+                                    'SON:SCOD': 0.01,  #Sol.Org.N as a frac of SCOD
+                                    'RBON:SON': 0.8,  #RBON + UBSON = SON
+                                    'SBON:PON': 0.75  #SBON + UBPON = PON
+                                }, 
+                                'ASM2d':{},  #TODO: define for ASM-2d
+                                'ASM3': {}   #TODO: define for ASM3
+                                }
 
         # Plant influent flow in M3/DAY
         # TODO: will be user-input from GUI. FROM THE GUI, USER
@@ -1322,8 +1389,7 @@ class influent(pipe):
         """
         Calculate 1 of the 3 branches' flow based on the other 2.
 
-        For an "influent" unit, the mainstream outflow always equals to its
-        design flow.
+        For an "influent" unit, the mainstream outflow always equals to its design flow.
         """
         
         self._mo_flow = self._design_flow
@@ -1335,8 +1401,8 @@ class influent(pipe):
         """
         Assign the intial guess to the unit before simulation.
 
-        There is no need for assigning any initial guesses to an "influent"
-        unit. This function is by-passed for "influent".
+        There is no need for assigning any initial guesses to an "influent" unit. This function is by-passed
+        for "influent".
         """
         pass
 
@@ -1345,9 +1411,8 @@ class influent(pipe):
         """
         Return the convergence status of the unit.
 
-        The "influent" unit gets flows and loads from the user. Convergence is
-        irrelevant here. This function is by-passed for "influent" by setting
-        the _converged to True.
+        The "influent" unit gets flows and loads from the user. Convergence is irrelevant here. This function
+        is by-passed for "influent" by setting the _converged to True.
         """
         return self._converged  # which is always True
 
@@ -1356,8 +1421,8 @@ class influent(pipe):
         """
         Add the discharger's branch to inlet.
 
-        The "influent" has no further upstream within the context of
-        simulation. This function is by-passed with an ERROR message displayed.
+        The "influent" has no further upstream within the context of simulation. This function is by-passed
+        with an ERROR message displayed.
         """
         print("ERROR:", self.__name__, "has NO upstream.")
         return None
@@ -1367,8 +1432,7 @@ class influent(pipe):
         """
         Combine the individual flows specified in the self._inlet into one.
 
-        For an "influent" unit, there is no further upstream. The total inflow
-        is the design flow.
+        For an "influent" unit, there is no further upstream. The total inflow is the design flow.
 
         See:
             _branch_flow_helper()
@@ -1381,26 +1445,30 @@ class influent(pipe):
         """
         Calculate the flow weighted average model component concentrations.
 
-        This function is re-implemented for the "influent" who doesn't have
-        further upstream units discharging into it. Rather, this function
-        becomes a wrapper for the _convert_to_model_comps() which fractions the
-        wastewater constituents measured in BOD, TSS, VSS, TKN, NH3-N, etc.
-        into the model components such as substrate COD, slowly biodegradable
-        COD, inert suspended solids, etc.
+        This function is re-implemented for the "influent" who doesn't have further upstream units
+        discharging into it. Rather, this function becomes a wrapper for the _convert_to_model_comps() which
+        fractions the wastewater constituents measured in BOD, TSS, VSS, TKN, NH3-N, etc. into the model
+        components such as substrate COD, slowly biodegradable COD, inert suspended solids, etc.
+
+        Args:
+            None
+
+        Return:
+            Copy of the blended influent components.
 
         See:
             _convert_to_model_comps().
         """
-        self._in_comps = self._convert_to_model_comps()
-        return None
+        self._in_comps = self._convert_to_model_comps(asm_ver='ASM1', verbose=False)
+        return self._in_comps[:]
 
 
     def remove_upstream(self, discharger):
         """
         Remove an existing discharger from inlet.
 
-        This function is bypassed for the "influent" who has no further
-        upstream. An error message displays when called.
+        This function is bypassed for the "influent" who has no further upstream. An error message displays
+        when called.
         """
         print("ERROR:", self.__name__, "has no upstream")
         return None
@@ -1410,8 +1478,8 @@ class influent(pipe):
         """
         Define the mainstream outlet flow.
 
-        This function is re-implemented for the "influent" and essentially
-        becomes a wrapper for setting the design flow (m3/d).
+        This function is re-implemented for the "influent" and essentially becomes a wrapper for setting the
+        design flow (m3/d).
 
         Args:
             flow:   design flow of the influent, m3/d
@@ -1431,8 +1499,8 @@ class influent(pipe):
         """
         Set whether the mainstream flow = (total inflow - side outflow).
 
-        This function is essentially bypassed for the "influent" since the
-        design flow (influent mainstream outflow) is directly set by the user.
+        This function is essentially bypassed for the "influent" since the design flow (influent mainstream
+        outflow) is directly set by the user.
         """
         pass
 
@@ -1458,14 +1526,19 @@ class influent(pipe):
         pass
 
 
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
-        This function is re-implemented for the "influent". An "influent" does
-        not care the changes from the previous round to the current since it is
-        the source for the entire WWTP. Therefore, _prev_mo_comps,
+        This function is re-implemented for the "influent". An "influent" does not care the changes from the
+        previous round to the current since it is the source for the entire WWTP. Therefore, _prev_mo_comps,
         _prev_so_comps, _mo_comps, and _so_comps all equal to _in_comps.
+
+        Args:
+            (see the note in the discharge() in the splitter class)
+
+        Return:
+            None
         """
 
         # influent concentrations don't change for steady state simulation
@@ -1486,94 +1559,176 @@ class influent(pipe):
     #
     # (INSERT CODE HERE)
     #
-    def set_fractions(self):
+    def set_constituents(self, asm_ver='ASM1', inf_concs=[]):
         """
-        Sets fractions for converting WW constituents into model components.
+        Set the conventional influent constituents.
 
-        PLACE HOLDER.
+        Usually called at top level when the entire inf_concs is defined and validated.
+
+        Args:
+            asm_ver:        version of ASM: ASM1 | ASM2d | ASM3
+            inf_concs:      list of influent constituents (see Note)
+
+        Return:
+            None
+
+        Note:
+            There are 9 elements in inf_concs for ASM1:
+                inf_concs[0] : self._BOD5 
+                inf_concs[1] : self._TSS 
+                inf_concs[2] : self._VSS 
+                inf_concs[3] : self._TKN 
+                inf_concs[4] : self._NH3N 
+                inf_concs[5] : self._NOxN 
+                inf_concs[6] : self._TP 
+                inf_concs[7] : self._Alk 
+                inf_concs[8] : self._DO 
         """
 
-        # TODO: set fractions for converting user measured influent
-        # characteristics into ASM1 model components.
-        pass
+        if asm_ver == 'ASM1' and len(inf_concs) == 9:
+            self._BOD5 = inf_concs[0]
+            self._TSS = inf_concs[1]
+            self._VSS = inf_concs[2]
+            self._TKN = inf_concs[3]
+            self._NH3N = inf_concs[4]
+            self._NOxN = inf_concs[5]
+            self._TP = inf_concs[6]
+            self._Alk = inf_concs[7]
+            self._DO = inf_concs[8]
+            
+        return None
 
-    def _convert_to_model_comps(self):
+
+    def set_fractions(self, asm_ver, frac_name, frac_val):
+        """
+        Set fractions to convert wastewater constituents into model components
+
+        Args:
+            asm_ver:        ASM version: 'ASM1' | 'ASM2d' | 'ASM3'
+            frac_name:      name of the fractionation, ASM version dependent
+            frac_val:       new value of the fraction specified by 'frac_name'
+
+        Return:
+            self._model_fracs.copy()
+        """
+
+        if asm_ver in self._model_fracs.keys()\
+                and frac_name in self._model_fracs[asm_ver]:
+            if (frac_name == 'COD:BOD5' and frac_val > 1.0)\
+                    or  (frac_name != 'COD:BOD5' and 0 <= frac_val <= 1.0):
+                self._model_fracs[asm_ver][frac_name] = frac_val
+                return self._model_fracs.copy()
+            else:
+                print('ERROR in new fraction value: FRACTIONS NOT UPDATED,'
+                        'DEFAULT FRACTIONS USED.')
+        
+        return self._model_fracs.copy()
+
+
+    def _convert_to_model_comps(self, asm_ver='ASM1', verbose=False):
         """
         Fractions the wastewater constituents into model components.
 
-        Wastewater constituents often are measured in units such as Biochemical
-        Oxygen Demand (BOD), Total Suspended Solids (TSS), Volatile SS (VSS),
-        etc. Many mathematical models including IWA ASMs, however, measured
-        organic carbons in Chemical Oxygen Demand (COD). This applies to
-        soluble and particulate constituents. As a result, conversions between
-        the two are needed.
+        Wastewater constituents often are measured in units such as Biochemical Oxygen Demand (BOD), Total
+        Suspended Solids (TSS), Volatile SS (VSS), etc. Many mathematical models including IWA ASMs, however,
+        measured organic carbons in Chemical Oxygen Demand (COD). This applies to soluble and particulate
+        constituents. As a result, conversions between the two are needed.
 
-        Currently this fuction is mainly set up to convert municipal
-        wastewater's constituents into IWA ASM1. Industrial wastewater can have
-        very different conversions coefficients. Also, the fractions will need
+        Currently this fuction is mainly set up to convert municipal wastewater's constituents into IWA ASM1.
+        Industrial wastewater can have very different conversions coefficients. Also, the fractions will need
         to be revised for models different from IWA ASM1.
+
+        Args:
+            asm_ver:    ASM Version: 'ASM1' | 'ASM2d' | 'ASM3'
+            verbose:    bool for whether to print the influent model components
 
         Return:
             list of model components for the influent characteristics user
             defined.
         """
 
-        #TODO: the first set of conversion available here is for municipal 
-        #   wastewater. Industrial wastewater may have completely different
-        #   conversion factors and needs to be tested.
-        
-        # influent biodegradable COD, BOD/COD = 1.71 for typ. muni.WW
-        Inf_CODb = self._BOD5 * 1.71
-        # influent total COD, COD/BOD5 = 2.04 per BioWin
-        Inf_CODt = self._BOD5 * 2.04
-        # influent total innert COD, 
-        Inf_CODi = Inf_CODt - Inf_CODb
-        # influent soluble innert COD
-        Inf_S_I = 0.13 * Inf_CODt
-        # influent particulate innert COD
-        Inf_X_I = Inf_CODi - Inf_S_I
-        # influent particulate biodegradable COD
-        Inf_X_S = 1.6 * self._VSS - Inf_X_I
-        # influent soluble biodegradable COD
-        Inf_S_S = Inf_CODb - Inf_X_S
-        # influent Heterotrophs (mgCOD/L), 
-        Inf_X_BH = 0.0
-        # influent Autotrophs (mgCOD/L), 
-        Inf_X_BA = 0.0
-        # influent Biomass Debris (mgCOD/L)
-        Inf_X_D = 0.0
-        
-        # influent TKN (mgN/L), NOT IN InfC
-        Inf_TKN = self._TKN
-        # influent Ammonia-N (mgN/L), 
-        Inf_S_NH = self._NH3
-        # subdividing TKN into: 
-        #  a) nonbiodegradable TKN 
-        NonBiodegradable_TKN_Ratio = 0.03 # TODO: need to be configurable
-        # NON-BIODEGRADABLE TKN WILL HAVE TO BE ADDED BACK TO THE EFFLUENT TN
-        Inf_nb_TKN = Inf_TKN * NonBiodegradable_TKN_Ratio
-        #  Grady 1999:
-        Soluble_Biodegradable_OrgN_Ratio = Inf_S_S / (Inf_S_S + Inf_X_S)
-        #  b) soluble biodegrable TKN,     
-        Inf_S_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
-                    * Soluble_Biodegradable_OrgN_Ratio
-        #  c) particulate biodegradable TKN
-        Inf_X_NS = (Inf_TKN - Inf_S_NH - Inf_nb_TKN)\
-                    * (1.0 - Soluble_Biodegradable_OrgN_Ratio)
-        
-        # influent Nitrite + Nitrate (mgN/L)
-        Inf_S_NO = self._NO
-        
-        Inf_S_ALK = self._Alk
-        
-        Inf_S_DO = self._DO
-        
-        _inf_concs = [Inf_S_DO, Inf_S_I, Inf_S_S, Inf_S_NH, Inf_S_NS, 
-                        Inf_S_NO, Inf_S_ALK, 
-                        Inf_X_I, Inf_X_S, Inf_X_BH, Inf_X_BA, Inf_X_D,
-                        Inf_X_NS]
 
-        return _inf_concs[:]
+        _temp_comps = self._in_comps[:]
+
+        if asm_ver == 'ASM1':
+            # total COD
+            _TCOD = self._model_fracs['ASM1']['COD:BOD5'] * self._BOD5
+
+            # soluble COD
+            _SCOD = self._model_fracs['ASM1']['SCOD:COD'] * _TCOD
+
+            # particulate COD
+            _PCOD = _TCOD - _SCOD
+
+            # readily biodegradable COD (biodeg. soluble COD)
+            _RBCOD = self._model_fracs['ASM1']['RBCOD:SCOD'] * _SCOD
+
+            # nonbiodegradable soluble COD
+            _NBSCOD = _SCOD - _RBCOD
+
+            # slowly biodegradable COD (biodeg. particulate COD)
+            _SBCOD = self._model_fracs['ASM1']['SBCOD:PCOD'] * _PCOD
+
+            # nonbiodegradable particulate COD
+            _NBPCOD = _PCOD - _SBCOD
+
+            # total organic N
+            _TON = self._TKN - self._NH3N
+
+            # soluble organic N
+            _SON = self._model_fracs['ASM1']['SON:SCOD'] * _SCOD
+
+            # particulate organic N
+            _PON = _TON - _SON
+
+            # readily biodegradable organic N (biodeg.sol.org N) 
+            # assuming RBON:SON = RBCOD:SCOD
+            _RBON = self._model_fracs['ASM1']['RBCOD:SCOD'] * _SON
+
+            # nonbiodeg. sol. org. N
+            _UBSON = _SON - _RBON
+
+            # slowly biodegradable organic N (biodeg.part.org. N) 
+            # assuming SBON:PON = SBCOD:PCOD
+            _SBON = self._model_fracs['ASM1']['SBCOD:PCOD'] * _PON
+
+            # nonbiodeg. part. org. N
+            _UBPON = _PON - _SBON
+
+            _temp_comps = [self._DO,
+                            _NBSCOD, _RBCOD, self._NH3N, _RBON, self._NOxN,
+                            self._Alk,
+                            _NBPCOD, _SBCOD, 0.0, 0.0, 0.0, _SBON]
+
+            # check if any negative values from the fractionation
+            for tc in _temp_comps:
+                if tc < 0:
+                    print('ERROR in fractions resulting in negative model', 
+                            ' components. Influent components NOT UPDATED')
+                    return self._in_comps[:]  # nothing changed
+
+
+            if asm_ver == 'ASM1' and verbose:
+                print("Model = ASM1, Influent Fractions Summary::")
+                print("Total COD = {}  Soluble COD = {}".format(_TCOD, _SCOD),
+                        " Particulate COD =", _PCOD)
+                print("Readily Biodegradable (biodeg. sol.) COD =", _RBCOD,
+                        " Non-Biodegradable Sol. COD =", _NBSCOD)
+                print("Slowly Biodegradable (biodeg. part.) COD =", _SBCOD,
+                        " Non-Biodegradable Part. COD =", _NBPCOD)
+                print("Total TKN = {}  NH3-N = {}  Total Org.N = {}".format(
+                            self._TKN, self._NH3N, _TON))
+                print("Soluble Org. N = {}  Part. Org. N = {}".format(
+                            _SON, _PON))
+                print("Readily Biodegradable (biodeg. sol.) Org. N =", _RBON,
+                        " Non-Biodegradable Sol. Org. N =", _UBSON)
+                print("Slowly Biodegradable (biodeg. part.) Org.N =", _SBON,
+                        " Non-Biodegradable part.Org. N =", _UBPON)
+
+            #TODO: Add accounting for nonbiod sol. orgN and nonbiod part orgN
+            return _temp_comps[:]
+
+
     # 
     # END OF FUNTIONS UNIQUE TO INFLUENT
 
@@ -1585,8 +1740,8 @@ class effluent(pipe):
     """
     A derived "pipe" class whose main outlet is "None".
 
-    The "effluent" class is another form of a "pipe". It differs from the
-    "pipe" class with its outlet being "None".
+    The "effluent" class is another form of a "pipe". It differs from the "pipe" class with its outlet being
+    "None".
     """
 
     __id = 0
@@ -1621,14 +1776,12 @@ class effluent(pipe):
         """
         Calculate 1 of the 3 branches' flow based on the other 2.
 
-        This function is re-implemented for "effluent" because the actual
-        effluent flow rate of a WWTP has to do with its waste sludge flow (WAS
-        flow). The WAS flow is set during simulation by PooPyLab. As a result,
-        the effluent flow rate is the balance of the plant influent flow and
-        WAS flow.
+        This function is re-implemented for "effluent" because the actual effluent flow rate of a WWTP has
+        to do with its waste sludge flow (WAS flow). The WAS flow is set during simulation by PooPyLab. As a
+        result, the effluent flow rate is the balance of the plant influent flow and WAS flow.
 
-        Occasionally, there may be a WWTP without dedicated WAS unit when the
-        effluent flow rate equals to that of the influent.
+        Occasionally, there may be a WWTP without dedicated WAS unit when the effluent flow rate equals to
+        that of the influent.
         """
 
         # the _mo_flow of an effluent is set externally (global main loop)
@@ -1652,12 +1805,19 @@ class effluent(pipe):
 #        return None
 
 
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
-        This function is re-implemented for "effluent" because there is no
-        further downstream units on either the main or side outlet.
+        This function is re-implemented for "effluent" because there is no further downstream units on either
+        the main or side outlet.
+        
+        Args:
+            (see the note in the discharge() defined in the splitter class)
+
+        Return:
+            None
+
         """
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
@@ -1695,10 +1855,9 @@ class WAS(pipe):
 
         3) Its inlet's total suspended solids (TSS).
 
-    It also differs from a "pipe" at its (mainstream) outlet which can be set
-    as "None" or another process unit, a sludge digester for instance. The
-    outlet of a "pipe", however, shall always be connected to another process
-    unit.
+    It also differs from a "pipe" at its (mainstream) outlet which can be set as "None" or another process
+    unit, a sludge digester for instance. The outlet of a "pipe", however, shall always be connected to
+    another process unit.
     """
 
     __id = 0
@@ -1734,13 +1893,19 @@ class WAS(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
-        WAS typically functions as an effluent obj. However, it can also be
-        a pipe obj. that connects to solids management process units.
-        Therefore, the discharge function allows a None at the main outlet.
+        WAS typically functions as an effluent obj. However, it can also be a pipe obj. that connects to
+        solids management process units. Therefore, the discharge function allows a None at the main outlet.
+
+        Args: 
+            (see the note in discharge() defined in the splitter class)
+
+        Return:
+            None
+
         """
 
         self._prev_mo_comps = self._mo_comps[:]
