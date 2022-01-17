@@ -1,0 +1,13 @@
+Id,Type,Pipe_Source,Pipe_Dest_Main,Pipe_Dest_Side,Text
+1,influent,,5,,Inlet
+2,asm_reactor,5,6,,Reactor
+3,final_clarifier,6,8,9,Final Clarifier
+4,splitter,8,12,10,split
+5,pipe,1,2,,pipe1
+6,pipe,2,3,,pipe2
+7,effluent,3,,,Outlet
+8,pipe,3,7,,pipe3
+9,pipe,3,4,,pipe4
+10,pipe,4,11,,pipe5
+11,waste,10,,,WasteWater
+12,ras,4,2,,RAS

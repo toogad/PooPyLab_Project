@@ -23,26 +23,10 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/pipe/reactor classes.
 #
-#
-# Change Log:
-# 20200625 KZ: retested after updating the steadt state criteria
-# 20191015 KZ: checked against ASIM results and passed.
-# 20191014 KZ: re-test after flow data source tags implementation.
-# 20190917 KZ: Matched ASIM results!!! - PASSED TEST!!
-# 20190916 KZ: compared results against ASIM. ASIM has additional rate
-#           adjustments including K_ALK and ammonia limitations. 
-#           But the results are comparable!!
-# 20190915 KZ: start to get reasonable integration results.
-# 20190911 KZ: got the pfd to run with results. need to verify its validity
-# 20190911 KZ: continued after rearraning ASM1 and integration function
-# 20190815 KZ: init
-#
 
-from unit_procs.streams import pipe, influent, effluent
-from unit_procs.bio import asm_reactor
-import utils.pfd
-import utils.run
-import pdb
+from PooPyLab.unit_procs.streams import pipe, influent, effluent
+from PooPyLab.unit_procs.bio import asm_reactor
+from PooPyLab.utils import pfd, run
 
 if __name__ == '__main__':
 
@@ -50,24 +34,24 @@ if __name__ == '__main__':
 
     wwtp = INF_REACT_EFF.construct()
 
-    utils.pfd.check(wwtp)
+    pfd.check(wwtp)
 
-    utils.pfd.show(wwtp)
+    pfd.show(wwtp)
 
     # identify units of different types
-    _inf = utils.pfd.get_all_units(wwtp, 'Influent')
+    _inf = pfd.get_all_units(wwtp, 'Influent')
 
-    _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
+    _reactors = pfd.get_all_units(wwtp, 'ASMReactor')
 
-    _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
+    _WAS = pfd.get_all_units(wwtp, 'WAS')
 
-    _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
+    _splitters = pfd.get_all_units(wwtp, 'Splitter')
 
     _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
 
-    _final_clar = utils.pfd.get_all_units(wwtp, 'Final_Clarifier')
+    _final_clar = pfd.get_all_units(wwtp, 'Final_Clarifier')
 
-    _eff = utils.pfd.get_all_units(wwtp, 'Effluent')
+    _eff = pfd.get_all_units(wwtp, 'Effluent')
 
     print('Influent in the PFD: {}'.format([_u.__name__ for _u in _inf]))
 
@@ -100,10 +84,10 @@ if __name__ == '__main__':
 
     for _u in _inf:
         _u.update_combined_input()
-        _u.discharge()
+        _u.discharge('BDF', True, 10)
 
     # TODO: what if there are multiple influent units?
-    _seed = utils.run.initial_guess(_params, 
+    _seed = run.initial_guess(_params, 
                                     _reactors,
                                     _inf[0].get_main_outflow(), 
                                     _inf[0].get_main_outlet_concs())
@@ -113,19 +97,19 @@ if __name__ == '__main__':
     for _r in _reactors:
         _r.assign_initial_guess(_seed)
     
-    utils.run.forward_set_flow(wwtp)
-    utils.run.traverse_plant(wwtp, _inf[0])
+    run.forward_set_flow(wwtp)
+    run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
     i = 1
     while True:
         #_WAS[0].set_mainstream_flow(_WAS_flow)
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
-        utils.run.backward_set_flow(_eff)
+        run.backward_set_flow(_eff)
 
-        utils.run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
-        if utils.run.check_global_cnvg(wwtp):
+        if run.check_global_cnvg(wwtp):
             break
         
         i += 1

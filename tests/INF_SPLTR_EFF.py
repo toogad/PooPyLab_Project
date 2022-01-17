@@ -34,10 +34,11 @@
 #    Author: Kai Zhang
 #
 # Change Log: 
-#   2019-08-15 KZ: init
+# 20201129 KZ: re-run after package structure update
+# 20190815 KZ: init
 #
 
-from unit_procs.streams import influent, effluent, pipe, splitter, WAS
+from PooPyLab.unit_procs.streams import influent, effluent, pipe, splitter, WAS
 
 
 inlet = influent()

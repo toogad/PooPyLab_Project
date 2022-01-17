@@ -1,0 +1,465 @@
+# This file is part of PooPyLab.
+#
+# This file is for archiving the functions developed, tested, but not selected
+# for use in the current PooPyLab package. However, these functions can be put
+# back into the unit_procs.bio.py file for future testing and use.
+#
+
+    def _runge_kutta_4(self, first_index_part, f_s, f_p):
+        """
+        Integration by using Runge-Kutta 4th order method.
+        
+        Args:
+            first_index_part:   first index of particulate model component;
+            f_s:                factor of max step for soluble components;
+            f_p:                factor of max step for particulate components.
+
+        Return:
+            step size used  # TODO: REVISE TO RETURN STEP SIZE INSTEAD OF NONE
+
+        Note:
+            1. The two parameters f_s and f_p came from the IWA Activated
+            Sludge Model 1 Report where it talks about the appropriate
+            integration step sizes for the soluble and particulate component.
+            The report suggested that the integration step sizes can be
+            determined by using the actual retention time of the constituent in
+            the reactor times f_s (factor for solubles, typ. 5% to 20%) or f_p
+            (factor for particulate, can go up to 200%). These two parameters
+            were used in the Euler and RK4 methods, but not RKF45.
+
+        See:
+            _runge_kutta_fehlberg_45();
+            _euler();
+        """
+        self._del_C_del_t = self._sludge._dCdt(
+                            self._mo_comps,
+                            self._active_vol,
+                            self._total_inflow,
+                            self._in_comps)
+
+        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
+        _max_step_sol, _max_step_part = self._max_steps(self._del_C_del_t, 7)
+
+        _step_sol = f_s * _max_step_sol
+        _step_part = f_p * _max_step_part
+
+        #self._int_step_sol = min(self._int_step_sol, _new_step_sol)
+        #print('step_sol = ', self._int_step_sol)
+
+        #print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
+
+        # mid-point version of RK4, using half the given step size:
+        #sz_2 = _step / 2
+        sz_2 = _step_sol / 2  #TODO: use soluble step for all for now
+
+        # _w1 = yn = self._mo_comps
+        # k1 is idetical to self._del_C_del_t calculated above
+        k1 = self._del_C_del_t 
+
+        # _w2 = y_n + _step/2 * k1
+        _w2 = [self._mo_comps[i] + sz_2 * k1[i] for i in range(len(k1))]
+
+        k2 = self._sludge._dCdt(
+                            _w2,
+                            self._active_vol,
+                            self._total_inflow,
+                            self._in_comps)
+
+        # _w3 = y_n + _step/2 * k2
+        _w3 = [self._mo_comps[i] + sz_2 * k2[i] for i in range(len(k2))]
+
+        k3 = self._sludge._dCdt(
+                            _w3,
+                            self._active_vol,
+                            self._total_inflow,
+                            self._in_comps)
+
+        # _w4 = yn + _step * k3
+        _w4 = [self._mo_comps[i] + _step_sol * k3[i] for i in range(len(k3))]
+
+        k4 = self._sludge._dCdt(
+                            _w4,
+                            self._active_vol,
+                            self._total_inflow,
+                            self._in_comps)
+
+        self._sludge._comps = [self._sludge._comps[i]
+                                + (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6
+                                * _step_sol
+                                for i in range(len(self._sludge._comps))]
+
+        self._mo_comps = self._sludge._comps[:]
+
+        return None
+
+
+    def _euler(self, first_index_part=7, f_s=0.05, f_p=2.0):
+        """
+        Integration by using Euler's method, aka RK1
+        
+        Args:
+            first_index_part: first index of particulate component;
+            f_s:    factor of max step for soluble components;
+            f_p:    factor of max step for particulate components.
+
+        Return:
+            step size used  # TODO: REVISE TO RETURN STEP SIZE INSTEAD OF NONE
+            
+        See:
+            _runge_kutta_fehlberg_45();
+            _runge_kutta_4();
+        """
+
+        # Determine the next step size based on:
+        #   C(t + del_t) = C(t) + (dC/dt) * del_t, where
+        #   0 < del_t < Retention_Time_C_k, where
+        #   C is the individual model component and k is the kth reactor
+        self._del_C_del_t = self._sludge._dCdt(
+                            self._mo_comps,
+                            self._active_vol,
+                            self._total_inflow,
+                            self._in_comps)
+
+        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
+        _max_step_sol, _max_step_part = self._max_steps(self._del_C_del_t, 7)
+
+        _step_sol = f_s * _max_step_sol
+        _step_part = f_s * _max_step_part
+
+        #self._int_step_sol = min(self._int_step_sol, _new_step_sol)
+        #print('step_sol = ', self._int_step_sol)
+
+        #print('sol. step = {}, part. step = {}'.format(_step_sol, _step_part))
+
+        # TODO: use the same time step before further optimization
+        #for i in range(first_index_particulate):
+            #self._mo_comps[i] += self._del_C_del_t[i] * self._int_step_sol
+            
+        #for j in range(first_index_particulate, len(self._mo_comps)):
+            #self._mo_comps[j] += self._del_C_del_t[j] * self._int_step_part
+
+        for i in range(len(self._mo_comps)):
+            self._sludge._comps[i] += self._del_C_del_t[i] * _step_sol
+
+        self._mo_comps = self._sludge._comps[:]
+
+        return None
+
+
+    def _integrate_iwa(self, start_time=0.0, end_time=120.0):
+        """
+        Integrate using the partitioning concept suggested in IWA ASM repot.
+
+        Args:
+            start_time: start time for integration, hr
+            end_time: end time for integration, hr
+
+        Return:
+            None
+        """
+
+        self._del_C_del_t = self._sludge._dCdt_iwa(self._mo_comps,
+                                                self._active_vol,
+                                                self._total_inflow,
+                                                self._in_comps,
+                                                "ALL")
+
+
+        cur_t = start_time
+
+        while cur_t < end_time:
+            self._step_oxy, self._step_sol, self._step_part =\
+                self._max_steps(self._del_C_del_t, 7)
+
+            print(self._step_oxy, self._step_sol, self._step_part)
+
+            limit_step_part = end_time - cur_t
+            if limit_step_part > 2e-4:
+                self._step_part = min(self._step_part, limit_step_part)
+            else:
+                self._step_part = 2e-4
+
+            if self._step_sol > self._step_part:
+                self._step_sol = self._step_part
+
+            if self._step_oxy > self._step_sol:
+                self._step_oxy = self._step_sol
+
+            print(self._step_oxy, self._step_sol, self._step_part)
+
+            cur_t_sol = cur_t
+            end_t_sol = cur_t_sol + self._step_part
+
+            while cur_t_sol < end_t_sol:
+                limit_step_sol = end_t_sol - cur_t_sol
+                if limit_step_sol > 2e-4:
+                    self._step_sol = min(self._step_sol, limit_step_sol)
+                else:
+                    self._step_sol = 2e-4
+                
+                cur_t_oxy = cur_t_sol
+                end_t_oxy = cur_t_oxy + self._step_sol
+
+                while cur_t_oxy < end_t_oxy:
+
+                    if self._del_C_del_t[0] < 1e-5:
+                        self._step_oxy = self._step_sol
+                    else:
+                        limit_step_oxy = end_t_oxy - cur_t_oxy
+                        if limit_step_oxy > 2e-4:
+                            self._step_oxy = min(self._step_oxy, limit_step_oxy)
+                        else:
+                            self._step_oxy = 2e-4
+
+                    self._del_C_del_t[0:0] =\
+                        self._sludge._dCdt_iwa(self._mo_comps,
+                                                self._active_vol,
+                                                self._total_inflow,
+                                                self._in_comps,
+                                                "OXY")
+
+                    self._sludge._comps[0] +=\
+                        self._del_C_del_t[0] * self._step_oxy
+
+                    print("O2:", self._del_C_del_t[0])
+
+                    self._mo_comps[0] = self._sludge._comps[0]
+                    cur_t_oxy += self._step_oxy
+                # end of Oxy cycle
+
+                self._del_C_del_t[1:7] = self._sludge._dCdt_iwa(self._mo_comps,
+                                                                self._active_vol,
+                                                                self._total_inflow,
+                                                                self._in_comps,
+                                                                "SOL")
+                for i in range(1, 7):
+                    self._sludge._comps[i] +=\
+                            self._del_C_del_t[i] * self._step_sol
+                    self._mo_comps[i] = self._sludge._comps[i]
+
+                print("SOL:", self._del_C_del_t[1:7])
+
+                cur_t_sol += self._step_sol
+            # end of Soluble cycle
+
+            self._del_C_del_t[7:] = self._sludge._dCdt_iwa(self._mo_comps,
+                                                            self._active_vol,
+                                                            self._total_inflow,
+                                                            self._in_comps,
+                                                            "PART")
+            for i in range(7, 13):
+                self._sludge._comps[i] +=\
+                        self._del_C_del_t[i] * self._step_part
+                self._mo_comps[i] = self._sludge._comps[i]
+
+            print("PART:", self._del_C_del_t[7:])
+            
+            cur_t += self._step_part
+
+            #control numerical minimums that are practically meaningful:
+            for i in range(len(self._mo_comps)):
+                if self._mo_comps[i] < 1e-5:
+                    self._mo_comps[i] = 1e-5
+
+            print("state vars:", self._mo_comps)
+
+        # end of Particulate cycle
+
+        return None
+
+
+    def _max_steps(self, dCdt, X_comp_min_id):
+        """
+        Determine the max step sizes for all model components.
+        
+        Based on:
+           C(t + del_t) = C(t) + (dC/dt) * del_t, where
+           0 < del_t < Retention_Time_C_k, where
+           C is the individual model component and k is the kth reactor
+
+        Args:
+            dCdt: current dCdt (list);
+            X_comp_min_id: starting index of particulate components
+            (Note 1)
+
+        Return:
+            list of max acceptable steps for all model components
+
+        Note:
+            1. By default, the O2 component's index is 0 in the list.
+        """
+
+        # soluble components except for O2
+        _uppers_sol = [abs(self._sludge._comps[i] / dCdt[i]) 
+                        for i in range(1, X_comp_min_id)
+                        if dCdt[i] != 0]
+
+        _uppers_part = [abs(self._sludge._comps[j] / dCdt[j])
+                        for j in range(X_comp_min_id, len(dCdt))
+                        if dCdt[j] != 0]
+
+        print("up_sol:", _uppers_sol)
+        print("up_part:", _uppers_part)
+
+        _max_s_sol = 0.05 * min(_uppers_sol)
+        _max_s_part = 0.05 * min(_uppers_part)
+
+        if dCdt[0] !=0:
+            _max_s_O2 = self._sludge._comps[0] / abs(dCdt[0])
+        else:
+            _max_s_O2 = _max_s_sol
+
+        print("O2, sol, part:", _max_s_O2, _max_s_sol, _max_s_part)
+        #_k = input("PAUSED")
+
+        return _max_s_O2, _max_s_sol, _max_s_part
+
+
+    def _RK45DP_ks_delta(self):
+        # number of model components
+        _nc = len(self._mo_comps)
+
+        # update the step size using the current step size and the scalar from
+        # previous round of RK4 vs RK5 comparison
+        h = self._step
+
+        f1 = self._sludge._dCdt(self._mo_comps,
+                                self._active_vol,
+                                self._total_inflow,
+                                self._in_comps)
+
+        self._del_C_del_t = f1[:]
+
+        k1 = [ h * f1[i] for i in range(_nc) ]
+
+
+        w2 = [ self._mo_comps[i] + 0.2 * k1[i]
+                for i in range(_nc) ]
+
+        f2 = self._sludge._dCdt(w2,
+                                self._active_vol,
+                                self._total_inflow,
+                                self._in_comps)
+
+        k2 = [ h * f2[i] for i in range(_nc) ]
+
+
+        w3 = [ self._mo_comps[i] + 3.0/40.0*k1[i] + 9.0/40.0*k2[i]
+                for i in range(_nc) ]
+
+        f3 = self._sludge._dCdt(w3,
+                                self._active_vol,
+                                self._total_inflow,
+                                self._in_comps)
+        
+        k3 = [ h * f3[i] for i in range(_nc) ]
+
+
+        w4 = [ self._mo_comps[i] + 44.0/45.0*k1[i] - 56.0/15.0*k2[i]
+                + 32.0/9.0*k3[i]
+                for i in range(_nc) ]
+
+        f4 = self._sludge._dCdt(w4,
+                                self._active_vol,
+                                self._total_inflow,
+                                self._in_comps)
+
+        k4 = [ h * f4[i] for i in range(_nc) ]
+
+
+        w5 = [ self._mo_comps[i] + 19372.0/6561.0*k1[i] - 25360.0/2187.0*k2[i]
+                + 64448.0/6561.0*k3[i] - 212.0/729.0*k4[i]
+                for i in range(_nc) ]
+
+        f5 = self._sludge._dCdt(w5,
+                                self._active_vol,
+                                self._total_inflow,
+                                self._in_comps)
+
+        k5 = [ h * f5[i] for i in range(_nc) ]
+
+
+        w6 = [ self._mo_comps[i] + 9017.0/3168.0*k1[i] - 355.0/33.0*k2[i]
+                + 46732.0/5247.0*k3[i] + 49.0/176.0*k4[i]
+                - 5103.0/18656.0*k5[i]
+                for i in range(_nc) ]
+
+        f6 = self._sludge._dCdt(w6,
+                                self._active_vol,
+                                self._total_inflow,
+                                self._in_comps)
+
+        k6 = [ h * f6[i] for i in range(_nc) ]
+
+
+
+        self._Cnext = [ self._mo_comps[i] + 35.0/384.0*k1[i] + 500.0/1113.0*k3[i]
+                    + 125.0/192.0*k4[i] - 2187.0/6784.0*k5[i] + 11.0/84.0*k6[i]
+                    for i in range(_nc) ]
+
+
+        delta = [ 71.0/57600.0 * k1[i] - 71.0/16695.0 * k3[i]
+                    + 71.0/1920.0 * k4[i] - 17253.0/339200.0 * k5[i]
+                    + 88.0/2100.0 * k6[i]
+                    for i in range(_nc) ]
+
+        
+        scale = [ self._atol + self._rtol * max(self._mo_comps[i], self._Cnext[i])
+                    for i in range(_nc) ]
+
+        LE_sum = sum( [ (delta[i] / scale[i])**2 for i in range(_nc) ] )
+
+        return (LE_sum / _nc)**0.5 
+
+    
+    def _runge_kutta_dp_45(self):
+        """
+        Integration w/ the Runge-Kutta-45 method w/ Dormand-Prince constants.
+
+        Args:
+            None
+        
+        Return:
+            step size used
+
+        See:
+            _RK45DP_ks_delta();
+            _RKF45_ks();
+            _RKF45_err();
+            _runge_kutta_fehlberg_45().
+        """
+
+        while True:
+            new_local_err = self._RK45DP_ks_delta()
+
+            step_scale = 1.0
+
+            if new_local_err <= 1.0:  # local err acceptable
+                self._prev_step_rejected = False
+                # avoid big jumps in step adjustment: 
+                # min_scale = 0.2, max_scale = 10
+                if new_local_err == 0.0:
+                    step_scale = 10
+                else:
+                    fct = 0.9 * new_local_err**(-0.14) * self._prev_local_err**0.08
+                    step_scale = max(min(fct, 10), 0.2)
+    
+                self._sludge._comps = self._Cnext[:]
+                self._prev_local_err = max(new_local_err, 1e-4)
+
+                if self._prev_step_rejected:
+                    self._step *= min(step_scale, 0.9)
+                else:
+                    self._step *= step_scale
+
+                break
+            else:
+                self._prev_step_rejected = True
+                step_scale = max(0.9 * new_local_err**(-0.14), 0.2)
+                self._step *= step_scale
+
+        self._mo_comps = self._sludge._comps[:]
+
+        return self._step
+
+

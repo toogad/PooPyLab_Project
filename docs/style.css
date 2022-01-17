@@ -1,11 +1,11 @@
 /* The standard CSS for doxygen 1.8.16 */
 
 body, table, div, p, dl {
-	font: 400 14px/22px Cousine;
+	font: 400 14px/22px Monospace Regular;
 }
 
 p.reference, p.definition {
-	font: 400 14px/22px Cousine;
+	font: 400 14px/22px Monospace Regular;
 }
 
 /* @group Heading Levels */
@@ -15,7 +15,7 @@ h1.groupheader {
 }
 
 .title {
-	font: 400 14px/28px Cousine;
+	font: 400 14px/28px Monospace Regular;
 	font-size: 150%;
 	font-weight: bold;
 	margin: 10px 2px;
@@ -126,6 +126,7 @@ div.navtab {
 
 a {
 	color: #3D578C;
+    font-size: 18px;
 	font-weight: normal;
 	text-decoration: none;
 }
@@ -202,7 +203,7 @@ pre.fragment {  /* THIS IS THE DETAILS FOLLOWING THE BRIEF DOC STRING */
         word-wrap: break-word;
         font-size:  14pt;
         line-height: 125%;
-        font-family: "Cousine";
+        font-family: "Monospace Regular";
         font-size: 95%;
 }
 
@@ -890,7 +891,7 @@ div.directory {
 }
 
 table.directory {
-    font: 400 14px Cousine;
+    font: 400 14px Monospace Regular;
 }
 
 /* @end */
@@ -1010,7 +1011,7 @@ table.fieldtable {
 
 .navpath ul
 {
-	font-size: 11px;
+	font-size: 14px;
 	background-image:url('tab_b.png');
 	background-repeat:repeat-x;
 	background-position: 0 -5px;
@@ -1281,14 +1282,14 @@ dl.section dd {
 
 #projectname
 {
-	font: 300% Cousine;
+	font: 300% Monospace Regular;
 	margin: 0px;
 	padding: 2px 0px;
 }
     
 #projectbrief
 {
-	font: 120% Cousine;
+	font: 120% Monospace Regular;
 	margin: 0px;
 	padding: 0px;
 }

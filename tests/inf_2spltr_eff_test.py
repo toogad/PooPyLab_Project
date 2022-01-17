@@ -23,16 +23,10 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/splitter/WAS/pipe classes.
 #
-#
-# Change Log:
-# 20191012 KZ: passed
-# 20191011 KZ: re-tested after add. of flow data source setting funcs.
-# 20190815 KZ: init and passed
-#
 
-from unit_procs.streams import pipe, influent, effluent, splitter, WAS
-import utils.pfd, utils.run
-import pdb
+from PooPyLab.unit_procs.streams import splitter, pipe, WAS
+from PooPyLab.unit_procs.streams import influent, effluent
+from PooPyLab.utils import pfd, run
 
 if __name__ == '__main__':
 
@@ -40,24 +34,24 @@ if __name__ == '__main__':
     
     wwtp = INF_2SPLTR_EFF.construct()
 
-    utils.pfd.check(wwtp)
+    pfd.check(wwtp)
 
-    utils.pfd.show(wwtp)
+    pfd.show(wwtp)
 
     # identify units of different types
-    _inf = utils.pfd.get_all_units(wwtp, 'Influent')
+    _inf = pfd.get_all_units(wwtp, 'Influent')
 
-    _reactors = utils.pfd.get_all_units(wwtp, 'ASMReactor')
+    _reactors = pfd.get_all_units(wwtp, 'ASMReactor')
 
-    _WAS = utils.pfd.get_all_units(wwtp, 'WAS')
+    _WAS = pfd.get_all_units(wwtp, 'WAS')
 
-    _splitters = utils.pfd.get_all_units(wwtp, 'Splitter')
+    _splitters = pfd.get_all_units(wwtp, 'Splitter')
 
     _srt_ctrl = [_u for _u in _splitters if _u.is_SRT_controller()]
 
-    _final_clar = utils.pfd.get_all_units(wwtp, 'Final_Clarifier')
+    _final_clar = pfd.get_all_units(wwtp, 'Final_Clarifier')
 
-    _eff = utils.pfd.get_all_units(wwtp, 'Effluent')
+    _eff = pfd.get_all_units(wwtp, 'Effluent')
 
     print('Influent in the PFD: {}'.format([_u.__name__ for _u in _inf]))
 
@@ -81,24 +75,24 @@ if __name__ == '__main__':
 
     # start the main loop
     _WAS_flow = 0.0  # M3/d
-    utils.run.forward_set_flow(wwtp)
+    run.forward_set_flow(wwtp)
     # the first travese of the plant is a MUST so that the known forward flows
     # are passed onto as many units as possible. This will ensure the
     # backward_set_flow() has the correct information when setting the
     # downstream flows for those units whose outlet flow data source tags are
     # "DNS" (downstream)
     #pdb.set_trace()
-    utils.run.traverse_plant(wwtp, _inf[0])
+    run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
     while True:
         _WAS_flow = 1000.0  # hardcoded for test
         _WAS[0].set_mainstream_flow(_WAS_flow)
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
-        utils.run.backward_set_flow([_WAS[0], _eff[0]])
-        utils.run.traverse_plant(wwtp, _inf[0])
+        run.backward_set_flow([_WAS[0], _eff[0]])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
-        if utils.run.check_global_cnvg(wwtp):
+        if run.check_global_cnvg(wwtp):
             break
 
     for elem in wwtp:
