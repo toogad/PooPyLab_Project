@@ -1,28 +1,24 @@
 # This file is part of PooPyLab.
 #
-# PooPyLab is a simulation software for biological wastewater treatment
-# processes using International Water Association Activated Sludge Models.
-#    
+# PooPyLab is a simulation software for biological wastewater treatment processes using International Water Association
+# Activated Sludge Models.
+#
 #    Copyright (C) Kai Zhang
 #
-#    PooPyLab is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    PooPyLab is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+#    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+#    later version.
 #
-#    PooPyLab is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+#    details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License along with PooPyLab. If not, see
+#    <http://www.gnu.org/licenses/>.
 #
 #
-#    Definition of physical-chemical process units.
-#    Author: Kai Zhang
+#    This is the definition of the ASM1 model to be imported as part of the Reactor object
 #
-# ----------------------------------------------------------------------------
+#
 
 """Defines classes for physical/chemical treatment processes.
 
@@ -50,17 +46,15 @@ class final_clarifier(splitter):
     """
     A "splitter" w/ different particulate concentrations at inlet/outlets.
 
-    In order to keep the PooPyLab package simple and focused on the biological 
-    processes, the final clarifier is assumed to be an ideal one. No detail    
-    solids settling model is implemented, as least for now.                    
+    In order to keep the PooPyLab package simple and focused on the biological processes, the final clarifier is       
+    assumed to be an ideal one. No detail solids settling model is implemented, as least for now.                      
 
-    However, surface overflow rate, solids loading rate, and HRT will be       
-    checked and warnings will be given to user if they are out of normal       
-    ranges. Simulation will not proceed until all parameters are within proper 
-    ranges. TODO: Add actual solids sedimentation model.                       
+    However, surface overflow rate, solids loading rate, and HRT will be checked and warnings will be given to user if 
+    they are out of normal ranges. Simulation will not proceed until all parameters are within proper ranges. 
+    TODO: Add actual solids sedimentation model.                                                                             
 
-    By default, the mainstream and sidestream outlets are overflow and         
-    underflow, respectively, of the final clarifier.                           
+    By default, the mainstream and sidestream outlets are overflow and underflow, respectively, of the final           
+    clarifier.                                                                                                         
     """
 
     # ASM components
@@ -87,14 +81,11 @@ class final_clarifier(splitter):
         """
         Constructor for final_clarifier.
         
-        The "final_clarifier" is modeled as an ideal solids-liquid separation
-        process that capture the solids from the inlet into the underflow as
-        per the user given capture rate. 
+        The "final_clarifier" is modeled as an ideal solids-liquid separation process that capture the solids from the 
+        inlet into the underflow as per the user given capture rate.                                                   
 
-        Essentially, the "final_clarifier" is a "splitter" with different
-        particulate concentrations among its three branches, while those
-        concentrations will be identical for all the branches of an ideal
-        "splitter".
+        Essentially, the "final_clarifier" is a "splitter" with different particulate concentrations among its three   
+        branches, while those concentrations will be identical for all the branches of an ideal "splitter".            
 
         Args:
             active_vol:     active clarifier volume excluding storage cone, m3;
@@ -139,16 +130,30 @@ class final_clarifier(splitter):
         return None
 
 
-    def discharge(self):
+    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
         """
         Pass the total flow and blended components to the downstreams.
 
-        This function is re-implemented for "final_clarifier" because of the   
-        need to settle the solids (particulate) and concentrate them at the    
-        sidestream (underflow). The function first calls _branch_flow_helper() 
-        to set the flows for inlet, mainstream outlet, and sidestream outlet,  
-        then calls _settle_solids() to fractions the particulate components    
-        according to the branch flows and user set percent solids capture.     
+        This function is re-implemented for "final_clarifier" because of the need to settle the solids (particulate)   
+        and concentrate them at the sidestream (underflow). The function first calls _branch_flow_helper() to set      
+        the flows for inlet, mainstream outlet, and sidestream outlet, then calls _settle_solids() to fractions the    
+        particulate components according to the branch flows and user set percent solids capture.                      
+
+        Args:
+            method_name:    integration method as per scipy.integrate.solveivp;
+            fix_DO:         whether to simulate w/ a fix DO setpoint;
+            DO_sat_T:       saturated DO conc. under the site conditions (mg/L)
+            (see note)
+
+        Return:
+            None
+
+        Note: 
+            Argument method_name is not used as of now but will be applicable when a settling model is placed here in  
+            the final_clarifier class.                                                                                     
+
+            Arguments of fix_DO and DO_sat_T are dummies for now because it is assumed that there is no biochemical    
+            reactions in the clarifier.                                                                                
 
         See:
             _settle_solids();
@@ -180,13 +185,11 @@ class final_clarifier(splitter):
         """
         Set the percent solids capture for the final clarifier.
 
-        This function is valid only when the "final_clarifier" is treated as a
-        perfect solids-liquid separation without actual modeling of the
-        settling process (for simplicity purpose at this stage). 
+        This function is valid only when the "final_clarifier" is treated as a perfect solids-liquid separation        
+        without actual modeling of the settling process (for simplicity purpose at this stage).                        
 
-        Future update of PooPyLab will include settling model to determine how
-        much solids can be captured based on the configuration of the
-        clarifier.
+        Future update of PooPyLab will include settling model to determine how much solids can be captured based on    
+        the configuration of the clarifier.                                                                            
 
         Args:
             capture_rate:   fraction of total inlet solids captured (< 1.0).
@@ -229,19 +232,16 @@ class final_clarifier(splitter):
 
         Assumptions:
             
-            1) All particulate model components settle in the identical fashion
-            in the clarifier.
+            1) All particulate model components settle in the identical fashion in the clarifier.                      
 
         This function first calculate the updated inlet TSS concentration.
 
-        Then based on the capture rate, split the inlet TSS to the mainstream  
-        and sidestream outlets, as if the "final_clarifier" behaved exactly    
-        like a "splitter".                                                     
+        Then based on the capture rate, split the inlet TSS to the mainstream and sidestream outlets, as if the        
+        "final_clarifier" behaved exactly like a "splitter".                                                           
 
-        The fractions of each particulate model components in inlet TSS is then
-        calculated. These fractions is then applied to the main- and sidestream
-        outlet TSS to back calculate the corresponding particulate model
-        components for that branch.
+        The fractions of each particulate model components in inlet TSS is then calculated. These fractions is         
+        then applied to the main- and sidestream outlet TSS to back calculate the corresponding particulate model      
+        components for that branch.                                                                                    
 
         The soluble model components are identical for all three branches.
 
@@ -264,21 +264,17 @@ class final_clarifier(splitter):
         #    return None
 
         _in_tss = self.get_TSS('Inlet')
-        self._under_TSS = (self._total_inflow * _in_tss * self._capture_rate
-                        / self._so_flow)
+        self._under_TSS = self._total_inflow * _in_tss * self._capture_rate / self._so_flow
 
-        _of_tss = (self._total_inflow * _in_tss * (1 - self._capture_rate)
-                            / self._mo_flow)
+        _of_tss = self._total_inflow * _in_tss * (1 - self._capture_rate) / self._mo_flow
 
         
-        # initiate _mo_comps and _so_comps so that all dissolved components
-        # (S_*) are identical among the three streams
+        # initiate _mo_comps and _so_comps so that all dissolved component (S_*) are identical among the three streams 
         self._mo_comps = self._in_comps[:]
         self._so_comps = self._in_comps[:]
 
-        # split the ASM model components associated with solids (X_*), assuming
-        # each component is split into the overflow and underflow keeping its
-        # fraction in clarifier inlet TSS.
+        # split the ASM model components associated with solids (X_*), assuming each component is split into the       
+        # overflow and underflow keeping its fraction in clarifier inlet TSS.                                          
         for i in particulate_index:
             if _in_tss > 0:
                 _frac = self._in_comps[i] / _in_tss

@@ -21,25 +21,28 @@
 #
 #
 # --------------------------------------------------------------------
-#    Testing the influent/effluent/pipe/reactor classes.
+#    Testing the influent fractionation.
 #
 
-from PooPyLab.utils import pfd, run
+from PooPyLab.unit_procs.streams import influent
+from PooPyLab.utils.run import input_inf_concs
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    import FOUR_STG_BARDEN 
+    inf = influent()
 
-    wwtp = FOUR_STG_BARDEN.construct()
+    input_inf_concs('ASM1', inf)
 
-    pfd.check(wwtp)
+    inf.set_mainstream_flow(37800/2.0)
+    inf.set_fractions('ASM1', 'COD:BOD5', 3.1)
+    inf.set_fractions('ASM1', 'SCOD:COD', 0.65)
+    inf.set_fractions('ASM1', 'RBCOD:SCOD', 0.7)  # readily biodeg. COD
+    inf.set_fractions('ASM1', 'SBCOD:PCOD', 0.6)  # slowly biodeg. COD
+    inf.set_fractions('ASM1', 'SON:SCOD', 0.01)
+    inf.set_fractions('ASM1', 'RBON:SON', 0.80)  # readily biodeg. org.N
+    inf.set_fractions('ASM1', 'SBON:PON', 0.75)  # slowly biodeg. org.N
 
-    pfd.show(wwtp)
-
-    run.get_steady_state(wwtp, FOUR_STG_BARDEN.SRT,
-                            verbose=False,
-                            diagnose=True,
-                            mn='BDF',
-                            fDO=True,
-                            DOsat=10)
+    print(inf.blend_inlet_comps())
+    inf.discharge()
+    print(inf.get_main_outlet_concs())
 

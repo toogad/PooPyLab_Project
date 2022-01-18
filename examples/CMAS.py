@@ -49,7 +49,6 @@ from PooPyLab.unit_procs.streams import splitter, pipe, WAS
 from PooPyLab.unit_procs.streams import influent, effluent
 from PooPyLab.unit_procs.bio import asm_reactor
 from PooPyLab.unit_procs.physchem import final_clarifier
-from PooPyLab.utils.pfd import check, show
 
 
 inlet = influent()

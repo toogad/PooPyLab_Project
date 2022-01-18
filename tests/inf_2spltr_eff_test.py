@@ -23,18 +23,10 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/splitter/WAS/pipe classes.
 #
-#
-# Change Log:
-# 20201129 KZ: re-run after package structure update
-# 20191012 KZ: passed
-# 20191011 KZ: re-tested after add. of flow data source setting funcs.
-# 20190815 KZ: init and passed
-#
 
 from PooPyLab.unit_procs.streams import splitter, pipe, WAS
 from PooPyLab.unit_procs.streams import influent, effluent
 from PooPyLab.utils import pfd, run
-import pdb
 
 if __name__ == '__main__':
 
@@ -90,7 +82,7 @@ if __name__ == '__main__':
     # downstream flows for those units whose outlet flow data source tags are
     # "DNS" (downstream)
     #pdb.set_trace()
-    run.traverse_plant(wwtp, _inf[0])
+    run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
     while True:
         _WAS_flow = 1000.0  # hardcoded for test
@@ -98,7 +90,7 @@ if __name__ == '__main__':
         _eff[0].set_mainstream_flow(_plant_inf_flow - _WAS_flow)
 
         run.backward_set_flow([_WAS[0], _eff[0]])
-        run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
         if run.check_global_cnvg(wwtp):
             break

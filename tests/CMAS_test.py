@@ -23,15 +23,6 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent/pipe/reactor classes.
 #
-#
-# Change Log:
-# 20201129 KZ: re-run after package structure update
-# 20201127 KZ: tested with the utils.run.get_steady_state()
-# 20200711 KZ: integrated the handling of PFD w/o RAS/WAS
-# 20200623 KZ: retested after updating steady state criteria
-# 20191017 KZ: passed testing
-# 20190920 KZ: init and digressed to BFS traverse of the PFD
-#
 
 from PooPyLab.utils import pfd, run
 
@@ -47,5 +38,8 @@ if __name__ == '__main__':
 
     run.get_steady_state(wwtp, target_SRT=CMAS.SRT,
                             verbose=False,
-                            diagnose=False)
+                            diagnose=True,
+                            mn='BDF',
+                            fDO=True,
+                            DOsat=10)
 

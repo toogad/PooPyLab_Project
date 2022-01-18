@@ -23,15 +23,9 @@
 # --------------------------------------------------------------------
 #    Testing the influent/effluent classes.
 #
-#
-# Change Log:
-# 20201129 KZ: re-run after package structure update
-# 20190815 KZ: init and passed
-#
 
 from PooPyLab.unit_procs.streams import pipe, influent, effluent, splitter, WAS
 from PooPyLab.utils import pfd, run
-import pdb
 
 if __name__ == '__main__':
 
@@ -83,7 +77,7 @@ if __name__ == '__main__':
     _WAS_flow = 0.0  # M3/d
 
     run.forward_set_flow(wwtp)
-    run.traverse_plant(wwtp, _inf[0])
+    run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
     
     #pdb.set_trace()
 
@@ -95,7 +89,7 @@ if __name__ == '__main__':
 
         #pdb.set_trace()
         run.backward_set_flow([_WAS[0], _eff[0]])
-        run.traverse_plant(wwtp, _inf[0])
+        run.traverse_plant(wwtp, _inf[0], 'BDF', True, 10)
 
         if run.check_global_cnvg(wwtp):
             break
