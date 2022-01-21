@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     run.get_steady_state(wwtp, target_SRT=MLE.SRT,
                             verbose=False,
-                            diagnose=False,
+                            diagnose=True,
                             mn='BDF',
                             fDO=True,
                             DOsat=10)

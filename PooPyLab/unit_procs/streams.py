@@ -481,11 +481,9 @@ class splitter(poopy_lab_obj):
                 temp = 0.0
                 for unit in self._inlet:
                     if self == unit.get_downstream_main():
-                        temp += unit.get_main_outlet_concs()[i]\
-                                * unit.get_main_outflow()
+                        temp += unit.get_main_outlet_concs()[i] * unit.get_main_outflow()
                     else:
-                        temp += unit.get_side_outlet_concs()[i]\
-                                * unit.get_side_outflow()
+                        temp += unit.get_side_outlet_concs()[i] * unit.get_side_outflow()
                 self._in_comps[i] = temp / self._total_inflow
         return self._in_comps[:]
     
@@ -664,7 +662,8 @@ class splitter(poopy_lab_obj):
         Return:
             list
         """
-        return self._mo_comps[:]
+        #return self._mo_comps[:]
+        return self._prev_mo_comps[:]
     
 
     def set_downstream_side(self, rcvr):
@@ -799,7 +798,8 @@ class splitter(poopy_lab_obj):
         Return:
             list
         """
-        return self._so_comps[:]
+        #return self._so_comps[:]
+        return self._prev_so_comps[:]
     
 
     def set_flow(self, dschgr, flow):
