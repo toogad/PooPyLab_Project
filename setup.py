@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='poopylab', 
-    version='0.01.0.20201206', 
-    author="Kai Zhang",
+    version='0.01.0.20220120', 
+    author="Kai Zhang, Shi Shu",
     author_email="poopylabproject@gmail.com",
     description="The .#2. best simulation tool for biological wastewater treatment, by the poop nerds, for the the poop nerds.",
     long_description=long_des,
@@ -17,7 +17,6 @@ setuptools.setup(
         'Source': 'https://github.com/toogad/PooPyLab_Project',
         'Documentation': 'https://toogad.github.io/brownbook/index.html',
         'Tracker': 'https://github.com/toogad/PooPyLab_Project/issues', 
-        'Funding': 'https://donate.pypi.org'
         },
     packages=setuptools.find_packages(include=['PooPyLab', 'PooPyLab.*']),
     classifiers=[
@@ -26,6 +25,6 @@ setuptools.setup(
         "Operating System :: OS Independent"
         ],
     python_requires='>=3',
-    install_requires=['scipy']
+    install_requires=['scipy', 'wxPython']
     )
 
