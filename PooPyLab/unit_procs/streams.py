@@ -165,9 +165,10 @@ class splitter(poopy_lab_obj):
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
     #
 
+
     def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
         """
-        Set the flow data source of the branch specified by the user. 
+        Set the flow data source of the branch specified by the user.
 
         This function helps to decide how a stream process unit (splitter, pipe, influent, effluent, WAS,
         etc.) performs flow balance calculations.
@@ -316,8 +317,7 @@ class splitter(poopy_lab_obj):
             _check_conc_cnvg()
         """
 
-        _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow)
-                        <  limit)
+        _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow) <  limit)
 
         self._converged = _flow_cnvg
 
@@ -1098,43 +1098,46 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], abs_lim=1E-6):
-        """
-        Check the convergence of model components (concentrations).
-
-        Args:
-            curr_comps: current model components
-            prev_comps: prevous round model components
-            abs_lim: absolute limit for convergence
-
-        Retrun:
-            list of bool for each model component's convergence status
-
-        See:
-            is_converged()
-        """
-
-        _nc = len(curr_comps)
-        _cnvg = [False] * _nc
-        abs_diff = []
-        for i in range(_nc):
-            if prev_comps[i] == 0 and curr_comps[i] == 0:
-                _cnvg[i] = True
-            else:
-                #TODO: assuming prev_comps[i] > 0:
-                # _ad = abs(curr_comps[i] - prev_comps[i]) / prev_comps[i]
-                _ad = abs(curr_comps[i] - prev_comps[i])
-                abs_diff.append(_ad)
-                _cnvg[i] = _ad <  abs_lim
-
-        return _cnvg[:]
-
+    #TODO: Double check...this function doesn't seem needed any more
+#    def _check_conc_cnvg(self, curr_comps=[], prev_comps=[], abs_lim=1E-6):
+#        """
+#        Check the convergence of model components (concentrations).
+#
+#        Args:
+#            curr_comps: current model components
+#            prev_comps: prevous round model components
+#            abs_lim: absolute limit for convergence
+#
+#        Retrun:
+#            list of bool for each model component's convergence status
+#
+#        See:
+#            is_converged()
+#        """
+#
+#        _nc = len(curr_comps)
+#        _cnvg = [False] * _nc
+#        abs_diff = []
+#        for i in range(_nc):
+#            if prev_comps[i] == 0 and curr_comps[i] == 0:
+#                _cnvg[i] = True
+#            else:
+#                #TODO: assuming prev_comps[i] > 0:
+#                # _ad = abs(curr_comps[i] - prev_comps[i]) / prev_comps[i]
+#                _ad = abs(curr_comps[i] - prev_comps[i])
+#                abs_diff.append(_ad)
+#                _cnvg[i] = _ad <  abs_lim
+#
+#        return _cnvg[:]
+#
     #
     # END OF COMMON INTERFACE DEFINITIONS
- 
-    
+
+
     # FUNCTIONS UNIQUE TO SPLITTER
     #
+
+
     def set_as_SRT_controller(self, setting=False):
         """
         Set the current splitter as an Solids Retention Time controller.
@@ -1161,7 +1164,7 @@ class splitter(poopy_lab_obj):
         #TODO: HOW DOES THIS IMPACT WAS FLOW BASED ON USER SPECIFIED SRT?
         return None
 
-    
+
     def is_SRT_controller(self):
         """
         Return whether a splitter is an SRT controller.
@@ -1179,7 +1182,7 @@ class splitter(poopy_lab_obj):
 
         Return:
             float
-        """ 
+        """
 
         _sum = 0.0
         if branch == 'Main':
