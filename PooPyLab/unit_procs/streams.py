@@ -662,8 +662,7 @@ class splitter(poopy_lab_obj):
         Return:
             list
         """
-        #return self._mo_comps[:]
-        return self._prev_mo_comps[:]
+        return self._mo_comps[:]
     
 
     def set_downstream_side(self, rcvr):
@@ -798,8 +797,7 @@ class splitter(poopy_lab_obj):
         Return:
             list
         """
-        #return self._so_comps[:]
-        return self._prev_so_comps[:]
+        return self._so_comps[:]
     
 
     def set_flow(self, dschgr, flow):
