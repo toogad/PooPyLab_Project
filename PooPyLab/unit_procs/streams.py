@@ -798,7 +798,7 @@ class splitter(poopy_lab_obj):
             list
         """
         return self._so_comps[:]
-    
+
 
     def set_flow(self, dschgr, flow):
         """
