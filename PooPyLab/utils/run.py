@@ -177,8 +177,8 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     """
     Return the initial guess as the start of integration towards steady state.
 
-    The approach here is similar to that outlined in the IWA ASM1 report, where
-    the total volume of all the reactors is treated as one CSTR.
+    The approach here is similar to that outlined in the IWA ASM1 report, where the total volume of all the reactors is
+    treated as one CSTR.
 
     Args:
         params:     model parameters adjusted to the project temperature;
@@ -187,9 +187,9 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
         plant_inf:  model components for the entire wwtp's influent.
 
     Return:
-        list of ASM 1 component concentrations [float]    
+        list of ASM 1 component concentrations [float]
     """
-    
+
     inf_S_S = plant_inf[2]
     inf_S_NH = plant_inf[3]
     inf_X_S = plant_inf[8]
@@ -204,14 +204,10 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     SF = 1.25
 
     # OXIC SRT required for eff_S_S, assuming DO is sufficiently high
-    SRT_OXIC_H = 1.0 \
-            / (params['u_max_H'] * eff_S_S / (eff_S_S + params['K_S'])
-                    - params['b_LH'])
+    SRT_OXIC_H = 1.0 / (params['u_max_H'] * eff_S_S / (eff_S_S + params['K_S']) - params['b_LH'])
 
     # Oxic SRT required for eff_S_NH, assuming DO is sufficiently high
-    SRT_OXIC_A = 1.0 \
-            / (params['u_max_A'] * eff_S_NH / (eff_S_NH + params['K_NH'])
-                    - params['b_LA'])
+    SRT_OXIC_A = 1.0 / (params['u_max_A'] * eff_S_NH / (eff_S_NH + params['K_NH']) - params['b_LA'])
 
     SRT_OXIC = max(SRT_OXIC_A, SRT_OXIC_H) * SF
 
@@ -220,30 +216,28 @@ def initial_guess(params={}, reactors=[], inf_flow=1.0, plant_inf=[]):
     print('SELECTED Oxic SRT = {:.2f} (day)'.format(SRT_OXIC))
 
     # Initial guesses of S_S and S_NH based on the selected oxic SRT
+
     init_S_S = params['K_S'] * (1.0 / SRT_OXIC + params['b_LH']) \
-            / (params['u_max_H'] - (1.0 / SRT_OXIC + params['b_LH']))
+                / (params['u_max_H'] - (1.0 / SRT_OXIC + params['b_LH']))
 
     init_S_NH = params['K_NH'] * (1.0 / SRT_OXIC + params['b_LA']) \
-            / (params['u_max_A'] - (1.0 / SRT_OXIC + params['b_LA']))
+                / (params['u_max_A'] - (1.0 / SRT_OXIC + params['b_LA']))
 
     #print('eff. S_S = {:.3f} (mg/L COD)'.format(init_S_S))
     #print('eff. S_NH = {:.3f} (mg/L N)'.format(init_S_NH))
 
     # daily active heterotrphic biomass production, unit: gCOD/day
-    daily_heter_biomass_prod = inf_flow  * (inf_S_S + inf_X_S - init_S_S)\
-            * params['Y_H'] / (1.0 + params['b_LH'] * SRT_OXIC)
+    daily_heter_biomass_prod = inf_flow * (inf_S_S + inf_X_S - init_S_S) * params['Y_H'] \
+                                / (1.0 + params['b_LH'] * SRT_OXIC)
 
     # Nitrogen Requried for assimilation
-    NR = 0.087 * params['Y_H'] \
-            * (1.0 + params['f_D'] * params['b_LH'] * SRT_OXIC) \
+    NR = 0.087 * params['Y_H'] * (1.0 + params['f_D'] * params['b_LH'] * SRT_OXIC) \
             / (1.0 + params['b_LH'] * SRT_OXIC)
-    
+
     init_S_NO = (inf_TKN - NR * (inf_S_S + inf_X_S - init_S_S) - init_S_NH)
 
     # daily active autotrophic biomass production, unit: gCOD/day
-    daily_auto_biomass_prod = inf_flow \
-            * init_S_NO \
-            * params['Y_A'] / (1.0 + params['b_LA'] * SRT_OXIC)
+    daily_auto_biomass_prod = inf_flow * init_S_NO * params['Y_A'] / (1.0 + params['b_LA'] * SRT_OXIC)
 
     # daily heterotrphic debris production, unit: gCOD/day
     daily_heter_debris_prod = daily_heter_biomass_prod * (params['f_D'] * params['b_LH'] * SRT_OXIC)
@@ -298,7 +292,7 @@ def _forward(me, visited=[]):
     See:
         forward_set_flow().
     """
-    if me in visited or me == None:
+    if me in visited or me is None:
         return None
     
     visited.append(me)
@@ -534,7 +528,7 @@ def _backward(me):
     _my_inlet = me.get_upstream()
     _my_inlet_allow = []
     if _my_inlet is not None:
-        _my_inlet_allow = [u for u in _my_inlet 
+        _my_inlet_allow = [u for u in _my_inlet
                 if ((u.get_flow_data_src()[1] == flow_data_src.TBD
                     or u.get_flow_data_src()[1] == flow_data_src.DNS)
                     and u.get_downstream_main() == me) 
@@ -590,7 +584,7 @@ def backward_set_flow(start=[]):
 
 
 def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
-                    mn='BDF', fDO=True, DOsat=10):
+                        mn='BDF', fDO=True, DOsat=10):
     """
     Integrate the entire plant towards a steady state at the target SRT.
 
@@ -674,7 +668,7 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
 
     # collect all the possible starting points for backward flow setting
     _backward_start_points = [_w for _w in _WAS] + [_e for _e in _eff]
-    
+
     if diagnose:
         profile = cProfile.Profile()
         profile.enable()

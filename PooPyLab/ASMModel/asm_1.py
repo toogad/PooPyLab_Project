@@ -257,6 +257,8 @@ class ASM_1(asm_model):
 
 
     # STOCHIOMETRIC MATRIX
+
+
     def _set_stoichs(self):
         """
         Set the stoichiometrics for the model.
@@ -368,6 +370,8 @@ class ASM_1(asm_model):
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
     #
+
+
     def _reaction_rate(self, comps):
         """
         Normalized reaction rates for the biological processes.
@@ -404,8 +408,8 @@ class ASM_1(asm_model):
         self._rate_res[0] = self._params['u_max_H'] * self._monods[0] * self._monods[1] * comps[9]
 
         # Anoxic Growth Rate of Heterotrophs (mgCOD/L/day).
-        self._rate_res[1] = self._params['u_max_H'] * self._monods[0] * self._monods[1] \
-                            * self._monods[2] * self._params['cf_g'] * comps[9]
+        self._rate_res[1] = self._params['u_max_H'] * self._monods[0] * self._monods[2] \
+                            * self._monods[3] * self._params['cf_g'] * comps[9]
 
         # Aerobic Growth Rate of Autotrophs (mgCOD/L/day).
         self._rate_res[2] = self._params['u_max_A'] * self._monods[4] * self._monods[5] * comps[10]
@@ -421,7 +425,8 @@ class ASM_1(asm_model):
 
         # Hydrolysis Rate of Particulate Organics (mgCOD/L/day).
         self._rate_res[6] = self._params['k_h'] * self._monods[6] \
-                * (self._monods[1] + self._params['cf_h'] * self._monods[3] * self._monods[2] * comps[9])
+                * (self._monods[1] + self._params['cf_h'] * self._monods[3] * self._monods[2]) \
+                * comps[9]
 
         # Hydrolysis Rate of Particulate Organic N (mgN/L/day).
         self._rate_res[7] = self._rate_res[6] * comps[12] / comps[8]

@@ -120,6 +120,8 @@ class final_clarifier(splitter):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF FINAL_CLARIFIER
     #
+
+
     def set_as_SRT_controller(self, setting=False):
         """
         Set the current splitter as an Solids Retention Time controller.
@@ -134,10 +136,10 @@ class final_clarifier(splitter):
         """
         Pass the total flow and blended components to the downstreams.
 
-        This function is re-implemented for "final_clarifier" because of the need to settle the solids (particulate)   
-        and concentrate them at the sidestream (underflow). The function first calls _branch_flow_helper() to set      
-        the flows for inlet, mainstream outlet, and sidestream outlet, then calls _settle_solids() to fractions the    
-        particulate components according to the branch flows and user set percent solids capture.                      
+        This function is re-implemented for "final_clarifier" because of the need to settle the solids (particulate)
+        and concentrate them at the sidestream (underflow). The function first calls _branch_flow_helper() to set
+        the flows for inlet, mainstream outlet, and sidestream outlet, then calls _settle_solids() to fractions the
+        particulate components according to the branch flows and user set percent solids capture.
 
         Args:
             method_name:    integration method as per scipy.integrate.solveivp;
@@ -148,12 +150,12 @@ class final_clarifier(splitter):
         Return:
             None
 
-        Note: 
-            Argument method_name is not used as of now but will be applicable when a settling model is placed here in  
-            the final_clarifier class.                                                                                     
+        Note:
+            Argument method_name is not used as of now but will be applicable when a settling model is placed here in
+            the final_clarifier class.
 
-            Arguments of fix_DO and DO_sat_T are dummies for now because it is assumed that there is no biochemical    
-            reactions in the clarifier.                                                                                
+            Arguments of fix_DO and DO_sat_T are dummies for now because it is assumed that there is no biochemical
+            reactions in the clarifier.
 
         See:
             _settle_solids();
@@ -181,6 +183,8 @@ class final_clarifier(splitter):
     # FUNCTIONS UNIQUE TO FINAL_CLARIFIER
     #
     # (INSERT CODE HERE)
+
+
     def set_capture_rate(self, capture_rate=0.95):
         """
         Set the percent solids capture for the final clarifier.

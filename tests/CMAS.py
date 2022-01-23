@@ -93,7 +93,7 @@ def construct():
     p5.set_downstream_main(waste)
     inlet.set_mainstream_flow(37800)
     #splt.set_sidestream_flow(0.0)
-    splt.set_mainstream_flow(37800) # i.e. 1.0Qi
+    splt.set_mainstream_flow(37800)  # i.e. 1.0Qi
     
     ra.set_model_condition(10, 2.0)
     ra.set_active_vol(14000)
