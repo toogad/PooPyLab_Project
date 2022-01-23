@@ -257,6 +257,8 @@ class ASM_1(asm_model):
 
 
     # STOCHIOMETRIC MATRIX
+
+
     def _set_stoichs(self):
         """
         Set the stoichiometrics for the model.
@@ -368,6 +370,8 @@ class ASM_1(asm_model):
 
     # PROCESS RATE DEFINITIONS (Rj, M/L^3/T):
     #
+
+
     def _reaction_rate(self, comps):
         """
         Normalized reaction rates for the biological processes.
