@@ -1,0 +1,27 @@
+[CONSTANTS]
+NO_MODEL_COMPONENTS = 13
+NO_RATE_EQUATIONS = 9
+
+[FLOW_DATA_SOURCE]
+# Possible Flow Data Source: UPS | DNS | PRG, where
+# UPS = Upstream, DNS = Downstream, PRG = Program (Runtime)
+
+# INFLOW = inlet flow
+# MO_FLOW = main outlet flow
+# SO_FLOW = side outlet flow
+
+INFLOW = UPS
+MO_FLOW = PRG
+SO_FLOW = DNS
+
+[FLOW_BALANCE]
+# The flow balance equation will be set accourding to the branch's flow data source
+INFLOW - MO_FLOW - SO_FLOW = 0
+
+[MASS_BALANCE]
+# IN_COMP[i] = the i-th model component of the blended inlet
+# MO_COMP[i] = the i-th model component of the main outlet
+# SO_COMP[i] = the i-th model component of the side outlet
+MO_COMP[i] = IN_COMP[i]
+SO_COMP[i] = IN_COMP[i]
+

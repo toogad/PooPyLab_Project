@@ -225,11 +225,9 @@ class splitter(poopy_lab_obj):
 
         _mo_flow_known = (self._mo_flow_ds != flow_data_src.TBD)
 
-        _mo_flow_by_ext = (self._mo_flow_ds == flow_data_src.DNS
-                        or self._mo_flow_ds == flow_data_src.PRG)
+        _mo_flow_by_ext = (self._mo_flow_ds == flow_data_src.DNS or self._mo_flow_ds == flow_data_src.PRG)
 
-        _so_flow_by_ext = (self._so_flow_ds == flow_data_src.DNS
-                        or self._so_flow_ds == flow_data_src.PRG)
+        _so_flow_by_ext = (self._so_flow_ds == flow_data_src.DNS or self._so_flow_ds == flow_data_src.PRG)
 
         if _so_flow_known:
             if _so_flow_by_ext:
