@@ -11,8 +11,6 @@ class expr_tree_node():
             self.priority = 2
         elif self.content == '*' or self.content == '/':
             self.priority = 1
-        #elif self.content == '(' or self.content == ')':
-        #    self.priority = 1
         else:
             self.priority = 0
         return None
