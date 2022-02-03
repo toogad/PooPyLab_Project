@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # This file is part of PooPyLab.
 #
 # PooPyLab is a simulation software for biological wastewater treatment
@@ -39,66 +41,32 @@
 #
 #    Author: Kai Zhang
 #
-# Change Log: 
+# Change Log:
 # 20201129 KZ: re-run after package structure update
 # 20190920 KZ: revised to match other testing results
 # 20190724 KZ: init
 #
 
-from PooPyLab.unit_procs.streams import splitter, pipe, WAS
-from PooPyLab.unit_procs.streams import influent, effluent
-from PooPyLab.unit_procs.bio import asm_reactor
-from PooPyLab.unit_procs.physchem import final_clarifier
+def eqs_sys(Inlet_1_MO_FLOW, Inlet_1_MO_COMP,
+            Pipe_1_IN_FLOW, Pipe_1_MO_FLOW, Pipe_1_IN_COMP, Pipe_1_MO_COMP):
+    # list of RHS below
+    RHS = []
+
+    # Inlet:
+    RHS.append(Inlet_1_MO_FLOW - 3780.0)
+    RHS.append(Inlet_1_MO_COMP[0] - 0)  # MO_COMP[0] is DO in this prototype
+    RHS.append(Inlet_1_MO_COMP[1] - 200)  #MO_COMP[1] is S_S
+    RHS.append(Inlet_1_MO_COMP[2] - 0)  # MO_COMP[2] is X_BH
+
+    # p1:
+    RHS.append(Pipe_1_IN_FLOW - Inlet_1_MO_FLOW)
+    for i in range(len(Inlet_1_MO_COMP)):
+        RHS.append(Pipe_1_IN_COMP[i] - Inlet_1_MO_COMP[i])
+    for i in range(len(Inlet_1_MO_COMP)):
+        RHS.append(Pipe_1_MO_COMP[i] - Pipe_1_IN_COMP[i])
+    #TODO: continue to build the model out
 
 
-inlet = influent()
-p1 = pipe()
 
-ra = asm_reactor()
-p2 = pipe()
 
-fc = final_clarifier()
-p3 = pipe()  # to outlet
-p4 = pipe()  # to splt
 
-outlet = effluent()
-
-splt = splitter()
-p5 = pipe()  # to waste
-RAS = pipe()  # to ra
-
-waste = WAS()
-
-wwtp = [inlet,
-        p1, p2, p3, p4, p5,
-        ra, fc, outlet,
-        RAS, waste, splt]
-
-SRT = 10  # day
-
-def construct():
-    # make an CMAS plant
-    inlet.set_downstream_main(p1)
-    p1.set_downstream_main(ra)
-    ra.set_downstream_main(p2)
-    p2.set_downstream_main(fc)
-    fc.set_downstream_main(p3)
-    fc.set_downstream_side(p4)
-    p3.set_downstream_main(outlet)
-    p4.set_downstream_main(splt)
-    splt.set_downstream_main(RAS)
-    splt.set_downstream_side(p5)
-    splt.set_as_SRT_controller(True)
-    RAS.set_downstream_main(ra)
-    p5.set_downstream_main(waste)
-    inlet.set_mainstream_flow(37800)
-    #splt.set_sidestream_flow(0.0)
-    splt.set_mainstream_flow(37800)  # i.e. 1.0Qi
-    
-    ra.set_model_condition(10, 2.0)
-    ra.set_active_vol(14000)
-
-    print("CMAS PFD constructed.")
-
-    return wwtp
- 
