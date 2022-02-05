@@ -56,18 +56,22 @@ def eqs_sys(Inlet_1_MO_FLOW, Inlet_1_MO_COMP,
     # number of model components:
     num_comps = len(Inlet_1_MO_COMP)
 
+
     # Inlet:
     RHS.append(Inlet_1_MO_FLOW - 3780.0)
     RHS.append(Inlet_1_MO_COMP[0] - 0)  # MO_COMP[0] is DO in this prototype
     RHS.append(Inlet_1_MO_COMP[1] - 200)  #MO_COMP[1] is S_S
     RHS.append(Inlet_1_MO_COMP[2] - 0)  # MO_COMP[2] is X_BH
 
+
     # p1:
     RHS.append(Pipe_1_IN_FLOW - Inlet_1_MO_FLOW)
+    RHS.append(Pipe_1_MO_FLOW - Pipe_1_IN_FLOW)
     for i in range(num_comps):
         RHS.append(Pipe_1_IN_COMP[i] - Inlet_1_MO_COMP[i])
     for i in range(num_comps):
         RHS.append(Pipe_1_MO_COMP[i] - Pipe_1_IN_COMP[i])
+
 
     # ra:
     RHS.append(ASMReactor_1_IN_FLOW - Inlet_1_MO_FLOW - RAS_MO_FLOW)
@@ -92,12 +96,15 @@ def eqs_sys(Inlet_1_MO_FLOW, Inlet_1_MO_COMP,
         RHS.append((ASMReactor_1_IN_FLOW * ASMReactor_1_IN_COMP[i] - ASMReactor_1_MO_FLOW * ASMReactor_1_MO_COMP[i])
                     + ASMReactor_1_OVERALLRATE[i])
 
+
     # p2:
     RHS.append(Pipe_2_IN_FLOW - ASMReactor_1_MO_FLOW)
+    RHS.append(Pipe_2_MO_FLOW - Pipe_2_IN_FLOW)
     for i in range(num_comps):
         RHS.append(Pipe_2_IN_COMP[i] - ASMReactor_1_MO_COMP[i])
     for i in range(num_comps):
         RHS.append(Pipe_2_MO_COMP[i] - Pipe_2_IN_COMP[i])
+
 
     # Final_Clar, assuming it is a perfect clarifier for prototype testing
     RHS.append(FinalClarifier_1_IN_FLOW - Pipe_2_MO_FLOW)
@@ -118,8 +125,19 @@ def eqs_sys(Inlet_1_MO_FLOW, Inlet_1_MO_COMP,
                     - FinalClarifier_1_MO_FLOW * FinalClarifier_1_MO_COMP[2])
                     / FinalClarifier_1_SO_FLOW)
 
+
+    # p3
+    RHS.append(Pipe_3_IN_FLOW - Pipe_3_MO_FLOW)
+    RHS.append(Pipe_3_MO_FLOW - Effluent_1_IN_FLOW)
+    for i in range(num_comps):
+        RHS.append(Pipe_3_IN_COMP[i] - FinalClarifier_1_MO_COMP[i])
+    for i in range(num_comps):
+        RHS.append(Pipe_3_MO_COMP[i] - Pipe_3_IN_COMP[i])
+
+
     # p4
-    RHS.append(Pipe_4_IN_FLOW - FinalClarifier_1_MO_FLOW)
+    RHS.append(Pipe_4_IN_FLOW - Splitter_1_IN_FLOW)
+    RHS.append(Pipe_4_MO_FLOW - FinalClarifier_1_IN_FLOW)
     for i in range(num_comps):
         RHS.append(Pipe_4_IN_COMP[i] - FinalClarifier_1_MO_COMP[i])
     for i in range(num_comps):
@@ -139,10 +157,38 @@ def eqs_sys(Inlet_1_MO_FLOW, Inlet_1_MO_COMP,
         RHS.append(Splitter_1_SO_COMP[i] - FinalClarifier_1_IN_COMP[i])
 
     
-    
-    
-    
+    # RAS
+    RHS.append(RAS_IN_FLOW - USER_SET_RAS_IN_FLOW)
+    RHS.append(RAS_MO_FLOW - RAS_IN_FLOW)
+    for i in range(num_comps):
+        RHS.append(RAS_IN_COMP[i] - Splitter_1_MO_COMP[i])
+    for i in range(num_comps):
+        RHS.append(RAS_MO_COMP[i] - RAS_IN_COMP[i])
 
+
+    # p5
+    RHS.append(Pipe_5_IN_FLOW - Pipe_5_MO_FLOW)
+    RHS.append(Pipe_5_MO_FLOW - WAS_1_IN_FLOW)
+    for i in range(num_comps):
+        RHS.append(Pipe_5_IN_COMP[i] - Splitter_1_SO_COMP[i])
+    for i in range(num_comps):
+        RHS.append(Pipe_5_MO_COMP[i] - Pipe_5_IN_COMP[i])
+
+
+    # WAS
+    RHS.append(WAS_1_IN_FLOW 
+                - (ASMReactor_1_MO_COMP[2] * ASMReactor_1_VOLUME / Target_SRT
+                    - Effluent_1_IN_COMP[2] * Effluent_1_IN_FLOW)
+                * 1.42 / Pipe_5_MO_COMP[2])
+    for i in range(num_comps):
+        RHS.append(WAS_1_IN_COMP[i] - Pipe_5_MO_COMP[i])
+    
+    
+    # Effluent
+    RHS.append(Effluent_1_IN_FLOW - (Inlet_1_MO_FLOW - WAS_1_IN_FLOW))
+    for i in range(num_comps):
+        RHS.append(Effluent_1_IN_COMP[i] - Pipe_3_MO_COMP[i])
+    
     return RHS[:]
     #TODO: continue to build the model out
 
