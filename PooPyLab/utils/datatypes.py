@@ -1,22 +1,20 @@
 # This file is part of PooPyLab.
 #
-# PooPyLab is a simulation software for biological wastewater treatment
-# processes using International Water Association Activated Sludge Models.
-#    
+# PooPyLab is a simulation software for biological wastewater treatment processes using International Water Association
+# Activated Sludge Models.
+#
 #    Copyright (C) Kai Zhang
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+#    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+#    later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+#    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+#    details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License along with this program. If not, see
+#    <http://www.gnu.org/licenses/>.
 #
 #
 """Definitions of specific data types used in the PooPyLab project.
@@ -28,6 +26,8 @@
 from enum import Enum
 
 # Flow Data Source
+
+
 class flow_data_src(Enum):
     """
     Data type "flow_data_src" is an enumerate of four possible sources.
@@ -36,7 +36,7 @@ class flow_data_src(Enum):
         UPS='Upstream'
         DNS='Downstream'
         PRG='Program'
-    
+
     This is mainly used to specify the controlling source of flow of a particular branch of a process unit.
 
     TBD(ToBeDetermined):
@@ -46,7 +46,7 @@ class flow_data_src(Enum):
         specify flow data source while building the process flow diagram (PFD) by connecting process units and setting
         desired flow rates to specific branches (e.g. RAS flow).
 
-    UPS(Upstream): 
+    UPS(Upstream):
 
         When set on the inlet of a process unit, the total inflow will be the sum of all the flows received from its
         upstream.
@@ -69,7 +69,7 @@ class flow_data_src(Enum):
         (sidestream outlet) both get their flow data from downstreams (DNS).
 
     PRG(Program):
-        
+
         When the flow rate of a particular branch is to be set by the simulation program run time, PRG will be set
         to that branch. An example would be the WAS unit's flow rate which is calculated based on the design solids
         retention time, effluent total suspended solids, and solids inventory in all bioreactors.
@@ -86,8 +86,7 @@ class flow_data_src(Enum):
         streams.splitter.set_flow_data_src()
     """
 
-    TBD='ToBeDetermined'
-    UPS='Upstream'
-    DNS='Downstream'
-    PRG='Program'
-    
+    TBD = 'ToBeDetermined'
+    UPS = 'Upstream'
+    DNS = 'Downstream'
+    PRG = 'Program'
