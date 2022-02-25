@@ -52,24 +52,24 @@
 #   Find:   MO_FLOW, MO_COMPS
 
 # p1 (Pipe_1):
-#   Known:  Flow_Source: Inlet = UPS, MainOutlet = UPS
+#   Known:  Flow_Source: Inlet = UPS, MainOutlet = UPS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # ra (ASMReactor_1):
 #   Known:  Kinetic Parameters, Stoichiometrics, Mixed Liquor Temperature, Mixed Liquor DO,
-#           Flow_Source: Inlet = UPS, MainOutlet = UPS
+#           Flow_Source: Inlet = UPS, MainOutlet = DNS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # p2 (Pipe_2):
-#   Known:  Flow_Source: Inlet = UPS, MainOutlet = DNS
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = PRG
 #   Fine:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # fc (FinalClarifier_1):
-#   Known:  Flow_Source: Inlet = UPS, MainOutlet = DNS, SideOutlet = DNS
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = DNS
 #   Find:   IN_FLOW, MO_FLOW, SO_FLOW, IN_COMPS, MO_COMPS, SO_COMPS
 
 # p3 (Pipe_3):
-#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # outlet (Effluent_1):
@@ -77,7 +77,7 @@
 #   Find:   IN_FLOW, IN_COMPS
 
 # p4 (Pipe_4):
-#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # splt* (Splitter_1):
@@ -86,11 +86,11 @@
 #   Find:   IN_FLOW, MO_FLOW, SO_FLOW, IN_COMPS, MO_COMPS, SO_COMPS
 
 # RAS:
-#   Known:  Flow_Source: Inlet = UPS, MainOutlet = UPS
+#   Known:  Flow_Source: Inlet = UPS, MainOutlet = UPS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # p5 (Pipe_5):
-#   Known:  Flow_Source: Inlet = DNS, MainOutlet = PRG
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = PRG, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # waste (WAS_1):

@@ -57,8 +57,8 @@ class flow_data_src(Enum):
 
     DNS(Downstream):
 
-        When set on the inlet of a process unit, the total inflow will be the sum of all the flows received from its
-        upstream. As a result, either the user or runtime will have to provide the flow rates for the mainstream and
+        When set on the inlet of a process unit, the total inflow will be the sum of its mainstream and sidestream
+        outlets. As a result, either the user or runtime will have to provide the flow rates for the mainstream and
         sidestream outlet branches.
 
         When set on the mainstream/sidestream outlet branches, the flow rate data have to be provided by downstream
