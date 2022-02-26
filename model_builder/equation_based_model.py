@@ -57,7 +57,7 @@
 
 # ra (ASMReactor_1):
 #   Known:  Kinetic Parameters, Stoichiometrics, Mixed Liquor Temperature, Mixed Liquor DO,
-#           Flow_Source: Inlet = UPS, MainOutlet = DNS, SideOutlet = PRG
+#           Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # p2 (Pipe_2):
@@ -73,7 +73,7 @@
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # outlet (Effluent_1):
-#   Known:  Flow_Source: Inlet = PRG
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = PRG, SideOutlet = PRG
 #   Find:   IN_FLOW, IN_COMPS
 
 # p4 (Pipe_4):
@@ -86,18 +86,51 @@
 #   Find:   IN_FLOW, MO_FLOW, SO_FLOW, IN_COMPS, MO_COMPS, SO_COMPS
 
 # RAS:
-#   Known:  Flow_Source: Inlet = UPS, MainOutlet = UPS, SideOutlet = PRG
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # p5 (Pipe_5):
-#   Known:  Flow_Source: Inlet = DNS, MainOutlet = PRG, SideOutlet = PRG
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = PRG
 #   Find:   IN_FLOW, MO_FLOW, IN_COMPS, MO_COMPS
 
 # waste (WAS_1):
-#   Known:  Flow_Source: Inlet = PRG
+#   Known:  Flow_Source: Inlet = DNS, MainOutlet = DNS, SideOutlet = PRG
 #   Find:   IN_FLOW, IN_COMPS
 
 
+def build_var_dictionary(wwtp):
+    """Document the variables in the wwtp's units and their indices used in the equation solving routine.
+
+    Args:
+        wwtp:   the collection(list) of all the process units to be analyzed
+
+    Return:
+        {unit.__name__, [id_IN_FLOW, id_MO_FLOW, id_SO_FLOW, id_IN_COMPS, id_MO_COMPS, id_SO_COMPS]}
+
+    """
+    res = {}
+
+    #TODO: should this fuction be built into the equation based version of the traverse routine instead?
+    return res
+
+
+def define_initial_guess(wwtp, flows, comps):
+    """Pass the initial guess into x0 for the equation system's solver function
+
+    Args:
+        wwtp:   the collection(list) of all the process units to be analyzed
+        flows:  list of flows to be used as initial guess
+        comps:  list of concentrations to be used as initial guess
+
+    Return:
+        list of initial flows and concentrations aligned with the result of build_var_dictionary()
+
+    See Also:
+        build_var_dictionary()
+    """
+    #TODO: develop this fuction
+    res = []
+    return res
 
 
 def eqs_sys(Influent_1_MO_FLOW, Influent_1_MO_COMPS,
@@ -244,7 +277,6 @@ def eqs_sys(Influent_1_MO_FLOW, Influent_1_MO_COMPS,
     
     return RHS[:]
     #TODO: continue to build the model out
-
 
 
 
