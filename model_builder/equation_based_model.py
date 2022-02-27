@@ -105,12 +105,25 @@ def build_var_dictionary(wwtp):
         wwtp:   the collection(list) of all the process units to be analyzed
 
     Return:
-        {unit.__name__, [id_IN_FLOW, id_MO_FLOW, id_SO_FLOW, id_IN_COMPS, id_MO_COMPS, id_SO_COMPS]}
+        {unit.__name__: [id_IN_FLOW, id_MO_FLOW, id_SO_FLOW, id_IN_COMPS, id_MO_COMPS, id_SO_COMPS]}
 
     """
     res = {}
 
     #TODO: should this fuction be built into the equation based version of the traverse routine instead?
+    return res
+
+
+def build_model_const_dictionary(model_filename):
+    """Document the model constants and their indices used in the equation solving routine
+
+    Args:
+        model_filename: path to the file that stores the Peterson matrix format of the model
+
+    Return:
+        {unit.__name__: {const_name: value}}
+    """
+    res = {}
     return res
 
 
