@@ -19,18 +19,18 @@
 #    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
 #
 # -----------------------------------------------------------------------------
-#    Definition of a 4-stage Bardenpho Process Flow Diagram.
+#    Definition of a Pre/Post Anoxic DN Process Flow Diagram.
 #
 #
 #    Process Flow Diagram:
 #
 # inlet--p1->rPAX--p2->rPOX--p3-->splt1--p4->rAXP--p5->rOXP--p6->fc--p7->outlet
-#            ^ ^                   |                    |
-#            | |                   |                    p8
-#            | |                   v                    |
-#            | +-----IR(p11)-------+                    |
-#            |                                          V
-#            +<-------RAS(p9)----splt2*<----------------+
+#            ^ ^                   |                             |
+#            | |                   |                             p8
+#            | |                   v                             |
+#            | +-----IR(p11)-------+                             |
+#            |                                                   V
+#            +<-------RAS(p9)----splt2*<-------------------------+
 #                                 |
 #                                 +------p10--> waste(WAS)
 #
@@ -43,7 +43,8 @@
 #
 #    Author: Kai Zhang
 #
-# Change Log: 
+# Change Log:
+# 20220228 KZ: corrected name in PFD
 # 20201129 KZ: re-run after package structure update
 # 20191029 KZ: init
 #
@@ -139,7 +140,6 @@ def construct():
     rAXP.set_active_vol(1000)
     rOXP.set_active_vol(500)
 
-    print("Four-stage Bardenpho PFD constructed.")
+    print("Pre- & Post-Anoxic Denitrification PFD constructed.")
 
     return wwtp
- 

@@ -28,17 +28,17 @@ from PooPyLab.utils import pfd, run
 
 if __name__ == '__main__':
 
-    import FOUR_STG_BARDEN 
+    import PRE_POST_AX_DN
 
-    wwtp = FOUR_STG_BARDEN.construct()
+    wwtp = PRE_POST_AX_DN.construct()
 
     pfd.check(wwtp)
 
     pfd.show(wwtp)
 
-    run.get_steady_state(wwtp, FOUR_STG_BARDEN.SRT,
+    run.get_steady_state(wwtp, PRE_POST_AX_DN.SRT,
                             verbose=False,
-                            diagnose=True,
+                            diagnose=False,
                             mn='BDF',
                             fDO=True,
                             DOsat=10)
