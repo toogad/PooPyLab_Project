@@ -42,9 +42,8 @@ def input_inf_concs(asm_ver, inf_unit):
     """
     Input the influent concentrations.
 
-    The concentrations are measured as BOD5, TKN, NH3-N, NOx-N, TSS, VSS,
-    Alkalinity before they are fractionated into ASM model components such as
-    S_S, X_S, S_NH, etc.
+    The concentrations are measured as BOD5, TKN, NH3-N, NOx-N, TSS, VSS, Alkalinity before they are fractionated into
+    ASM model components such as S_S, X_S, S_NH, etc.
 
     Args:
         asm_ver:    ASM version: ASM1 | ASM2d | ASM3
@@ -276,9 +275,8 @@ def _forward(me, visited=[]):
     """
     Set the flow data source by visiting process units along the flow paths.
 
-    This function is to be called by forward_set_flow(). It follows the flow
-    paths and decide whether additional flow data sources can be decided based
-    on what's known.
+    This function is to be called by forward_set_flow(). It follows the flow paths and decide whether additional flow
+    data sources can be decided based on what's known.
 
     Args:
         me:         current process unit under analysis;
@@ -476,9 +474,8 @@ def _backward(me):
     """
     Set the flow data source by visiting process units against the flow paths.
 
-    This function is to be called by backward_set_flow(). It decides whether
-    additional flow data sources can be decided based on (_mo_flow + _so_flow).
-    If so, proceed and set the inflow and trace further upstream of "me".
+    This function is to be called by backward_set_flow(). It decides whether additional flow data sources can be
+    determined based on (_mo_flow + _so_flow). If so, proceed and set the inflow and trace further upstream of "me".
 
     Args:
         me:         current process unit under analysis;
@@ -581,14 +578,12 @@ def backward_set_flow(start=[]):
     return None
 
 
-def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
-                        mn='BDF', fDO=True, DOsat=10):
-    """
+def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False, mn='BDF', fDO=True, DOsat=10):
+    """ 
     Integrate the entire plant towards a steady state at the target SRT.
 
-    Constant influent flows and loads are required. If the user only knows the
-    dynamic influent characteristics, the averages should be used as the
-    influent conditions.
+    Constant influent flows and loads are required. If the user only knows the dynamic influent characteristics, the
+    averages should be used as the influent conditions.
 
     Args:
         wwtp:       all process units in a wastewater treatment plant
