@@ -174,8 +174,6 @@ def print_tree(treetop):
     print(treetop.content)
     print_tree(treetop.left)
     print_tree(treetop.right)
-    returndef get_model_components(all_rows):
-    """ Initialize lists for model components and their names."""
 
     _num_comps = len([cell for cell in all_rows[0] if cell != ''])
     _comps = []
@@ -186,6 +184,12 @@ def print_tree(treetop):
     return _comps
 
 ##========================Binary Tree Building Ends================================
+
+
+def get_model_components(all_rows=[]):
+    """ Initialize lists for model components and their names."""
+    #TODO: what do we need here?
+    pass
 
 
 def get_model_params(all_rows=[]):
