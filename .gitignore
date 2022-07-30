@@ -74,4 +74,5 @@ toogad.github.io/
 docs/html/
 docs/latex/
 
-
+#emacs:
+.dir-locals.el

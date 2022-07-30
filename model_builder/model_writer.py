@@ -23,7 +23,6 @@
 #
 
 
-
 #==========Build Binary Tree from a Given Expression================
 
 class expr_tree_node():
@@ -174,6 +173,14 @@ def print_tree(treetop):
     print(treetop.content)
     print_tree(treetop.left)
     print_tree(treetop.right)
+    return
+
+
+##========================Binary Tree Building Ends================================
+
+
+def get_model_components(all_rows=[]):
+    """ Initialize lists for model components and their names."""
 
     _num_comps = len([cell for cell in all_rows[0] if cell != ''])
     _comps = []
@@ -182,14 +189,6 @@ def print_tree(treetop):
         _comps.append([all_rows[1][i], all_rows[2][i], all_rows[3][i]])
 
     return _comps
-
-##========================Binary Tree Building Ends================================
-
-
-def get_model_components(all_rows=[]):
-    """ Initialize lists for model components and their names."""
-    #TODO: what do we need here?
-    pass
 
 
 def get_model_params(all_rows=[]):
