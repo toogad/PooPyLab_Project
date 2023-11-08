@@ -2,7 +2,7 @@
 #
 # PooPyLab is a simulation software for biological wastewater treatment
 # processes using International Water Association Activated Sludge Models.
-#    
+#
 #    Copyright (C) Kai Zhang
 #
 #    PooPyLab is free software: you can redistribute it and/or modify

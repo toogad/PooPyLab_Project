@@ -1,26 +1,24 @@
 # This file is part of PooPyLab.
 #
-# PooPyLab is a simulation software for biological wastewater treatment
-# processes using International Water Association Activated Sludge Models.
+# PooPyLab is a simulation software for biological wastewater treatment processes using International Water Association
+# Activated Sludge Models.
 #
 #    Copyright (C) Kai Zhang
 #
-#    PooPyLab is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    PooPyLab is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+#    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+#    later version.
 #
-#    PooPyLab is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    PooPyLab is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+#    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+#    details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with PooPyLab.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU General Public License along with PooPyLab. If not, see
+#    <http://www.gnu.org/licenses/>.
 #
 #
-#    Definition of global utility functions related to the initial guess
-#    for the integration of the model's equation system.
+#    Definition of global utility functions related to the initial guess for the integration of the model's equation
+#    system.
 #
 #    Author: Kai Zhang
 #
@@ -44,9 +42,8 @@ def input_inf_concs(asm_ver, inf_unit):
     """
     Input the influent concentrations.
 
-    The concentrations are measured as BOD5, TKN, NH3-N, NOx-N, TSS, VSS,
-    Alkalinity before they are fractionated into ASM model components such as
-    S_S, X_S, S_NH, etc.
+    The concentrations are measured as BOD5, TKN, NH3-N, NOx-N, TSS, VSS, Alkalinity before they are fractionated into
+    ASM model components such as S_S, X_S, S_NH, etc.
 
     Args:
         asm_ver:    ASM version: ASM1 | ASM2d | ASM3
@@ -57,15 +54,15 @@ def input_inf_concs(asm_ver, inf_unit):
 
     Note:
         There are nine elements in inf_concs for ASM1:
-            inf_concs[0] : BOD5 
-            inf_concs[1] : TSS 
-            inf_concs[2] : VSS 
-            inf_concs[3] : TKN 
-            inf_concs[4] : NH3N 
-            inf_concs[5] : NOxN 
-            inf_concs[6] : TP 
+            inf_concs[0] : BOD5
+            inf_concs[1] : TSS
+            inf_concs[2] : VSS
+            inf_concs[3] : TKN
+            inf_concs[4] : NH3N
+            inf_concs[5] : NOxN
+            inf_concs[6] : TP
             inf_concs[7] : Alk, mmol/L as CaCO3
-            inf_concs[8] : DO 
+            inf_concs[8] : DO
     """
     print("Please define the influent constituents...")
 
@@ -124,7 +121,7 @@ def show_concs(wwtp):
     Return:
         None
     """
-    #    self._comps[0]: S_DO as COD
+    #    self._comps[0]: S_DO as DO
     #    self._comps[1]: S_I
     #    self._comps[2]: S_S
     #    self._comps[3]: S_NH
@@ -278,9 +275,8 @@ def _forward(me, visited=[]):
     """
     Set the flow data source by visiting process units along the flow paths.
 
-    This function is to be called by forward_set_flow(). It follows the flow
-    paths and decide whether additional flow data sources can be decided based
-    on what's known.
+    This function is to be called by forward_set_flow(). It follows the flow paths and decide whether additional flow
+    data sources can be decided based on what's known.
 
     Args:
         me:         current process unit under analysis;
@@ -294,7 +290,7 @@ def _forward(me, visited=[]):
     """
     if me in visited or me is None:
         return None
-    
+
     visited.append(me)
 
     _in = me.get_upstream()
@@ -310,7 +306,7 @@ def _forward(me, visited=[]):
     _so_f_known = (_so_f_ds != flow_data_src.TBD)
 
     if _in_f_known:
-        if _so == None:
+        if _so is None:
             if not _mo_f_known:
                 me.set_flow_data_src('Main', flow_data_src.UPS)
                 _forward(_mo, visited)
@@ -478,9 +474,8 @@ def _backward(me):
     """
     Set the flow data source by visiting process units against the flow paths.
 
-    This function is to be called by backward_set_flow(). It decides whether
-    additional flow data sources can be decided based on (_mo_flow + _so_flow).
-    If so, proceed and set the inflow and trace further upstream of "me".
+    This function is to be called by backward_set_flow(). It decides whether additional flow data sources can be
+    determined based on (_mo_flow + _so_flow). If so, proceed and set the inflow and trace further upstream of "me".
 
     Args:
         me:         current process unit under analysis;
@@ -531,7 +526,7 @@ def _backward(me):
         _my_inlet_allow = [u for u in _my_inlet
                 if ((u.get_flow_data_src()[1] == flow_data_src.TBD
                     or u.get_flow_data_src()[1] == flow_data_src.DNS)
-                    and u.get_downstream_main() == me) 
+                    and u.get_downstream_main() == me)
                     or
                     ((u.get_flow_data_src()[2] == flow_data_src.TBD
                     or u.get_flow_data_src()[2] == flow_data_src.DNS)
@@ -583,14 +578,12 @@ def backward_set_flow(start=[]):
     return None
 
 
-def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False,
-                        mn='BDF', fDO=True, DOsat=10):
-    """
+def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False, mn='BDF', fDO=True, DOsat=10):
+    """ 
     Integrate the entire plant towards a steady state at the target SRT.
 
-    Constant influent flows and loads are required. If the user only knows the
-    dynamic influent characteristics, the averages should be used as the
-    influent conditions.
+    Constant influent flows and loads are required. If the user only knows the dynamic influent characteristics, the
+    averages should be used as the influent conditions.
 
     Args:
         wwtp:       all process units in a wastewater treatment plant
