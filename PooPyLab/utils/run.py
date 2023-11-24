@@ -104,6 +104,8 @@ def check_global_cnvg(wwtp):
         bool
     """
 
+    #TODO: this function is unlikely to be needed in the equation-based solving system
+    #
     for unit in wwtp:
         if not unit.is_converged():
             #print(unit.__name__, 'not converged yet')
@@ -360,6 +362,8 @@ def forward_set_flow(wwtp):
         _backward();
         _sum_of_known_inflows().
     """
+    #TODO: this function is unlikely to be needed in the equation-based solving system
+    #
 
     _visited = []
     _starters = []

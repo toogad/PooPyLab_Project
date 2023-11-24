@@ -80,6 +80,8 @@ class splitter(poopy_lab_obj):
         ## type string of the process unit
         self._type = "Splitter"
 
+        ## TODO: save the specification in a file (in what format?)
+
         ## upstream units and their flows in the format of {unit: Flow}
         self._inlet = {}
         ## mainstream outlet, a single receiver
@@ -91,6 +93,8 @@ class splitter(poopy_lab_obj):
         self._has_discharger = False
         ## flag on whether there is a sidestream, always True for a splitter
         self._has_sidestream = True
+
+        ##TODO: the following two connection flags can probably be removed when a specification file is used
         ## flag on whether the mainstream outlet is connected
         self._mo_connected = False
         ## flag on whether the sidestream outlet is connected
@@ -107,6 +111,7 @@ class splitter(poopy_lab_obj):
         self._so_flow_ds = flow_data_src.TBD
 
 
+        ## TODO: This flag can probably be removed when a specification file is used
         ## flag to confirm it has received _so_flow > 0 m3/d
         self._so_flow_defined = False
 
@@ -315,6 +320,7 @@ class splitter(poopy_lab_obj):
             _check_conc_cnvg()
         """
 
+        #TODO: this function will unlikely be needed in the equation-based solving system
         _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow) < limit)
 
         self._converged = _flow_cnvg
@@ -449,6 +455,8 @@ class splitter(poopy_lab_obj):
             update_combined_input().
         """
 
+        #TODO: this function is unlikely to be needed in the equation-based solving system
+        #
         if self._upstream_set_mo_flow:
             self._total_inflow = sum(self._inlet.values())
         else:
@@ -474,6 +482,8 @@ class splitter(poopy_lab_obj):
             totalize_inflow()
         """
 
+        #TODO: this function is unlikely to be needed in the equation-based solving system
+        #
         if self._total_inflow:  # make sure it's not 0
             for i in range(len(self._mo_comps)):
                 temp = 0.0
@@ -490,6 +500,8 @@ class splitter(poopy_lab_obj):
         """
         Update both total inflow and blended concentrations (model components).
         """
+        #TODO: this function is unlikely to be needed in the equation-based solving system
+        #
         self.totalize_inflow()
         self.blend_inlet_comps()
         return None
@@ -745,6 +757,9 @@ class splitter(poopy_lab_obj):
             set_flow_data_src().
         """
 
+        #TODO: save the sidestream flow definition in a specification file
+        #TODO: allow constant flow, flow pacing, and dynamic flow schedule
+
         if flow >= 0:
             self._so_flow = flow
             self.set_flow_data_src('Side', flow_data_src.PRG)
@@ -834,6 +849,8 @@ class splitter(poopy_lab_obj):
             update_combined_input();
             _discharge_side_outlet();
         """
+        #TODO: this function is unlikely to be needed in the equation-based solving system
+        #
         m = self.get_downstream_main()
         m.set_flow(self, self._mo_flow)
         #m.update_combined_input()
@@ -855,6 +872,8 @@ class splitter(poopy_lab_obj):
             update_combined_input();
             _discharge_main_outlet();
         """
+        #TODO: this function is unlikely to be needed in the equation-based solving system
+        #
         s = self.get_downstream_side()
         s.set_flow(self, self._so_flow)
         return None
@@ -885,6 +904,8 @@ class splitter(poopy_lab_obj):
             _discharge_main_outlet();
             _discharge_side_outlet().
         """
+        #TODO: this function is unlikely to be needed in the equation-based solving system
+        #
         self._prev_mo_comps = self._mo_comps[:]
         self._prev_so_comps = self._so_comps[:]
 

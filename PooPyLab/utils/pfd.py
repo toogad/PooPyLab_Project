@@ -111,6 +111,8 @@ def _check_WAS(mywas):
 
         The SRT controlling splitter connected to this WAS unit
     """
+    #TODO: check WAS strategy:
+    #       (definition file, constant flow, constant flow ratio, dynamic flow schedule)
 
     # SRT Controlling splitter to be found:
     _srt_ctrl_splt = None
@@ -119,16 +121,15 @@ def _check_WAS(mywas):
 
     for _u in mywas:
         for _upds in _u.get_upstream():
-            if _upds.get_type() == 'Pipe':
-                if len(_upds.get_upstream()) == 1:
-                    _xu = [q for q in _upds.get_upstream()][0]
-                    if _id_upstream_type(_upds, _xu) != 'SPLITTER_SIDE':
-                        print('CONNECTION ERROR:', _u.__name__, 'shall be [SIDESTREAM->PIPE->WAS].')
-                        _was_connect_ok = False
-                        break
-                    if _xu.is_SRT_controller():
-                        _srt_ctrl_splt = _xu
-                        _srt_ctrl_count += 1
+            if _upds.get_type() == 'Pipe' and len(_upds.get_upstream()) == 1:
+                _xu = [q for q in _upds.get_upstream()][0]
+                if _id_upstream_type(_upds, _xu) != 'SPLITTER_SIDE':
+                    print('CONNECTION ERROR:', _u.__name__, 'shall be [SIDESTREAM->PIPE->WAS].')
+                    _was_connect_ok = False
+                    break
+                if _xu.is_SRT_controller():
+                    _srt_ctrl_splt = _xu
+                    _srt_ctrl_count += 1
 
     if _srt_ctrl_count > 1:
         print('PFD ERROR: More than ONE SRT controlling splitters.')
