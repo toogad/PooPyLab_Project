@@ -463,6 +463,7 @@ def _sum_of_known_inflows(me, my_inlet_of_unknown_flow):
     Return:
         float, m3/d
     """
+    #TODO: this function would become an flow balance equation in the equation-based solving system
 
     _sum = 0.0
     for _inlet in me.get_upstream():
@@ -650,6 +651,7 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False, mn='B
         _u.discharge(mn, fDO, DOsat)
 
     # TODO: what if there are multiple influent units?
+    #       An equation-based solving system would take care of that
     if len(_reactors):
         _params = _reactors[0].get_model_params()
         _seed = initial_guess(_params, _reactors, _inf[0].get_main_outflow(), _inf[0].get_main_outlet_concs())
@@ -693,3 +695,6 @@ def get_steady_state(wwtp=[], target_SRT=5, verbose=False, diagnose=False, mn='B
 
     if verbose:
         print("TOTAL ITERATION = ", r)
+
+
+def get_steady
