@@ -76,3 +76,10 @@ docs/latex/
 
 #emacs:
 .dir-locals.el
+
+#makefile:
+Makefile*
+compile_flag.txt
+debug/
+*.o
+*.out
