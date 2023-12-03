@@ -55,13 +55,12 @@ int funcGrowth(realtype t, N_Vector y, N_Vector yp, N_Vector LHS, void *user_dat
   Ith(LHS,7) = P2_mo_S - P2_IN_S;
   Ith(LHS,8) = P2_mo_D - P2_IN_D;
 
-  // POOPYLAB: P3_Pipe_Array:
+  // POOPYLAB: R1_Rxn_Array:
   Ith(LHS,9) = R1_in_F - (P1_mo_F + P2_mo_F);
   Ith(LHS,10) = R1_in_X - ((P1_mo_F * P1_mo_X + P2_mo_F * P2_mo_X) / R1_in_F);
   Ith(LHS,11) = R1_in_S - ((P1_mo_F * P1_mo_S + P2_mo_F * P2_mo_S) / R1_in_F);
   Ith(LHS,12) = R1_in_D - ((P1_mo_F * P1_mo_D + P2_mo_F * P2_mo_D) / R1_in_F);
 
-  // POOPYLAB: R1_Rxn_Array:
   Ith(LHS,13) = R1_mo_F - R1_in_F;
 
   Ith(LHS,14) = R1_mo_F / VOL * (R1_in_X - R1_mo_X)

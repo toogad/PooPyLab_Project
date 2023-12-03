@@ -5,6 +5,8 @@
 
 #include <sundials/sundials_math.h>
 
+//TODO: all the model inputs will have to be in array form, read from a definition/data file
+
 #define X0    RCONST(2000.0)    /* initial y components */
 #define S0    RCONST(1.0)
 #define D0    RCONST(1.0e2)
