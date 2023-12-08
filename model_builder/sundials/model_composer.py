@@ -36,6 +36,10 @@ def define_branches(filename='pipe.ppm', array_str='comp'):
 
     return 'realtype ' + ', '.join(array_defs)
 
+def equation():
+    return
+
+
 if __name__ == '__main__':
-    unit_arrays = define_branches('pipe.ppm', 'comp')
-    print(unit_arrays)
+    unit_arrays_defs = define_branches('pipe.ppm', 'comp')
+    print(unit_arrays_defs)
