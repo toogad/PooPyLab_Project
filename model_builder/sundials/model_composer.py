@@ -23,7 +23,6 @@ def _create_array_name(template_items={}, branch='Inlet'):
     else:
         prefix = '_so_'
     array_name += prefix + array_str + '[' + str(array_len) + ']'
-    # define the array as the SUNDIALS "realtype"
     return ''.join(array_name)
 
 def define_branch_arrays(items={}):
@@ -43,9 +42,9 @@ def define_branch_arrays(items={}):
 
 def compose_eqns(model_files=[]):
     configs = [create_configs(f) for f in model_files]
+    # declare the arrays as SUNDIALS realtype
     declars = ['realtype '+define_branch_arrays(items)+';' for items in configs]
     #all_eqs = []
-
     return declars
 
 
