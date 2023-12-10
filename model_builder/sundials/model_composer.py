@@ -44,8 +44,15 @@ def compose_eqns(model_files=[]):
     configs = [create_configs(f) for f in model_files]
     # declare the arrays as SUNDIALS realtype
     declars = ['realtype '+define_branch_arrays(items)+';' for items in configs]
-    #all_eqs = []
-    return declars
+    declars.append('int i;')
+    all_eqs = []
+    for c in configs:
+        if c['SELF_TYPE'] == 'Pipe':
+            all_eqs.append('for (i=0; i<' + c['NUM_MODEL_COMPONENTS'] + '; i++){')
+            all_eqs.append('  LHS[i] = P1_Pipe_1_in_comp[i] - INF1_Influent_2_mo_comp[i];')
+            all_eqs.append('  LHS[i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
+            all_eqs.append('}')
+    return declars, all_eqs
 
 
 def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
@@ -57,11 +64,12 @@ def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
 
 
 if __name__ == '__main__':
-    p1_config = create_configs('pipe.ppm')
-    p1_array_defs = define_branch_arrays(p1_config)
-    print(p1_array_defs)
     inf1_config = create_configs('influent.ppm')
     inf1_array_defs = define_branch_arrays(inf1_config)
     print(inf1_array_defs)
-    declars = compose_eqns(['pipe.ppm', 'influent.ppm'])
+    p1_config = create_configs('pipe.ppm')
+    p1_array_defs = define_branch_arrays(p1_config)
+    print(p1_array_defs)
+    declars, eqs = compose_eqns(['influent.ppm', 'pipe.ppm'])
     write_to_file('syseqs.c', declars, 'w')
+    write_to_file('syseqs.c', eqs, 'a')
