@@ -1,6 +1,15 @@
 #!/usr/bin/python3
 
 def create_configs(filename='pipe.ppm'):
+    """
+    Read the lines in a .ppm file and convert the info into a dict
+
+    Args:
+        filename: the name for a .ppm file
+
+    Return:
+        {}
+    """
     lines, items = [], {}
     with open(filename, 'r') as def_file:
         lines = def_file.readlines()
@@ -9,6 +18,16 @@ def create_configs(filename='pipe.ppm'):
 
 
 def _create_array_name(template_items={}, branch='Inlet'):
+    """
+    Create the array name for a particular branch of a process unit
+
+    Args:
+        template_items: a configs {}
+        branch: type of the branch whose array is to be created, 'Inlet'|'Main'|'Side'
+
+    Return:
+        str of the array name for the given branch
+    """
     array_str = 'comp'
     _vd = list(template_items.values())
     array_name = '_'.join(_vd[1:4])
@@ -41,6 +60,16 @@ def define_branch_arrays(items={}):
 
 
 def compose_eqns(model_files=[]):
+    """
+    Compose the units' variable/array declarations and mass balance equations
+
+    Args:
+        model_files: list of model configuration files
+
+    Return:
+        declaration of the arrays
+        equations of all the units in the model_files
+    """
     configs = [create_configs(f) for f in model_files]
     # declare the arrays as SUNDIALS realtype
     declars = ['realtype '+define_branch_arrays(items)+';' for items in configs]
