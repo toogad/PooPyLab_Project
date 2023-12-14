@@ -59,7 +59,7 @@ def define_branch_arrays(items={}):
     return ', '.join(array_defs)
 
 
-def compose_eqns(model_files=[]):
+def compose_sys(model_files=[]):
     """
     Compose the units' variable/array declarations and mass balance equations
 
@@ -97,6 +97,6 @@ def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
 
 if __name__ == '__main__':
     pfd = ['influent.ppm', 'pipe.ppm']
-    declars, eqs = compose_eqns(pfd)
+    declars, eqs = compose_sys(pfd)
     write_to_file('syseqs.c', declars, 'w')
     write_to_file('syseqs.c', eqs, 'a')
