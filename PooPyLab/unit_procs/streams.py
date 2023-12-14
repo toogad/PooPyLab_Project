@@ -171,6 +171,11 @@ class splitter(poopy_lab_obj):
     #
 
 
+    def set_name(self, new_name='New_Name_Not_Given'):
+        self.__name__ = new_name
+        return None
+
+
     def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
         """
         Set the flow data source of the branch specified by the user.
@@ -295,39 +300,6 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def is_converged(self, limit=1E-6):
-        """
-        Return the convergence status of the unit.
-
-        This function checks the absolute changes of flows and concentrations between last round of
-        simulation and current. If all changes are within the tolerance limit, it flags the self._converged
-        True.
-
-        The same absolute changes will be used in evaluting the convergence of splitter, clarifier, pipe,
-        effluent, WAS, and other unit processes that do not have splicit definitions of change rate terms
-        (dy/dt = f(...)).
-
-        This function is redefined for unit processes like asm_reactor whose models have specific dy/dt
-        terms.
-
-        Args:
-            limit: Limit within which the simulation is considered converged
-
-        Return:
-            True/False
-
-        See:
-            _check_conc_cnvg()
-        """
-
-        #TODO: this function will unlikely be needed in the equation-based solving system
-        _flow_cnvg = (abs(self._total_inflow - self._mo_flow - self._so_flow) < limit)
-
-        self._converged = _flow_cnvg
-
-        return self._converged
-
-
     def get_type(self):
         """
         Return the type string of the process unit.
@@ -399,19 +371,6 @@ class splitter(poopy_lab_obj):
         return None
 
 
-    def has_discharger(self):
-        """
-        Return whether the unit's inlet has been connected.
-
-        Args:
-            None
-
-        Return:
-            bool
-        """
-        return self._has_discharger
-
-
     def get_upstream(self):
         """
         Return the _inlet {} of the unit.
@@ -425,86 +384,17 @@ class splitter(poopy_lab_obj):
         return self._inlet
 
 
-    def totalize_inflow(self):
+    def has_discharger(self):
         """
-        Combine the individual flows specified in the self._inlet into one.
-
-        There are scenarios to be managed here:
-
-            1) When the mainstream outlet branch's flow is to be calculated using the total inflow
-            (self._upstream_set_mo_flow == True): The total inflow is calculated using the individual flows
-            specified in self._inlet; and
-
-            2) When both flow rates for the mainstream and sidestream outlet branches have been specified
-            (either by user or simulation run time), i.e. self._upstream_set_mo_flow == False: the total
-            inflow will be the sum of the two branches. This calculated total inflow is to be passed upstream
-            by the main loop to maintain the WWTP's flow balance.
+        Return whether the unit's inlet has been connected.
 
         Args:
             None
 
         Return:
-            float
-
-        See:
-            utils.datatypes.flow_data_src,
-            set_flow_data_src(),
-            set_mainstream_flow_by_upstream(),
-            _branch_flow_helper(),
-            blend_inlet_comps(),
-            update_combined_input().
+            bool
         """
-
-        #TODO: this function is unlikely to be needed in the equation-based solving system
-        #
-        if self._upstream_set_mo_flow:
-            self._total_inflow = sum(self._inlet.values())
-        else:
-            self._total_inflow = self._mo_flow + self._so_flow
-
-        return self._total_inflow
-
-
-    def blend_inlet_comps(self):
-        """
-        Calculate the flow weighted average model component concentrations.
-
-        Note: This function does not totalize inlet flow. It only uses the current flow rates. It is adviced
-        to call totalize_inflow() first.
-
-        Args:
-            None
-
-        Return:
-            Blended Inlet Concentrations (copy of the list)
-
-        See:
-            totalize_inflow()
-        """
-
-        #TODO: this function is unlikely to be needed in the equation-based solving system
-        #
-        if self._total_inflow:  # make sure it's not 0
-            for i in range(len(self._mo_comps)):
-                temp = 0.0
-                for unit in self._inlet:
-                    if self == unit.get_downstream_main():
-                        temp += unit.get_main_outlet_concs()[i] * unit.get_main_outflow()
-                    else:
-                        temp += unit.get_side_outlet_concs()[i] * unit.get_side_outflow()
-                self._in_comps[i] = temp / self._total_inflow
-        return self._in_comps[:]
-
-
-    def update_combined_input(self):
-        """
-        Update both total inflow and blended concentrations (model components).
-        """
-        #TODO: this function is unlikely to be needed in the equation-based solving system
-        #
-        self.totalize_inflow()
-        self.blend_inlet_comps()
-        return None
+        return self._has_discharger
 
 
     def remove_upstream(self, discharger):
@@ -607,74 +497,6 @@ class splitter(poopy_lab_obj):
         return self._main_outlet
 
 
-    def set_mainstream_flow_by_upstream(self, f=True):
-        self._upstream_set_mo_flow = f
-        return None
-
-
-    def set_mainstream_flow(self, flow=0):
-        """
-        Define the mainstream outlet flow.
-
-
-        If the specified flow is less than 0 m3/d, the current unit's mainstream outlet flow will be set to 0
-        m3/d. An error message will display.
-
-        Upon successful setting of the mainstream flow rate, the mainstream outlet's flow data source will be
-        set to flow_data_src.PRG, and the _upstream_set_mo_flow flag False.
-
-        Args:
-            flow: flow rate in m3/d, shall be no less than 0.
-
-        Return:
-            None
-
-        See:
-            set_sidestream_flow(),
-            totalize_inflow(),
-            set_flow_data_src().
-        """
-
-        if flow >= 0:
-            self._mo_flow = flow
-            self._upstream_set_mo_flow = False
-            self.set_flow_data_src('Main', flow_data_src.PRG)
-        else:
-            print('ERROR:', self.__name__, 'given main flow < 0.')
-            self._mo_flow = 0
-        return None
-
-
-    def get_main_outflow(self):
-        """
-        Return the mainstream outflow.
-
-        Args:
-            None
-
-        Return:
-            float, m3/d
-        """
-        self.totalize_inflow()
-        self._branch_flow_helper()
-        if self._mo_flow < 0:
-            print('WARN/ERROR:', self.__name__, 'main outlet flow < 0.')
-        return self._mo_flow
-
-
-    def get_main_outlet_concs(self):
-        """
-        Return a copy of the mainstream outlet concentrations.
-
-        Args:
-            None
-
-        Return:
-            list
-        """
-        return self._mo_comps[:]
-
-
     def set_downstream_side(self, rcvr):
         """
         Define the downstream side outlet's connection.
@@ -736,40 +558,6 @@ class splitter(poopy_lab_obj):
         return self._side_outlet
 
 
-    def set_sidestream_flow(self, flow=0):
-        """
-        Define the flow rate for the sidestream.
-
-        If the specified flow is less than 0 m3/d, n error message will display.
-
-        Upon successful setting of the sidestream flow rate, the sidestream outlet's flow data source will be
-        set to flow_data_src.PRG.
-
-        Args:
-            flow: flow rate in m3/d, shall be no less than 0.
-
-        Return:
-            None
-
-        See:
-            set_mainstream_flow(),
-            totalize_inflow(),
-            set_flow_data_src().
-        """
-
-        #TODO: save the sidestream flow definition in a specification file
-        #TODO: allow constant flow, flow pacing, and dynamic flow schedule
-
-        if flow >= 0:
-            self._so_flow = flow
-            self.set_flow_data_src('Side', flow_data_src.PRG)
-            self._so_flow_defined = True
-        else:
-            self._so_flow_defined = False
-            print("ERROR:", self.__name__, "given side flow < 0")
-        return None
-
-
     def sidestream_flow_defined(self):
         """
         Return whether the sidestream flow rate has been defined.
@@ -783,23 +571,6 @@ class splitter(poopy_lab_obj):
         return self._so_flow_defined
 
 
-    def get_side_outflow(self):
-        """
-        Return the sidestream outlet flow rate.
-
-        Args:
-            None
-
-        Return:
-            float
-        """
-        self.totalize_inflow()
-        self._branch_flow_helper()
-        if self._so_flow < 0:
-            print('WARN/ERROR:', self.__name__, 'side outlet flow < 0.')
-        return self._so_flow
-
-
     def get_side_outlet_concs(self):
         """
         Return a copy of the sidestream outlet concentrations.
@@ -811,122 +582,6 @@ class splitter(poopy_lab_obj):
             list
         """
         return self._so_comps[:]
-
-
-    def set_flow(self, dschgr, flow):
-        """
-        Specify the flow from the discharger.
-
-        Please see the _discharge_main_outlet() and _discharge_side_outlet() for the use of this function.
-
-        Args:
-            dschgr: discharger
-            flow:   flow rate in m3/d
-
-        Return:
-            None
-
-        See:
-            discharge().
-        """
-        if dschgr in self._inlet and flow >= 0:
-            self._inlet[dschgr] = flow
-        return None
-
-
-    def _discharge_main_outlet(self):
-        """
-        Pass the flow and concentrations to the main outlet.
-
-        This function identifies the process unit connected to the mainstream outlet, then call its
-        set_flow() and update_combined_input() so that the flow and concentrations from the current unit is
-        passed onto the mainstream outlet.
-
-        See:
-            discharge();
-            get_downstream_main();
-            set_flow();
-            update_combined_input();
-            _discharge_side_outlet();
-        """
-        #TODO: this function is unlikely to be needed in the equation-based solving system
-        #
-        m = self.get_downstream_main()
-        m.set_flow(self, self._mo_flow)
-        #m.update_combined_input()
-        return None
-
-
-    def _discharge_side_outlet(self):
-        """
-        Pass the flow and concentrations to the side outlet.
-
-        This function identifies the process unit connected to the sidestream outlet, then call its
-        set_flow() and update_combined_input() so that the flow and concentrations from the current unit is
-        passed onto the sidestream outlet.
-
-        See:
-            discharge();
-            get_downstream_side();
-            set_flow();
-            update_combined_input();
-            _discharge_main_outlet();
-        """
-        #TODO: this function is unlikely to be needed in the equation-based solving system
-        #
-        s = self.get_downstream_side()
-        s.set_flow(self, self._so_flow)
-        return None
-
-
-    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
-        """
-        Pass the total flow and blended components to the downstreams.
-
-        Record the main- and sidestream outlet concentrations from the previous iteration. Update the
-        concentrations for the two outlet branches. Pass the flows and concentrations onto the downstream
-        units.
-
-        Args:
-            method_name:    integration method as per scipy.integrate.solveivp;
-            fix_DO:         whether to simulate w/ a fix DO setpoint;
-            DO_sat_T:       saturated DO conc. under the site conditions (mg/L)
-
-        Return:
-            None
-
-        Note: For discharge() in the splitter/pipe/influent/effluent/WAS classes, the arguments of
-        method_name, fix_DO, and DO_sat_T are pretty much dummies because it is assumed that there is no
-        reaction of any kind in these types of process units.
-
-        See:
-            _branch_flow_helper();
-            _discharge_main_outlet();
-            _discharge_side_outlet().
-        """
-        #TODO: this function is unlikely to be needed in the equation-based solving system
-        #
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
-
-        self._branch_flow_helper()
-
-        # for a typical splitter, concentrations at the main/side outlets equal
-        # to those at the inlet
-        self._mo_comps = self._in_comps[:]
-        self._so_comps = self._in_comps[:]
-
-        if self._main_outlet is not None:
-            self._discharge_main_outlet()
-        else:
-            print('ERROR:', self.__name__, 'main outlet incomplete.')
-
-        if self._side_outlet is not None:
-            self._discharge_side_outlet()
-        elif self._has_sidestream:
-            print('ERROR:', self.__name__, 'side outlet incomplete')
-
-        return None
 
 
     def get_TSS(self, br='Main'):
@@ -1081,44 +736,11 @@ class splitter(poopy_lab_obj):
 
         return DO_sat_T
 
-
-    def _branch_flow_helper(self):
-        """
-        Calculate 1 of the 3 branches' flow based on the other 2.
-
-        1) Side outlet flow (_so_flow) can be set by
-          1A) either WAS (_SRT_controller) or direct user input
-          2A) upstream (non _SRT_controller)
-        2) Main outlet flow (_mo_flow) can be set by
-          2A) upstream automatically
-          2B) direct user/run_time input
-        3) Inlet flow is dependent on the two outlet branches' settings back tracing will be required to make
-        sure flows are balanced if both main and side outlet flows are set either by user or run time SRT
-        control.
-
-        See:
-            set_flow_data_src(),
-            discharge().
-        """
-
-        if self._SRT_controller:  # i.e. _so_flow set by a WAS unit
-            if self._upstream_set_mo_flow:
-                self._mo_flow = self._total_inflow - self._so_flow
-            else:
-                self._total_inflow = self._mo_flow + self._so_flow
-        elif self._upstream_set_mo_flow:
-            self._mo_flow = self._total_inflow - self._so_flow
-        else:
-            self._so_flow = self._total_inflow - self._mo_flow
-            self._so_flow_defined = True
-        return None
-    #
     # END OF COMMON INTERFACE DEFINITIONS
 
 
     # FUNCTIONS UNIQUE TO SPLITTER
     #
-
 
     def set_as_SRT_controller(self, setting=False):
         """

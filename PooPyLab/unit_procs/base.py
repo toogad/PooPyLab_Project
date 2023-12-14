@@ -16,9 +16,6 @@
 #    <http://www.gnu.org/licenses/>.
 #
 #
-#    This is the definition of the ASM1 model to be imported as part of the Reactor object
-#
-#
 
 
 
@@ -40,6 +37,11 @@ class poopy_lab_obj(object):
     """
 
     __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def set_name(self, new_name):
+        pass
+
 
     @abstractmethod
     def set_flow_data_src(self, branch, flow_ds):
@@ -64,14 +66,6 @@ class poopy_lab_obj(object):
         """
         pass
 
-##
-##    @abstractmethod
-##    def is_converged(self, limit):
-##        """
-##        Return the convergence status of the unit.
-##        """
-##        pass
-##
 
     @abstractmethod
     def get_type(self):
@@ -100,76 +94,49 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
+    def get_upstream(self):
+        pass
+
+
+    @abstractmethod
     def has_discharger(self):
         """
         Return True if upstream is connected, False if not.
         """
         pass
 
-##
-##    @abstractmethod
-##    def remove_upstream(self, discharger):
-##        """
-##        Remove an existing discharger from inlet.
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def set_downstream_main(self, receiver):
-##        """
-##        Define the main outlet by specifying the receiving process unit.
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def main_outlet_connected(self):
-##        """
-##        Return whether the main outlet of the unit is defined (connected).
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def get_downstream_main(self):
-##        """
-##        Return the process unit that is connected to the main outlet.
-##        """
-##        pass
-##
 
     @abstractmethod
-    def set_mainstream_flow_by_upstream(self, flag):
+    def remove_upstream(self, discharger):
         """
-        Set whether the mainstream flow = (total inflow - side outflow).
+        Remove an existing discharger from inlet.
         """
         pass
 
-##
-##    @abstractmethod
-##    def set_mainstream_flow(self, flow):
-##        """
-##        Define the mainstream outlet flow.
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def get_main_outflow(self):
-##        """
-##        Return the mainstream outlet flow.
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def get_main_outlet_concs(self):
-##        """
-##        Return a copy of the mainstream outlet concentrations.
-##        """
-##        pass
-##
+
+    @abstractmethod
+    def set_downstream_main(self, receiver):
+        """
+        Define the main outlet by specifying the receiving process unit.
+        """
+        pass
+
+
+    @abstractmethod
+    def main_outlet_connected(self):
+        """
+        Return whether the main outlet of the unit is defined (connected).
+        """
+        pass
+
+
+    @abstractmethod
+    def get_downstream_main(self):
+        """
+        Return the process unit that is connected to the main outlet.
+        """
+        pass
+
 
     @abstractmethod
     def set_downstream_side(self, receiver):
@@ -194,14 +161,6 @@ class poopy_lab_obj(object):
         """
         pass
 
-##
-##    @abstractmethod
-##    def set_sidestream_flow(self, flow):
-##        """
-##        Define the flow rate for the sidestream.
-##        """
-##        pass
-##
 
     @abstractmethod
     def sidestream_flow_defined(self):
@@ -210,14 +169,6 @@ class poopy_lab_obj(object):
         """
         pass
 
-##
-##    @abstractmethod
-##    def get_side_outflow(self):
-##        """
-##        Return the sidestream outlet flow rate.
-##        """
-##        pass
-##
 
     @abstractmethod
     def get_side_outlet_concs(self):
@@ -226,38 +177,6 @@ class poopy_lab_obj(object):
         """
         pass
 
-##
-##    @abstractmethod
-##    def set_flow(self, discharger, flow):
-##        """
-##        Specify the flow from the discharger.
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def _discharge_main_outlet(self):
-##        """
-##        Pass the flow and concentrations to the main outlet.
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def _discharge_side_outlet(self):
-##        """
-##        Pass the flow and concentrations to the side outlet.
-##        """
-##        pass
-##
-##
-##    @abstractmethod
-##    def discharge(self, method_name, fix_DO, DO_sat_T):
-##        """
-##        Pass the total flow and blended components to the downstreams.
-##        """
-##        pass
-##
 
     @abstractmethod
     def get_TSS(self, branch='Main'):
@@ -353,13 +272,3 @@ class poopy_lab_obj(object):
         Calculate the saturated DO concentration under the site conditions.
         """
         pass
-
-##
-##    @abstractmethod
-##    def _branch_flow_helper(self):
-##        """
-##        Calculate 1 of the 3 branches' flow based on the other 2.
-##        """
-##        pass
-##
-##
