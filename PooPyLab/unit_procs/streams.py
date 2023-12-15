@@ -776,26 +776,26 @@ class splitter(poopy_lab_obj):
         return self._SRT_controller
 
 
-    def _sum_helper(self, branch='Main', index_list=[]):
-        """
-        Sum up the model components indicated by the index_list.
-
-        Args:
-            branch: {'Inlet'|'Main'|'Side'}
-            index_list: a list of indices for the model components to use
-
-        Return:
-            float
-        """
-
-        _sum = 0.0
-        if branch == 'Main':
-            _sum = sum(self._mo_comps[i] for i in index_list)
-        elif branch == 'Inlet':
-            _sum = sum(self._in_comps[i] for i in index_list)
-        elif branch == 'Side' and self.has_sidestream():
-            _sum = sum(self._so_comps[i] for i in index_list)
-        return _sum
+##    def _sum_helper(self, branch='Main', index_list=[]):
+##        """
+##        Sum up the model components indicated by the index_list.
+##
+##        Args:
+##            branch: {'Inlet'|'Main'|'Side'}
+##            index_list: a list of indices for the model components to use
+##
+##        Return:
+##            float
+##        """
+##
+##        _sum = 0.0
+##        if branch == 'Main':
+##            _sum = sum(self._mo_comps[i] for i in index_list)
+##        elif branch == 'Inlet':
+##            _sum = sum(self._in_comps[i] for i in index_list)
+##        elif branch == 'Side' and self.has_sidestream():
+##            _sum = sum(self._so_comps[i] for i in index_list)
+##        return _sum
     #
     # END OF FUNCTIONS UNIQUE TO SPLITTER
 
@@ -853,19 +853,19 @@ class pipe(splitter):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
     #
-    def _branch_flow_helper(self):
-        """
-        Calculate 1 of the 3 branches' flow based on the other 2.
-
-        For a "pipe", the sidestream flow is set to 0 m3/d. The mainstream outlet flow always equals to the
-        total inlet flow.
-        """
-        if self._upstream_set_mo_flow:
-            self._mo_flow = self._total_inflow
-        else:
-            self._total_inflow = self._mo_flow
-        return None
-
+##    def _branch_flow_helper(self):
+##        """
+##        Calculate 1 of the 3 branches' flow based on the other 2.
+##
+##        For a "pipe", the sidestream flow is set to 0 m3/d. The mainstream outlet flow always equals to the
+##        total inlet flow.
+##        """
+##        if self._upstream_set_mo_flow:
+##            self._mo_flow = self._total_inflow
+##        else:
+##            self._total_inflow = self._mo_flow
+##        return None
+##
 
     def set_downstream_side(self, receiver):
         """
@@ -878,16 +878,16 @@ class pipe(splitter):
         return None
 
 
-    def set_sidestream_flow(self, flow):
-        """
-        Define the flow rate for the sidestream.
-
-        This function is bypassed for a "pipe" whose sidestream is set to "None" and sidestream flow 0 m3/d.
-        A warning message is displayed if called.
-        """
-        print("WARN:", self.__name__, "has sidestream flow of ZERO.")
-        return None
-
+##    def set_sidestream_flow(self, flow):
+##        """
+##        Define the flow rate for the sidestream.
+##
+##        This function is bypassed for a "pipe" whose sidestream is set to "None" and sidestream flow 0 m3/d.
+##        A warning message is displayed if called.
+##        """
+##        print("WARN:", self.__name__, "has sidestream flow of ZERO.")
+##        return None
+##
     #
     # END OF ADJUSTMENT TO COMMON INTERFACE
 
@@ -992,16 +992,16 @@ class influent(pipe):
     # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
     #
 
-    def _branch_flow_helper(self):
-        """
-        Calculate 1 of the 3 branches' flow based on the other 2.
-
-        For an "influent" unit, the mainstream outflow always equals to its design flow.
-        """
-
-        self._mo_flow = self._design_flow
-        self._so_flow = 0.0
-        return None
+##    def _branch_flow_helper(self):
+##        """
+##        Calculate 1 of the 3 branches' flow based on the other 2.
+##
+##        For an "influent" unit, the mainstream outflow always equals to its design flow.
+##        """
+##
+##        self._mo_flow = self._design_flow
+##        self._so_flow = 0.0
+##        return None
 
 
     def assign_initial_guess(self, init_guess_lst):
@@ -1014,14 +1014,14 @@ class influent(pipe):
         pass
 
 
-    def is_converged(self, limit=1E-6):
-        """
-        Return the convergence status of the unit.
-
-        The "influent" unit gets flows and loads from the user. Convergence is irrelevant here. This function
-        is by-passed for "influent" by setting the _converged to True.
-        """
-        return self._converged  # which is always True
+##    def is_converged(self, limit=1E-6):
+##        """
+##        Return the convergence status of the unit.
+##
+##        The "influent" unit gets flows and loads from the user. Convergence is irrelevant here. This function
+##        is by-passed for "influent" by setting the _converged to True.
+##        """
+##        return self._converged  # which is always True
 
 
     def add_upstream(self, discharger, branch):
@@ -1035,40 +1035,40 @@ class influent(pipe):
         return None
 
 
-    def totalize_inflow(self):
-        """
-        Combine the individual flows specified in the self._inlet into one.
-
-        For an "influent" unit, there is no further upstream. The total inflow is the design flow.
-
-        See:
-            _branch_flow_helper()
-        """
-        self._branch_flow_helper()
-        return self._design_flow
-
-
-    def blend_inlet_comps(self):
-        """
-        Calculate the flow weighted average model component concentrations.
-
-        This function is re-implemented for the "influent" who doesn't have further upstream units
-        discharging into it. Rather, this function becomes a wrapper for the _convert_to_model_comps() which
-        fractions the wastewater constituents measured in BOD, TSS, VSS, TKN, NH3-N, etc. into the model
-        components such as substrate COD, slowly biodegradable COD, inert suspended solids, etc.
-
-        Args:
-            None
-
-        Return:
-            Copy of the blended influent components.
-
-        See:
-            _convert_to_model_comps().
-        """
-        self._in_comps = self._convert_to_model_comps(asm_ver='ASM1', verbose=False)
-        return self._in_comps[:]
-
+##    def totalize_inflow(self):
+##        """
+##        Combine the individual flows specified in the self._inlet into one.
+##
+##        For an "influent" unit, there is no further upstream. The total inflow is the design flow.
+##
+##        See:
+##            _branch_flow_helper()
+##        """
+##        self._branch_flow_helper()
+##        return self._design_flow
+##
+##
+##    def blend_inlet_comps(self):
+##        """
+##        Calculate the flow weighted average model component concentrations.
+##
+##        This function is re-implemented for the "influent" who doesn't have further upstream units
+##        discharging into it. Rather, this function becomes a wrapper for the _convert_to_model_comps() which
+##        fractions the wastewater constituents measured in BOD, TSS, VSS, TKN, NH3-N, etc. into the model
+##        components such as substrate COD, slowly biodegradable COD, inert suspended solids, etc.
+##
+##        Args:
+##            None
+##
+##        Return:
+##            Copy of the blended influent components.
+##
+##        See:
+##            _convert_to_model_comps().
+##        """
+##        self._in_comps = self._convert_to_model_comps(asm_ver='ASM1', verbose=False)
+##        return self._in_comps[:]
+##
 
     def remove_upstream(self, discharger):
         """
@@ -1081,25 +1081,25 @@ class influent(pipe):
         return None
 
 
-    def set_mainstream_flow(self, flow=37800):
-        """
-        Define the mainstream outlet flow.
-
-        This function is re-implemented for the "influent" and essentially becomes a wrapper for setting the
-        design flow (m3/d).
-
-        Args:
-            flow:   design flow of the influent, m3/d
-
-        Return:
-            None
-        """
-        if flow > 0:
-            self._design_flow = flow
-        else:
-            print("ERROR:", self.__name__, "shall have design flow > 0 M3/d."
-                    "Design flow NOT CHANGED due to error in user input.")
-        return None
+##    def set_mainstream_flow(self, flow=37800):
+##        """
+##        Define the mainstream outlet flow.
+##
+##        This function is re-implemented for the "influent" and essentially becomes a wrapper for setting the
+##        design flow (m3/d).
+##
+##        Args:
+##            flow:   design flow of the influent, m3/d
+##
+##        Return:
+##            None
+##        """
+##        if flow > 0:
+##            self._design_flow = flow
+##        else:
+##            print("ERROR:", self.__name__, "shall have design flow > 0 M3/d."
+##                    "Design flow NOT CHANGED due to error in user input.")
+##        return None
 
 
     def set_mainstream_flow_by_upstream(self, f):
@@ -1112,52 +1112,52 @@ class influent(pipe):
         pass
 
 
-    def get_main_outflow(self):
-        """
-        Return the mainstream outlet flow.
-
-        For an "influent", this function will return the design flow.
-
-        Return:
-            self._design_flow
-        """
-        return self._design_flow
-
-
-    def set_flow(self, discharger, flow):
-        """
-        Specify the flow from the discharger.
-
-        This function is bypassed for the "influent".
-        """
-        pass
-
-
-    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
-        """
-        Pass the total flow and blended components to the downstreams.
-
-        This function is re-implemented for the "influent". An "influent" does not care the changes from the
-        previous round to the current since it is the source for the entire WWTP. Therefore, _prev_mo_comps,
-        _prev_so_comps, _mo_comps, and _so_comps all equal to _in_comps.
-
-        Args:
-            (see the note in the discharge() in the splitter class)
-
-        Return:
-            None
-        """
-
-        # influent concentrations don't change for steady state simulation
-        self._prev_mo_comps = self._prev_so_comps = self._in_comps[:]
-        self._mo_comps = self._so_comps = self._in_comps[:]
-
-        if self._main_outlet is not None:
-            self._discharge_main_outlet()
-        else:
-            print("ERROR:", self.__name__, "main outlet incomplete")
-
-        return None
+##    def get_main_outflow(self):
+##        """
+##        Return the mainstream outlet flow.
+##
+##        For an "influent", this function will return the design flow.
+##
+##        Return:
+##            self._design_flow
+##        """
+##        return self._design_flow
+##
+##
+##    def set_flow(self, discharger, flow):
+##        """
+##        Specify the flow from the discharger.
+##
+##        This function is bypassed for the "influent".
+##        """
+##        pass
+##
+##
+##    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
+##        """
+##        Pass the total flow and blended components to the downstreams.
+##
+##        This function is re-implemented for the "influent". An "influent" does not care the changes from the
+##        previous round to the current since it is the source for the entire WWTP. Therefore, _prev_mo_comps,
+##        _prev_so_comps, _mo_comps, and _so_comps all equal to _in_comps.
+##
+##        Args:
+##            (see the note in the discharge() in the splitter class)
+##
+##        Return:
+##            None
+##        """
+##
+##        # influent concentrations don't change for steady state simulation
+##        self._prev_mo_comps = self._prev_so_comps = self._in_comps[:]
+##        self._mo_comps = self._so_comps = self._in_comps[:]
+##
+##        if self._main_outlet is not None:
+##            self._discharge_main_outlet()
+##        else:
+##            print("ERROR:", self.__name__, "main outlet incomplete")
+##
+##        return None
     #
     # END OF ADJUSTMENT TO COMMON INTERFACE
 
@@ -1379,22 +1379,22 @@ class effluent(pipe):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF EFFLUENT
     #
 
-    def _branch_flow_helper(self):
-        """
-        Calculate 1 of the 3 branches' flow based on the other 2.
-
-        This function is re-implemented for "effluent" because the actual effluent flow rate of a WWTP has
-        to do with its waste sludge flow (WAS flow). The WAS flow is set during simulation by PooPyLab. As a
-        result, the effluent flow rate is the balance of the plant influent flow and WAS flow.
-
-        Occasionally, there may be a WWTP without dedicated WAS unit when the effluent flow rate equals to
-        that of the influent.
-        """
-
-        # the _mo_flow of an effluent is set externally (global main loop)
-        if self._upstream_set_mo_flow:
-            self._mo_flow = self._total_inflow  # _so_flow = 0
-        return None
+##    def _branch_flow_helper(self):
+##        """
+##        Calculate 1 of the 3 branches' flow based on the other 2.
+##
+##        This function is re-implemented for "effluent" because the actual effluent flow rate of a WWTP has
+##        to do with its waste sludge flow (WAS flow). The WAS flow is set during simulation by PooPyLab. As a
+##        result, the effluent flow rate is the balance of the plant influent flow and WAS flow.
+##
+##        Occasionally, there may be a WWTP without dedicated WAS unit when the effluent flow rate equals to
+##        that of the influent.
+##        """
+##
+##        # the _mo_flow of an effluent is set externally (global main loop)
+##        if self._upstream_set_mo_flow:
+##            self._mo_flow = self._total_inflow  # _so_flow = 0
+##        return None
 
 
 #    def set_mainstream_flow(self, flow=0):
@@ -1410,41 +1410,41 @@ class effluent(pipe):
 #            print("ERROR:", self.__name__, "receives flow < 0.")
 #            self._mo_flow = 0.0
 #        return None
-
-
-    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
-        """
-        Pass the total flow and blended components to the downstreams.
-
-        This function is re-implemented for "effluent" because there is no further downstream units on either
-        the main or side outlet.
-
-        Args:
-            (see the note in the discharge() defined in the splitter class)
-
-        Return:
-            None
-
-        """
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
-
-        self._branch_flow_helper()
-
-        self._mo_comps = self._in_comps[:]
-        self._so_comps = self._in_comps[:]
-
-        return None
-
-    #
-    # END OF ADJUSTMENTS TO COMMON INTERFACE
-
-    # FUNCTIONS UNIQUE TO EFFLUENT
-    #
-    # (INSERT CODE HERE)
-    #
-    # END OF FUNCTIONS UNIQUE TO EFFLUENT
-
+##
+##
+##    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
+##        """
+##        Pass the total flow and blended components to the downstreams.
+##
+##        This function is re-implemented for "effluent" because there is no further downstream units on either
+##        the main or side outlet.
+##
+##        Args:
+##            (see the note in the discharge() defined in the splitter class)
+##
+##        Return:
+##            None
+##
+##        """
+##        self._prev_mo_comps = self._mo_comps[:]
+##        self._prev_so_comps = self._so_comps[:]
+##
+##        self._branch_flow_helper()
+##
+##        self._mo_comps = self._in_comps[:]
+##        self._so_comps = self._in_comps[:]
+##
+##        return None
+##
+##    #
+##    # END OF ADJUSTMENTS TO COMMON INTERFACE
+##
+##    # FUNCTIONS UNIQUE TO EFFLUENT
+##    #
+##    # (INSERT CODE HERE)
+##    #
+##    # END OF FUNCTIONS UNIQUE TO EFFLUENT
+##
 
 
 # ------------------------------------------------------------------------------
@@ -1501,35 +1501,35 @@ class WAS(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
-    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
-        """
-        Pass the total flow and blended components to the downstreams.
-
-        WAS typically functions as an effluent obj. However, it can also be a pipe obj. that connects to
-        solids management process units. Therefore, the discharge function allows a None at the main outlet.
-
-        Args:
-            (see the note in discharge() defined in the splitter class)
-
-        Return:
-            None
-
-        """
-
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
-
-        self._branch_flow_helper()
-
-        # see doc string above
-        if self._main_outlet is not None:
-            self._discharge_main_outlet()
-
-        self._mo_comps = self._in_comps[:]
-        self._so_comps = self._in_comps[:]
-
-        return None
-
+##    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
+##        """
+##        Pass the total flow and blended components to the downstreams.
+##
+##        WAS typically functions as an effluent obj. However, it can also be a pipe obj. that connects to
+##        solids management process units. Therefore, the discharge function allows a None at the main outlet.
+##
+##        Args:
+##            (see the note in discharge() defined in the splitter class)
+##
+##        Return:
+##            None
+##
+##        """
+##
+##        self._prev_mo_comps = self._mo_comps[:]
+##        self._prev_so_comps = self._so_comps[:]
+##
+##        self._branch_flow_helper()
+##
+##        # see doc string above
+##        if self._main_outlet is not None:
+##            self._discharge_main_outlet()
+##
+##        self._mo_comps = self._in_comps[:]
+##        self._so_comps = self._in_comps[:]
+##
+##        return None
+##
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
@@ -1577,7 +1577,9 @@ class WAS(pipe):
             get_solids_inventory().
         """
 
-        self.update_combined_input()
+        # TODO: Need to re-write this function
+        #
+        #self.update_combined_input()
 
         _eff_solids = 0.0
         for _u in effluent_list:

@@ -271,4 +271,13 @@ class poopy_lab_obj(object):
         """
         Calculate the saturated DO concentration under the site conditions.
         """
+        #TODO: not sure why this needs to be here for polymorphism
+        pass
+
+
+    @abstractmethod
+    def compose(self, neq):
+        """
+        Generate the declarations and equations for the process unit
+        """
         pass
