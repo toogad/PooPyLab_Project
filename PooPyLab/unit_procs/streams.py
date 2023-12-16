@@ -94,7 +94,6 @@ class splitter(poopy_lab_obj):
         ## flag on whether there is a sidestream, always True for a splitter
         self._has_sidestream = True
 
-        ##TODO: the following two connection flags can probably be removed when a specification file is used
         ## flag on whether the mainstream outlet is connected
         self._mo_connected = False
         ## flag on whether the sidestream outlet is connected
@@ -114,13 +113,6 @@ class splitter(poopy_lab_obj):
         ## TODO: This flag can probably be removed when a specification file is used
         ## flag to confirm it has received _so_flow > 0 m3/d
         self._so_flow_defined = False
-
-        ## mainstream outflow, m3/d
-        self._mo_flow = 0.0
-        ## sidestream outflow, m3/d
-        self._so_flow = 0.0
-        ## total inlet flow, m3/d
-        self._total_inflow = 0.0
 
         # site elevation, meter above MSL
         self._elev = 100.0
@@ -150,19 +142,11 @@ class splitter(poopy_lab_obj):
         #    _comps[12]: X_NS
         #
         ## inlet model components
-        self._in_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+        self._in_comps = []
         ## mainstream outlet model components
-        self._mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+        self._mo_comps = []
         ## sidestream outlet model components
-        self._so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
-
-        ## mainstream outlet model components for the previous round
-        self._prev_mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
-        ## sidestream outlet model components for the previous round
-        self._prev_so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
-
-        ## flag on convergence status
-        self._converged = False
+        self._so_comps = []
 
         return None
 
@@ -174,6 +158,10 @@ class splitter(poopy_lab_obj):
     def set_name(self, new_name='New_Name_Not_Given'):
         self.__name__ = new_name
         return None
+
+
+    def get_name(self):
+        return self.__name__
 
 
     def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
