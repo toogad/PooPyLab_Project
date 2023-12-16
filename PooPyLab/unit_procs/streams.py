@@ -115,13 +115,14 @@ class splitter(poopy_lab_obj):
         ## flag to confirm it has received _so_flow > 0 m3/d
         self._so_flow_defined = False
 
-        ## mainstream outflow, m3/d
-        self._mo_flow = 0.0
-        ## sidestream outflow, m3/d
-        self._so_flow = 0.0
-        ## total inlet flow, m3/d
-        self._total_inflow = 0.0
-
+##        ## mainstream outflow, m3/d
+##        self._mo_flow = 0.0
+##        ## sidestream outflow, m3/d
+##        self._so_flow = 0.0
+##        ## total inlet flow, m3/d
+##        self._total_inflow = 0.0
+##
+        # TODO: not sure why saturated DO estimate is here.
         # site elevation, meter above MSL
         self._elev = 100.0
         # water salinity, GRAM/L
@@ -149,6 +150,7 @@ class splitter(poopy_lab_obj):
         #    _comps[11]: X_D
         #    _comps[12]: X_NS
         #
+        ## TODO: With equation based solving system, these can probably simply be empty lists
         ## inlet model components
         self._in_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
         ## mainstream outlet model components
@@ -156,14 +158,14 @@ class splitter(poopy_lab_obj):
         ## sidestream outlet model components
         self._so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
 
-        ## mainstream outlet model components for the previous round
-        self._prev_mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
-        ## sidestream outlet model components for the previous round
-        self._prev_so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
-
-        ## flag on convergence status
-        self._converged = False
-
+##        ## mainstream outlet model components for the previous round
+##        self._prev_mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+##        ## sidestream outlet model components for the previous round
+##        self._prev_so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
+##
+##        ## flag on convergence status
+##        self._converged = False
+##
         return None
 
 
@@ -174,6 +176,10 @@ class splitter(poopy_lab_obj):
     def set_name(self, new_name='New_Name_Not_Given'):
         self.__name__ = new_name
         return None
+
+
+    def get_name(self):
+        return self.__name__
 
 
     def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
