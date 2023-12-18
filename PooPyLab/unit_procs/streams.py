@@ -41,7 +41,7 @@ import math
 
 from ..unit_procs.base import poopy_lab_obj
 from ..utils.datatypes import flow_data_src
-from ..ASMModel import constants
+#from ..ASMModel import constants
 
 # -----------------------------------------------------------------------------
 

@@ -281,7 +281,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def compose(self, neq):
+    def compose(self, start_neq, model_template_file):
         """
         Generate the declarations and equations for the process unit
         """
