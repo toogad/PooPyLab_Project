@@ -53,7 +53,7 @@ class asm_reactor(pipe):
     The integration of the model is also done by the "asm_reactor".
     """
 
-    __id = 0
+    __count = 0
 
     def __init__(self, act_vol=38000, swd=3.5,
                     ww_temp=20, DO=2, *args, **kw):
@@ -73,8 +73,8 @@ class asm_reactor(pipe):
         """
 
         pipe.__init__(self)
-        self.__class__.__id += 1
-        self.__name__ = 'ASMReactor_' + str(self.__id)
+        self.__class__.__count += 1
+        self.__name__ = 'ASMReactor_' + str(self.__count)
 
         self._type = 'ASMReactor'
 

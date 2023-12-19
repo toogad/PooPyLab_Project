@@ -38,6 +38,7 @@
 ## @file streams.py
 
 import math
+import random
 
 from ..unit_procs.base import poopy_lab_obj
 from ..utils.datatypes import flow_data_src
@@ -67,15 +68,21 @@ class splitter(poopy_lab_obj):
         When specified as an SRT (solids retention time) controller, a splitter would have to be connected
     with a WAS (waste activated sludge) unit at its sidestream. """
 
-    __id = 0
+    __id_exist = set()
+    random.seed(None, 2)
 
     def __init__(self):
         """
         Constructor for "splitter"
         """
 
-        self.__class__.__id += 1
-        self.__name__ = "Splitter_" + str(self.__id)
+        while True:
+            self._id = random.randint(1,199)
+            if self._id not in self.__class__.__id_exist:
+                self.__class__.__id_exist.add(self._id)
+                break
+
+        self.__name__ = "Splitter_" + str(self._id)
 
         ## type string of the process unit
         self._type = "Splitter"
@@ -532,8 +539,7 @@ class splitter(poopy_lab_obj):
                 self._so_connected = True
                 rcvr.add_upstream(self, 'Side')
             else:
-                print("ERROR: Influent types CAN NOT be the side outlet of",
-                        self.__name__)
+                print("ERROR: Influent types CAN NOT be the side outlet of", self.__name__)
         return None
 
 
@@ -816,7 +822,7 @@ class pipe(splitter):
     A pipe can have multiple upstream dischargers but only one downstream (main) receiver.
     """
 
-    __id = 0
+    __count = 0
 
     def __init__(self):
         """
@@ -831,8 +837,8 @@ class pipe(splitter):
         """
 
         splitter.__init__(self)
-        self.__class__.__id += 1
-        self.__name__ = 'Pipe_' + str(self.__id)
+        self.__class__.__count += 1
+        self.__name__ = 'Pipe_' + str(self.__count)
 
         self._type = 'Pipe'
 
@@ -911,7 +917,7 @@ class influent(pipe):
     A derived "pipe" class with its inlet being "None".
     """
 
-    __id = 0
+    __count = 0
 
     def __init__(self):
         """
@@ -931,8 +937,8 @@ class influent(pipe):
         """
 
         pipe.__init__(self)
-        self.__class__.__id += 1
-        self.__name__ = 'Influent_' + str(self.__id)
+        self.__class__.__count += 1
+        self.__name__ = 'Influent_' + str(self.__count)
 
         self._type = 'Influent'
 
@@ -1356,7 +1362,7 @@ class effluent(pipe):
     "None".
     """
 
-    __id = 0
+    __count = 0
 
     def __init__(self):
         """
@@ -1367,8 +1373,8 @@ class effluent(pipe):
         1) Mainstream outlet is "None".
         """
         pipe.__init__(self)
-        self.__class__.__id += 1
-        self.__name__ = 'Effluent_' + str(self.__id)
+        self.__class__.__count += 1
+        self.__name__ = 'Effluent_' + str(self.__count)
 
         self._type = 'Effluent'
 
@@ -1473,7 +1479,7 @@ class WAS(pipe):
     another process unit.
     """
 
-    __id = 0
+    __count = 0
 
     def __init__(self):
         """
@@ -1489,8 +1495,8 @@ class WAS(pipe):
         """
 
         pipe.__init__(self)
-        self.__class__.__id += 1
-        self.__name__ = 'WAS_' + str(self.__id)
+        self.__class__.__count += 1
+        self.__name__ = 'WAS_' + str(self.__count)
 
         self._type = 'WAS'
 
