@@ -749,6 +749,12 @@ class splitter(poopy_lab_obj):
 
         return DO_sat_T
 
+
+    def compose(self):
+        #TODO: fill here
+        pass
+
+
     # END OF COMMON INTERFACE DEFINITIONS
 
 
