@@ -97,9 +97,9 @@ class final_clarifier(splitter):
         splitter.__init__(self)
         self.__class__.__id += 1
         self._id = self.__class__.__id
-        self._type = 'Final_Clarifier'
-        self.__name__ = 'Final_Clarifier_' + str(self._id)
-        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
+        self._type = 'FinalClarifier'
+        self.__name__ = self._type +'_' + str(self._id)
+        self._codename = self.__name__
 
 
         ## clarifier active volume, bottom cone volume excluded, m3

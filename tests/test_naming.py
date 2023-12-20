@@ -12,7 +12,6 @@ if __name__ == '__main__':
     print('a new name is', a.get_name())
     print('a new codename is', a.get_codename())
 
-
     c = pipe()
     print('c default names:', c.get_name(), c.get_codename())
     c.set_name('pluto')
@@ -33,7 +32,6 @@ if __name__ == '__main__':
     f.set_name('blutbad')  # purposefully
     print('f new names:', f.get_name(), f.get_codename())
 
-
     h = final_clarifier()
     print('h default names:', h.get_name(), h.get_codename())
     h.set_name('blutbad')  # purposefully
@@ -43,3 +41,6 @@ if __name__ == '__main__':
     print('i default names:', i.get_name(), i.get_codename())
     i.set_name('grimm')  # purposefully
     print('i new names:', i.get_name(), i.get_codename())
+
+
+    a.save('testsave.pfd',0)

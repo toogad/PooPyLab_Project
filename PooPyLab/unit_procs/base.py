@@ -291,3 +291,11 @@ class poopy_lab_obj(object):
         Generate the declarations and equations for the process unit
         """
         pass
+
+
+    @abstractmethod
+    def save(self, filename, seq):
+        """
+        Save the configuration of the unit to a file.
+        """
+        pass

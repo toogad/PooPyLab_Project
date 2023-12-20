@@ -83,3 +83,6 @@ compile_flag.txt
 debug/
 *.o
 *.out
+
+#generated files:
+*.pfd

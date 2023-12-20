@@ -38,6 +38,7 @@
 ## @file streams.py
 
 import math
+from pathlib import Path
 
 from ..unit_procs.base import poopy_lab_obj
 from ..utils.datatypes import flow_data_src
@@ -78,11 +79,12 @@ class splitter(poopy_lab_obj):
 
         self.__class__.__id += 1
         self._id = self.__class__.__id
-
-        self.__name__ = "Splitter_" + str(self._id)
+        self.__name__ = self._type + '_' + str(self._id)
 
         ## code name is for use in system equation writing:
-        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
+        ## default as __name__, but will add user defined name to the front if that is given later
+        ## see set_name()
+        self._codename = self.__name__
 
         ## TODO: save the specification in a file (in what format?)
 
@@ -176,7 +178,7 @@ class splitter(poopy_lab_obj):
     #
 
 
-    def set_name(self, new_name='New_Name_Not_Given'):
+    def set_name(self, new_name='NoNewName'):
         self.__name__ = new_name
         self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
         return None
@@ -527,6 +529,7 @@ class splitter(poopy_lab_obj):
         Args:
             rcvr: receiver of the current unit's sidestream outlet flow.
 
+
         See:
             add_upstream(),
             set_downstream_main().
@@ -586,6 +589,8 @@ class splitter(poopy_lab_obj):
 
     def get_side_outlet_concs(self):
         """
+
+
         Return a copy of the sidestream outlet concentrations.
 
         Args:
@@ -750,9 +755,33 @@ class splitter(poopy_lab_obj):
         return DO_sat_T
 
 
-    def compose(self):
+    def compose(self, start_neq, model_template_file):
         #TODO: fill here
         pass
+
+
+    def save(self, filename='myflowsheet.pfd', seq=0):
+        """
+        Save the unit configuration to a file.
+
+        Args:
+            filename: full path/name (str) of the target file
+            seq: sequence/order (int) of this save
+
+        Return:
+            None
+        """
+        _tag = 'w'
+        f = Path(filename)
+        if f.exists() and seq > 0:
+            _tag = 'a'
+
+        with open(filename, _tag) as savef:
+            savef.write('SELF_NAME=' + self.__name__ + '\n')
+            savef.write('SELF_TYPE=' + self._type + '\n')
+            savef.write('SELF_ID=' + str(self._id) + '\n')
+            savef.write('SELF_CODENAME=' + self._codename + '\n')
+
 
 
     # END OF COMMON INTERFACE DEFINITIONS
@@ -795,26 +824,26 @@ class splitter(poopy_lab_obj):
         return self._SRT_controller
 
 
-##    def _sum_helper(self, branch='Main', index_list=[]):
-##        """
-##        Sum up the model components indicated by the index_list.
-##
-##        Args:
-##            branch: {'Inlet'|'Main'|'Side'}
-##            index_list: a list of indices for the model components to use
-##
-##        Return:
-##            float
-##        """
-##
-##        _sum = 0.0
-##        if branch == 'Main':
-##            _sum = sum(self._mo_comps[i] for i in index_list)
-##        elif branch == 'Inlet':
-##            _sum = sum(self._in_comps[i] for i in index_list)
-##        elif branch == 'Side' and self.has_sidestream():
-##            _sum = sum(self._so_comps[i] for i in index_list)
-##        return _sum
+    def _sum_helper(self, branch='Main', index_list=[]):
+        """
+        Sum up the model components indicated by the index_list.
+
+        Args:
+            branch: {'Inlet'|'Main'|'Side'}
+            index_list: a list of indices for the model components to use
+
+        Return:
+            float
+        """
+
+        _sum = 0.0
+        if branch == 'Main':
+            _sum = sum(self._mo_comps[i] for i in index_list)
+        elif branch == 'Inlet':
+            _sum = sum(self._in_comps[i] for i in index_list)
+        elif branch == 'Side' and self.has_sidestream():
+            _sum = sum(self._so_comps[i] for i in index_list)
+        return _sum
     #
     # END OF FUNCTIONS UNIQUE TO SPLITTER
 
@@ -853,10 +882,9 @@ class pipe(splitter):
 
         self._id = self.__class__.__id
 
-        self.__name__ = "Pipe_" + str(self._id)
+        self.__name__ = self._type + '_' + str(self._id)
 
-        ## code name is for use in system equation writing:
-        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
+        self._codename = self.__name__
 
         # pipe has no sidestream
         self._has_sidestream = False
@@ -959,10 +987,10 @@ class influent(pipe):
 
         self._type = 'Influent'
 
-        self.__name__ = 'Influent_' + str(self._id)
+        self.__name__ = self._type + '_' + str(self._id)
 
         ## code name is for use in system equation writing:
-        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
+        self._codename = self.__name__
 
         # influent has no further upstream discharger
         self._inlet = None
@@ -1397,14 +1425,10 @@ class effluent(pipe):
         pipe.__init__(self)
 
         self.__class__.__id += 1
-
         self._id = self.__class__.__id
-
         self._type = 'Effluent'
-
-        self.__name__ = 'Effluent_' + str(self._id)
-
-        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
+        self.__name__ = self._type + '_' + str(self._id)
+        self._codename = self.__name__
 
         # flow data source tags
         self._in_flow_ds = flow_data_src.TBD
@@ -1526,10 +1550,9 @@ class WAS(pipe):
 
         self.__class__.__id += 1
         self._id = self.__class__.__id
-
         self._type = 'WAS'
-        self.__name__ = 'WAS_' + str(self._id)
-        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
+        self.__name__ = self._type +'_' + str(self._id)
+        self._codename = self.__name__
 
         # flow data source tags
         self._in_flow_ds = flow_data_src.DNS
