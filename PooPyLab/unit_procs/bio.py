@@ -75,10 +75,9 @@ class asm_reactor(pipe):
         pipe.__init__(self)
         self.__class__.__id += 1
         self._id = self.__class__.__id
-        self.__name__ = 'ASMReactor_' + str(self.__count)
-        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
-
         self._type = 'ASMReactor'
+        self.__name__ = 'ASMReactor_' + str(self._id)
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
 
         # active volume, m3
         self._active_vol = act_vol
