@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='poopylab',
-    version='0.01.0.20201206',
+    version='0.01.0.20231219',
     author="Kai Zhang",
     author_email="poopylabproject@gmail.com",
     description="The .#2. best simulation tool for biological wastewater treatment, by the nerds, for the the nerds.",

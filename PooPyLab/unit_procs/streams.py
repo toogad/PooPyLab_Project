@@ -38,7 +38,6 @@
 ## @file streams.py
 
 import math
-import random
 
 from ..unit_procs.base import poopy_lab_obj
 from ..utils.datatypes import flow_data_src
@@ -68,24 +67,22 @@ class splitter(poopy_lab_obj):
         When specified as an SRT (solids retention time) controller, a splitter would have to be connected
     with a WAS (waste activated sludge) unit at its sidestream. """
 
-    __id_exist = set()
-    random.seed(None, 2)
+    __id = 0
 
     def __init__(self):
         """
         Constructor for "splitter"
         """
+        ## type string of the process unit
+        self._type = "Splitter"
 
-        while True:
-            self._id = random.randint(1,199)
-            if self._id not in self.__class__.__id_exist:
-                self.__class__.__id_exist.add(self._id)
-                break
+        self.__class__.__id += 1
+        self._id = self.__class__.__id
 
         self.__name__ = "Splitter_" + str(self._id)
 
-        ## type string of the process unit
-        self._type = "Splitter"
+        ## code name is for use in system equation writing:
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
 
         ## TODO: save the specification in a file (in what format?)
 
@@ -181,11 +178,16 @@ class splitter(poopy_lab_obj):
 
     def set_name(self, new_name='New_Name_Not_Given'):
         self.__name__ = new_name
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
         return None
 
 
     def get_name(self):
         return self.__name__
+
+
+    def get_codename(self):
+        return self._codename
 
 
     def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
@@ -822,7 +824,7 @@ class pipe(splitter):
     A pipe can have multiple upstream dischargers but only one downstream (main) receiver.
     """
 
-    __count = 0
+    __id = 0
 
     def __init__(self):
         """
@@ -837,10 +839,18 @@ class pipe(splitter):
         """
 
         splitter.__init__(self)
-        self.__class__.__count += 1
-        self.__name__ = 'Pipe_' + str(self.__count)
 
+        self.__class__.__id += 1
+
+        ## type string of the process unit
         self._type = 'Pipe'
+
+        self._id = self.__class__.__id
+
+        self.__name__ = "Pipe_" + str(self._id)
+
+        ## code name is for use in system equation writing:
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
 
         # pipe has no sidestream
         self._has_sidestream = False
@@ -917,7 +927,7 @@ class influent(pipe):
     A derived "pipe" class with its inlet being "None".
     """
 
-    __count = 0
+    __id = 0
 
     def __init__(self):
         """
@@ -937,10 +947,16 @@ class influent(pipe):
         """
 
         pipe.__init__(self)
-        self.__class__.__count += 1
-        self.__name__ = 'Influent_' + str(self.__count)
+
+        self.__class__.__id += 1
+        self._id = self.__class__.__id
 
         self._type = 'Influent'
+
+        self.__name__ = 'Influent_' + str(self._id)
+
+        ## code name is for use in system equation writing:
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
 
         # influent has no further upstream discharger
         self._inlet = None
@@ -1362,7 +1378,7 @@ class effluent(pipe):
     "None".
     """
 
-    __count = 0
+    __id = 0
 
     def __init__(self):
         """
@@ -1373,10 +1389,16 @@ class effluent(pipe):
         1) Mainstream outlet is "None".
         """
         pipe.__init__(self)
-        self.__class__.__count += 1
-        self.__name__ = 'Effluent_' + str(self.__count)
+
+        self.__class__.__id += 1
+
+        self._id = self.__class__.__id
 
         self._type = 'Effluent'
+
+        self.__name__ = 'Effluent_' + str(self._id)
+
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
 
         # flow data source tags
         self._in_flow_ds = flow_data_src.TBD
@@ -1479,7 +1501,7 @@ class WAS(pipe):
     another process unit.
     """
 
-    __count = 0
+    __id = 0
 
     def __init__(self):
         """
@@ -1495,10 +1517,13 @@ class WAS(pipe):
         """
 
         pipe.__init__(self)
-        self.__class__.__count += 1
-        self.__name__ = 'WAS_' + str(self.__count)
+
+        self.__class__.__id += 1
+        self._id = self.__class__.__id
 
         self._type = 'WAS'
+        self.__name__ = 'WAS_' + str(self._id)
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
 
         # flow data source tags
         self._in_flow_ds = flow_data_src.DNS

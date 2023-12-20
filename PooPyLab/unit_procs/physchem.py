@@ -75,7 +75,7 @@ class final_clarifier(splitter):
     #    self._comps[11]: X_D
     #    self._comps[12]: X_NS
 
-    __count = 0
+    __id = 0
 
     def __init__(self, active_vol=9500, SWD=3.5):
         """
@@ -95,10 +95,12 @@ class final_clarifier(splitter):
             None
         """
         splitter.__init__(self)
-        self.__class__.__count += 1
-        self.__name__ = 'Final_Clarifier_' + str(self.__count)
-
+        self.__class__.__id += 1
+        self._id = self.__class__.__id
         self._type = 'Final_Clarifier'
+        self.__name__ = 'Final_Clarifier_' + str(self._id)
+        self._codename = self.__name__ + '_' + self._type + '_' + str(self._id)
+
 
         ## clarifier active volume, bottom cone volume excluded, m3
         self._active_vol = active_vol
