@@ -44,3 +44,4 @@ if __name__ == '__main__':
 
 
     a.save('testsave.pfd',0)
+    c.save('testsave.pfd',1)
