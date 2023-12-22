@@ -88,8 +88,8 @@ class splitter(poopy_lab_obj):
 
         ## TODO: save the specification in a file (in what format?)
 
-        ## upstream units and their flows in the format of {unit: Flow}
-        self._inlet = {}
+        ## a list of upstream units [OLD: and their flows in the format of {unit: Flow}]
+        self._inlet = []
         ## mainstream outlet, a single receiver
         self._main_outlet = None
         ## sidestream outlet, a single receiver
@@ -374,7 +374,7 @@ class splitter(poopy_lab_obj):
         """
 
         if discharger not in self._inlet:
-            self._inlet[discharger] = 0.0  # place holder
+            self._inlet.append(discharger)
             if upst_branch == 'Main':
                 self._has_discharger = True
                 discharger.set_downstream_main(self)
@@ -395,7 +395,7 @@ class splitter(poopy_lab_obj):
             None
 
         Return:
-            {unit_addr: flow into self._inlet}
+            set of units in the inlet
         """
         return self._inlet
 
@@ -437,7 +437,7 @@ class splitter(poopy_lab_obj):
         """
 
         if discharger in self._inlet:
-            self._inlet.pop(discharger)
+            self._inlet.remove(discharger)
             self._upstream_set_mo_flow = False
             if discharger.get_downstream_main() == self:
                 discharger.set_downstream_main(None)
