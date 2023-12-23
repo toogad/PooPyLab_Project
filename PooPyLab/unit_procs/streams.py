@@ -782,12 +782,12 @@ class splitter(poopy_lab_obj):
             savef.write('SELF_TYPE=' + self._type + '\n')
             savef.write('SELF_ID=' + str(self._id) + '\n')
             savef.write('SELF_CODENAME=' + self._codename + '\n')
-            savef.write('SELF_IN_FLOW_DATA_SOURCE=' + str(self._in_flow_ds)[-3] + '\n')
-            savef.write('SELF_MO_FLOW_DATA_SOURCE=' + str(self._mo_flow_ds)[-3] + '\n')
-            savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3] + '\n')
+            savef.write('SELF_IN_FLOW_DATA_SOURCE=' + str(self._in_flow_ds)[-3:] + '\n')
+            savef.write('SELF_MO_FLOW_DATA_SOURCE=' + str(self._mo_flow_ds)[-3:] + '\n')
+            savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3:] + '\n')
 
-
-            savef.write('INLET_NAMES=')
+            #savef.write('INLET_NAMES=')
+        return None
 
 
 
