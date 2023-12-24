@@ -785,11 +785,19 @@ class splitter(poopy_lab_obj):
             savef.write('SELF_IN_FLOW_DATA_SOURCE=' + str(self._in_flow_ds)[-3:] + '\n')
             savef.write('SELF_MO_FLOW_DATA_SOURCE=' + str(self._mo_flow_ds)[-3:] + '\n')
             savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3:] + '\n')
-
-            #savef.write('INLET_NAMES=')
+            if self.get_upstream():
+                savef.write('INLET_NAMES=' + ' '.join([k.get_name() for k in self.get_upstream()]) + '\n')
+            else:
+                savef.write('INLET_NAMES=NONE' + '\n')
+            if self.get_downstream_main():
+                savef.write('MAIN_OUTLET_NAME=' + self.get_downstream_main().get_name() + '\n')
+            else:
+                savef.write('MAIN_OUTLET_NAME=NONE' + '\n')
+            if self.get_downstream_side():
+                savef.write('SIDE_OUTLET_NAME=' + self.get_downstream_side().get_name() + '\n')
+            else:
+                savef.write('SIDE_OUTLET_NAME=NONE' + '\n')
         return None
-
-
 
 
     # END OF COMMON INTERFACE DEFINITIONS

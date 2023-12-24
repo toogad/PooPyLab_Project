@@ -51,3 +51,8 @@ if __name__ == '__main__':
 
     for i in range(len(pfd)):
         pfd[i].save('test_connect.pfd', i)
+
+    # Corner cases: should show an error msg in each attempt
+    inf.add_upstream(p1, 'Main')
+    p2.add_upstream(was, 'Main')
+    p2.add_upstream(p1, 'Side')
