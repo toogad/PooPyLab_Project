@@ -50,7 +50,7 @@ def _check_connection(pfd=[]):
 
     loose_end = 0
     for unit in pfd:
-        if not unit.has_discharger():
+        if not unit.inlet_connected():
             print(unit.__name__, 'upstream is not connected')
             loose_end += 1
         if unit.has_sidestream():

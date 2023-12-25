@@ -76,7 +76,6 @@ class splitter(poopy_lab_obj):
         """
         ## type string of the process unit
         self._type = "Splitter"
-
         self.__class__.__id += 1
         self._id = self.__class__.__id
         self.__name__ = self._type + '_' + str(self._id)
@@ -96,7 +95,7 @@ class splitter(poopy_lab_obj):
         self._side_outlet = None
 
         ## flag on whether there are upstream units
-        self._has_discharger = False
+        self._inlet_connected = False
         ## flag on whether there is a sidestream, always True for a splitter
         self._has_sidestream = True
 
@@ -120,13 +119,6 @@ class splitter(poopy_lab_obj):
         ## flag to confirm it has received _so_flow > 0 m3/d
         self._so_flow_defined = False
 
-##        ## mainstream outflow, m3/d
-##        self._mo_flow = 0.0
-##        ## sidestream outflow, m3/d
-##        self._so_flow = 0.0
-##        ## total inlet flow, m3/d
-##        self._total_inflow = 0.0
-##
         # TODO: not sure why saturated DO estimate is here.
         # site elevation, meter above MSL
         self._elev = 100.0
@@ -163,20 +155,11 @@ class splitter(poopy_lab_obj):
         ## sidestream outlet model components
         self._so_comps = []
 
-##        ## mainstream outlet model components for the previous round
-##        self._prev_mo_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
-##        ## sidestream outlet model components for the previous round
-##        self._prev_so_comps = [0.00001] * constants._NUM_ASM1_COMPONENTS
-##
-##        ## flag on convergence status
-##        self._converged = False
-##
         return None
 
 
     # COMMON INTERFACES DEFINED IN POOPY_LAB_OBJ (BASE)
     #
-
 
     def set_name(self, new_name='NoNewName'):
         self.__name__ = new_name
@@ -360,7 +343,7 @@ class splitter(poopy_lab_obj):
         set_downstream_main()/set_downstream_side() to connect its mainstream/sidestream outlet to the
         current unit's inlet.
 
-        Upon sucessful addition of the specified discharger and its branch, the self._has_discharger flag is
+        Upon sucessful addition of the specified discharger and its branch, the self._inlet_connected flag is
         set to True.
 
         Args:
@@ -376,10 +359,10 @@ class splitter(poopy_lab_obj):
         if discharger not in self._inlet:
             self._inlet.append(discharger)
             if upst_branch == 'Main':
-                self._has_discharger = True
+                self._inlet_connected = True
                 discharger.set_downstream_main(self)
             elif upst_branch == 'Side':
-                self._has_discharger = True
+                self._inlet_connected = True
                 discharger.set_downstream_side(self)
             else:
                 print("ERROR: UNKNOWN BRANCH SPECIFIED.")
@@ -400,7 +383,7 @@ class splitter(poopy_lab_obj):
         return self._inlet
 
 
-    def has_discharger(self):
+    def inlet_connected(self):
         """
         Return whether the unit's inlet has been connected.
 
@@ -410,7 +393,7 @@ class splitter(poopy_lab_obj):
         Return:
             bool
         """
-        return self._has_discharger
+        return self._inlet_connected
 
 
     def remove_upstream(self, discharger):
@@ -421,7 +404,7 @@ class splitter(poopy_lab_obj):
 
             If so, proceed and remove it from self._inlet. Then it finds out which branch of the discharger
             is originally connected to current unit's inlet, inform the original discharger to update its
-            corresponding branch's connection. The _has_discharger flag will be checked and updated when an
+            corresponding branch's connection. The _inlet_connected flag will be checked and updated when an
             upstream discharger is removed successfully.
 
             If not, an error message will be displayed and nothing will be removed from the self._inlet.
@@ -443,7 +426,7 @@ class splitter(poopy_lab_obj):
                 discharger.set_downstream_main(None)
             else:
                 discharger.set_downstream_side(None)
-            self._has_discharger = len(self._inlet) > 0
+            self._inlet_connected = len(self._inlet) > 0
         else:
             print('ERROR:', self.__name__, 'inlet unit not found for removal.')
         return None
@@ -785,6 +768,7 @@ class splitter(poopy_lab_obj):
             savef.write('SELF_IN_FLOW_DATA_SOURCE=' + str(self._in_flow_ds)[-3:] + '\n')
             savef.write('SELF_MO_FLOW_DATA_SOURCE=' + str(self._mo_flow_ds)[-3:] + '\n')
             savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3:] + '\n')
+
             if self.get_upstream():
                 savef.write('INLET_NAMES=' + ' '.join([k.get_name() for k in self.get_upstream()]) + '\n')
             else:
@@ -797,6 +781,8 @@ class splitter(poopy_lab_obj):
                 savef.write('SIDE_OUTLET_NAME=' + self.get_downstream_side().get_name() + '\n')
             else:
                 savef.write('SIDE_OUTLET_NAME=NONE' + '\n')
+
+            savef.write('IS_SRT_CONTROLLEER=' + str(self.is_SRT_controller()) + '\n')
         return None
 
 
@@ -1011,8 +997,8 @@ class influent(pipe):
         # influent has no further upstream discharger
         self._inlet = None
 
-        # Trick the system by setting True to _has_discharger flag
-        self._has_discharger = True
+        # Trick the system by setting True to _inlet_connected flag
+        self._inlet_connected = True
         # influent has no sidestream
         self._has_sidestream = False
 
@@ -1582,35 +1568,12 @@ class WAS(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
-##    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
-##        """
-##        Pass the total flow and blended components to the downstreams.
-##
-##        WAS typically functions as an effluent obj. However, it can also be a pipe obj. that connects to
-##        solids management process units. Therefore, the discharge function allows a None at the main outlet.
-##
-##        Args:
-##            (see the note in discharge() defined in the splitter class)
-##
-##        Return:
-##            None
-##
-##        """
-##
-##        self._prev_mo_comps = self._mo_comps[:]
-##        self._prev_so_comps = self._so_comps[:]
-##
-##        self._branch_flow_helper()
-##
-##        # see doc string above
-##        if self._main_outlet is not None:
-##            self._discharge_main_outlet()
-##
-##        self._mo_comps = self._in_comps[:]
-##        self._so_comps = self._in_comps[:]
-##
-##        return None
-##
+    def set_downstream_main(self, rcvr):
+        print('WARN:', self.__name__, 'has no downstream main outlet.')
+        return None
+
+    def set_downstream_side(self, receiver):
+        print('WARN:', self.__name__, 'has no downstream side outlet.')
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
@@ -1621,67 +1584,67 @@ class WAS(pipe):
     #
 
 
-    def get_solids_inventory(self, reactor_list=[]):
-        """
-        Calculate the total solids mass in active reactors.
-
-        Args:
-            reactor_list: list of the asm_reactors with active treatment;
-
-        Return:
-            solids inventory (float) in grams.
-
-        See:
-            set_WAS_flow().
-        """
-
-        inventory = 0.0
-        for unit in reactor_list:
-            inventory += unit.get_TSS() * unit.get_active_vol()
-
-        return inventory
-
-
-    def set_WAS_flow(self, SRT=5, reactor_list=[], effluent_list=[]):
-        """
-        Set the waste sludge flow to meet the WWTP's solids retention time.
-
-        Args:
-            SRT:            WWTP's SRT in days;
-            reactor_list:   list of active asm_reactors;
-            effluent_list:  list of all effluent units in the WWTP.
-
-        Return:
-            Mainstream outflow in m3/d
-
-        See:
-            get_solids_inventory().
-        """
-
-        # TODO: Need to re-write this function
-        #
-        #self.update_combined_input()
-
-        _eff_solids = 0.0
-        for _u in effluent_list:
-            _eff_solids += _u.get_TSS() * _u.get_main_outflow()
-
-        _wf = 0.0
-        if self.get_TSS() != 0:
-            _wf = ((self.get_solids_inventory(reactor_list) / SRT
-                    - _eff_solids) / self.get_TSS())
-
-        # screen out the potential < 0 WAS flow
-        if _wf < 0:
-            print('WARN: SRT specified can not be achieved.')
-            self._mo_flow = 0.0
-        else:
-            self._mo_flow = _wf
-
-        #TODO: in MAIN function, we need to check whether the WAS flow
-        # is higher than the influent flow; The WAS flow is then passed to the
-        # SRT controlling splitter by the main loop.
-        return self._mo_flow
-
+##    def get_solids_inventory(self, reactor_list=[]):
+##        """
+##        Calculate the total solids mass in active reactors.
+##
+##        Args:
+##            reactor_list: list of the asm_reactors with active treatment;
+##
+##        Return:
+##            solids inventory (float) in grams.
+##
+##        See:
+##            set_WAS_flow().
+##        """
+##
+##        inventory = 0.0
+##        for unit in reactor_list:
+##            inventory += unit.get_TSS() * unit.get_active_vol()
+##
+##        return inventory
+##
+##
+##    def set_WAS_flow(self, SRT=5, reactor_list=[], effluent_list=[]):
+##        """
+##        Set the waste sludge flow to meet the WWTP's solids retention time.
+##
+##        Args:
+##            SRT:            WWTP's SRT in days;
+##            reactor_list:   list of active asm_reactors;
+##            effluent_list:  list of all effluent units in the WWTP.
+##
+##        Return:
+##            Mainstream outflow in m3/d
+##
+##        See:
+##            get_solids_inventory().
+##        """
+##
+##        # TODO: Need to re-write this function
+##        #
+##        #self.update_combined_input()
+##
+##        _eff_solids = 0.0
+##        for _u in effluent_list:
+##            _eff_solids += _u.get_TSS() * _u.get_main_outflow()
+##
+##        _wf = 0.0
+##        if self.get_TSS() != 0:
+##            _wf = ((self.get_solids_inventory(reactor_list) / SRT
+##                    - _eff_solids) / self.get_TSS())
+##
+##        # screen out the potential < 0 WAS flow
+##        if _wf < 0:
+##            print('WARN: SRT specified can not be achieved.')
+##            self._mo_flow = 0.0
+##        else:
+##            self._mo_flow = _wf
+##
+##        #TODO: in MAIN function, we need to check whether the WAS flow
+##        # is higher than the influent flow; The WAS flow is then passed to the
+##        # SRT controlling splitter by the main loop.
+##        return self._mo_flow
+##
     #
     # END OF FUNCTIONS UNIQUE TO WAS

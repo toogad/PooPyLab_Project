@@ -109,7 +109,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def has_discharger(self):
+    def inlet_connected(self):
         """
         Return True if upstream is connected, False if not.
         """
