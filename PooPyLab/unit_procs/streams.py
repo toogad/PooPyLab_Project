@@ -770,19 +770,19 @@ class splitter(poopy_lab_obj):
             savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3:] + '\n')
 
             if self.get_upstream():
-                savef.write('INLET_NAMES=' + ' '.join([k.get_name() for k in self.get_upstream()]) + '\n')
+                savef.write('INLET_CODENAMES=' + ' '.join([k.get_codename() for k in self.get_upstream()]) + '\n')
             else:
-                savef.write('INLET_NAMES=NONE' + '\n')
+                savef.write('INLET_CODENAMES=NONE' + '\n')
             if self.get_downstream_main():
-                savef.write('MAIN_OUTLET_NAME=' + self.get_downstream_main().get_name() + '\n')
+                savef.write('MAIN_OUTLET_CODENAME=' + self.get_downstream_main().get_codename() + '\n')
             else:
-                savef.write('MAIN_OUTLET_NAME=NONE' + '\n')
+                savef.write('MAIN_OUTLET_CODENAME=NONE' + '\n')
             if self.get_downstream_side():
-                savef.write('SIDE_OUTLET_NAME=' + self.get_downstream_side().get_name() + '\n')
+                savef.write('SIDE_OUTLET_CODENAME=' + self.get_downstream_side().get_codename() + '\n')
             else:
-                savef.write('SIDE_OUTLET_NAME=NONE' + '\n')
+                savef.write('SIDE_OUTLET_CODENAME=NONE' + '\n')
 
-            savef.write('IS_SRT_CONTROLLEER=' + str(self.is_SRT_controller()) + '\n')
+            savef.write('IS_SRT_CONTROLLER=' + str(self.is_SRT_controller()) + '\n')
         return None
 
 
