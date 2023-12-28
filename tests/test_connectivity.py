@@ -40,6 +40,9 @@ if __name__ == '__main__':
     eff.add_upstream(fc, 'Main')
     rxn.add_upstream(splt, 'Main')
     was.add_upstream(splt, 'Side')
+    was.remove_upstream(splt)
+
+    splt.set_downstream_side(was)
 
     p1.add_upstream(inf, 'Main')
     rxn.add_upstream(p1, 'Main')
@@ -56,3 +59,4 @@ if __name__ == '__main__':
     inf.add_upstream(p1, 'Main')
     p2.add_upstream(was, 'Main')
     p2.add_upstream(p1, 'Side')
+    eff.set_downstream_main(p2)

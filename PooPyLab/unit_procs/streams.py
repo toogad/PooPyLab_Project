@@ -931,7 +931,7 @@ class pipe(splitter):
         A "pipe" has no sidestream (set to "None"). This function is essentially by-passed with a warning
         message if called.
         """
-        print("WARN:", self.__name__, "has no sidestream.")
+        print("ERROR:", self.__name__, "has no sidestream.")
         return None
 
 
@@ -1443,6 +1443,12 @@ class effluent(pipe):
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF EFFLUENT
     #
+    def set_downstream_main(self, rcvr):
+        print('ERROR:', self.__name__, 'has no downstream main outlet.')
+        return None
+
+    def set_downstream_side(self, rcvr):
+        print('ERROR:', self.__name__, 'has no downstream side outlet.')
 
 ##    def _branch_flow_helper(self):
 ##        """
@@ -1569,11 +1575,11 @@ class WAS(pipe):
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF WAS OBJ.
     #
     def set_downstream_main(self, rcvr):
-        print('WARN:', self.__name__, 'has no downstream main outlet.')
+        print('ERROR:', self.__name__, 'has no downstream main outlet.')
         return None
 
-    def set_downstream_side(self, receiver):
-        print('WARN:', self.__name__, 'has no downstream side outlet.')
+    def set_downstream_side(self, rcvr):
+        print('ERROR:', self.__name__, 'has no downstream side outlet.')
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
