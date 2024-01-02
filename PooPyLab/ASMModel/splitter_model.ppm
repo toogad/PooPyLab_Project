@@ -6,3 +6,22 @@ MO = IN - SO
 
 #FLOW_DATA_SRC: IN=DNS MO=DNS SO=PRG
 IN = MO + SO
+
+
+All the above, the equation is written as
+ 0 = IN - MO - SO
+
+ All three (3) sets of flows are to be solved for the splitter itself.
+ The individual branch (outlet) will get its flow data according to its
+ data source flag.
+
+ For a splitter unit, its side outlet shall be defined if the splitter
+ is NOT a SRT Controller. But if the splitter controls the SRT by
+ connecting to a "pipe-WAS" structure, the side outlet flow is still
+ considered defined by the program (PRG) runtime.
+
+ Therefore, the FLOW_DATA_SRC for a splitter's side outlet can only
+ be PRG (user defined or program runtime) onced it is defined.
+
+ If FLOW_DATA_SRC for the main outlet is PRG or DNS, it shall be
+ assigned such ways.
