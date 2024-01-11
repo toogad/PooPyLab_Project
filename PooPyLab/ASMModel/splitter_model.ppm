@@ -1,15 +1,6 @@
-#FLOW_DATA_SRC: IN=UPS MO=UPS SO=PRG
-MO = IN - SO
-
-#FLOW_DATA_SRC: IN=UPS MO=PRG SO=DNS
-MO = IN - SO
-
-#FLOW_DATA_SRC: IN=DNS MO=DNS SO=PRG
-IN = MO + SO
-
-
-All the above, the equation is written as
+Flow Balance:
  0 = IN - MO - SO
+ 0 = IN - Sum(all dischargers' contribution)
 
  All three (3) sets of flows are to be solved for the splitter itself.
  The individual branch (outlet) will get its flow data according to its
@@ -24,4 +15,9 @@ All the above, the equation is written as
  be PRG (user defined or program runtime) onced it is defined.
 
  If FLOW_DATA_SRC for the main outlet is PRG or DNS, it shall be
- assigned such ways.
+ assigned such ways, either of which would lead to the determination of
+ the inlet flow.
+
+Mass Balance:
+ Concentrations would be assigned from inlet (flow weighted averages) 
+ to the main and side outlets.

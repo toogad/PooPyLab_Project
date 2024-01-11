@@ -1,0 +1,8 @@
+Flow Balance:
+ 0 = IN - MO
+ 0 = IN - Sum(all dischargers' contribution)
+
+
+Mass Balance:
+ Concentrations would be assigned from inlet (flow weighted averages) 
+ to the main and side outlets.
