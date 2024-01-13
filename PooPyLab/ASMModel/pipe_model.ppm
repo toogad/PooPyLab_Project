@@ -4,5 +4,9 @@ Flow Balance:
 
 
 Mass Balance:
+ Flow data source for the main outlet can be UPS, DNS, and PRG (e.g. pipe-->WAS).
+ Assign the main outlet flow as needed.
+ Sum up the dischargers contributions.
+
  Concentrations would be assigned from inlet (flow weighted averages) 
  to the main and side outlets.

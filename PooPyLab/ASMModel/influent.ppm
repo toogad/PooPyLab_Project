@@ -1,0 +1,9 @@
+Influent is essentially a Pipe.
+
+It provides the definitions of flows and concentrations.
+
+The inlet is NOT to be defined, only the main outlet will be used to supply
+information to the receiving unit.
+
+straightly define the main outlet flows and concentrations as known.
+build in fractionations for cod, n, p, s, etc.
