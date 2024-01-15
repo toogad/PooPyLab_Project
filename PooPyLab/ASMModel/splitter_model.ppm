@@ -21,3 +21,5 @@ Flow Balance:
 Mass Balance:
  Concentrations would be assigned from inlet (flow weighted averages) 
  to the main and side outlets.
+
+How to set up steady state vs dynamic conditions?
