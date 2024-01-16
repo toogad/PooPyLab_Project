@@ -1,0 +1,14 @@
+An WAS unit only deals with its own inlet since its main outlet
+feeds to nothing within the process boundaries.
+
+Its inlet flow data source can only be set to UPS or PRG.
+
+If the inlet flow data source is PRG, it would be either defined by
+the user or calculations. If calculated, the current WAS unit
+shall be the only WAS type for such estimate. All other WAS units,
+if present, shall be defined in terms of flows.
+
+The flow balance would be a global one across the entire plant,
+including the total of all influents, all effluents, and all other
+WAS units whose flows are defined, along with their solids
+concentrations.
