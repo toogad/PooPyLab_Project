@@ -43,6 +43,7 @@ if __name__ == '__main__':
     was.remove_upstream(splt)
 
     splt.set_downstream_side(was)
+    splt.set_as_SRT_controller()
 
     p1.add_upstream(inf, 'Main')
     rxn.add_upstream(p1, 'Main')

@@ -38,6 +38,7 @@
 ## @file streams.py
 
 import math
+import json
 from pathlib import Path
 
 from ..unit_procs.base import poopy_lab_obj
@@ -759,30 +760,70 @@ class splitter(poopy_lab_obj):
         if f.exists() and seq > 0:
             _tag = 'a'
 
+#        with open(filename, _tag) as savef:
+#            savef.write('=' * 8 + self._codename + '=' * 8 + '\n')
+#            savef.write('SELF_NAME=' + self.__name__ + '\n')
+#            savef.write('SELF_TYPE=' + self._type + '\n')
+#            savef.write('SELF_ID=' + str(self._id) + '\n')
+#            savef.write('SELF_CODENAME=' + self._codename + '\n')
+#            savef.write('SELF_IN_FLOW_DATA_SOURCE=' + str(self._in_flow_ds)[-3:] + '\n')
+#            savef.write('SELF_MO_FLOW_DATA_SOURCE=' + str(self._mo_flow_ds)[-3:] + '\n')
+#            savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3:] + '\n')
+#
+#            if self.get_upstream():
+#                savef.write('INLET_CODENAMES=' + ' '.join([k.get_codename() for k in self.get_upstream()]) + '\n')
+#            else:
+#                savef.write('INLET_CODENAMES=NONE' + '\n')
+#            if self.get_downstream_main():
+#                savef.write('MAIN_OUTLET_CODENAME=' + self.get_downstream_main().get_codename() + '\n')
+#            else:
+#                savef.write('MAIN_OUTLET_CODENAME=NONE' + '\n')
+#            if self.get_downstream_side():
+#                savef.write('SIDE_OUTLET_CODENAME=' + self.get_downstream_side().get_codename() + '\n')
+#            else:
+#                savef.write('SIDE_OUTLET_CODENAME=NONE' + '\n')
+#
+#            savef.write('IS_SRT_CONTROLLER=' + str(self.is_SRT_controller()) + '\n')
+
+        if self.get_upstream():
+            _in_codenames = ' '.join([k.get_codename() for k in self.get_upstream()])
+            print(_in_codenames)
+        else:
+            _in_codenames = 'None'
+
+        if self._main_outlet:
+            _mo_codename = self._main_outlet.get_codename()
+        else:
+            _mo_codename = 'None'
+
+        if self._side_outlet:
+            _so_codename = self._side_outlet.get_codename()
+        else:
+            _so_codename = 'None'
+
+        if self.is_SRT_controller:
+            _srt_ctrl = 'True'
+        else:
+            _srt_ctrl = 'False'
+
+        config = {self._codename: {
+                    'Name': self.__name__,
+                    'Type': self._type,
+                    'ID': str(self.__id),
+                    'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
+                    'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
+                    'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
+                    'Inlet_Codenames': _in_codenames,
+                    'Main_Outlet_Codenames': _mo_codename,
+                    'Side_Outlet_Codenames': _so_codename,
+                    'Is_SRT_Controller': _srt_ctrl
+                    }
+                 }
+
         with open(filename, _tag) as savef:
-            savef.write('=' * 8 + self._codename + '=' * 8 + '\n')
-            savef.write('SELF_NAME=' + self.__name__ + '\n')
-            savef.write('SELF_TYPE=' + self._type + '\n')
-            savef.write('SELF_ID=' + str(self._id) + '\n')
-            savef.write('SELF_CODENAME=' + self._codename + '\n')
-            savef.write('SELF_IN_FLOW_DATA_SOURCE=' + str(self._in_flow_ds)[-3:] + '\n')
-            savef.write('SELF_MO_FLOW_DATA_SOURCE=' + str(self._mo_flow_ds)[-3:] + '\n')
-            savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3:] + '\n')
+            savef.write(json.dumps(config, sort_keys=True, indent=4))
+            savef.write('\n')
 
-            if self.get_upstream():
-                savef.write('INLET_CODENAMES=' + ' '.join([k.get_codename() for k in self.get_upstream()]) + '\n')
-            else:
-                savef.write('INLET_CODENAMES=NONE' + '\n')
-            if self.get_downstream_main():
-                savef.write('MAIN_OUTLET_CODENAME=' + self.get_downstream_main().get_codename() + '\n')
-            else:
-                savef.write('MAIN_OUTLET_CODENAME=NONE' + '\n')
-            if self.get_downstream_side():
-                savef.write('SIDE_OUTLET_CODENAME=' + self.get_downstream_side().get_codename() + '\n')
-            else:
-                savef.write('SIDE_OUTLET_CODENAME=NONE' + '\n')
-
-            savef.write('IS_SRT_CONTROLLER=' + str(self.is_SRT_controller()) + '\n')
         return None
 
 
