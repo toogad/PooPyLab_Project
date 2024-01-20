@@ -744,7 +744,7 @@ class splitter(poopy_lab_obj):
         pass
 
 
-    def save_info(self):
+    def get_config(self):
         """
         Generate the config info of the unit to be saved to file.
 

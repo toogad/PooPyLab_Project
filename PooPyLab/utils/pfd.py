@@ -28,6 +28,7 @@
 ## @namespace pfd
 ## @file pfd.py
 
+import json
 from ..unit_procs.streams import influent, effluent, WAS, pipe, splitter
 from ..unit_procs.bio import asm_reactor
 from ..unit_procs.physchem import final_clarifier
@@ -322,3 +323,10 @@ def show(wwtp=[]):
         else:
             print()
     return None
+
+
+def save_wwtp(wwtp=[], filename='myWWTP.json'):
+    plant_def = {'Flowsheet':{unit.get_config() for unit in wwtp}, 'Solids Retention Time': {}}
+    print(json.dumps(plant_def, sort_keys=False, indent=4))
+
+    with open filename as savef:
