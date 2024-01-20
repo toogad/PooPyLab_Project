@@ -744,50 +744,19 @@ class splitter(poopy_lab_obj):
         pass
 
 
-    def save(self, filename='myflowsheet.pfd', seq=0):
+    def save_info(self):
         """
-        Save the unit configuration to a file.
+        Generate the config info of the unit to be saved to file.
 
         Args:
-            filename: full path/name (str) of the target file
-            seq: sequence/order (int) of this save
+            None
 
         Return:
-            None
+            a config dict for json
         """
-        _tag = 'w'
-        f = Path(filename)
-        if f.exists() and seq > 0:
-            _tag = 'a'
-
-#        with open(filename, _tag) as savef:
-#            savef.write('=' * 8 + self._codename + '=' * 8 + '\n')
-#            savef.write('SELF_NAME=' + self.__name__ + '\n')
-#            savef.write('SELF_TYPE=' + self._type + '\n')
-#            savef.write('SELF_ID=' + str(self._id) + '\n')
-#            savef.write('SELF_CODENAME=' + self._codename + '\n')
-#            savef.write('SELF_IN_FLOW_DATA_SOURCE=' + str(self._in_flow_ds)[-3:] + '\n')
-#            savef.write('SELF_MO_FLOW_DATA_SOURCE=' + str(self._mo_flow_ds)[-3:] + '\n')
-#            savef.write('SELF_SO_FLOW_DATA_SOURCE=' + str(self._so_flow_ds)[-3:] + '\n')
-#
-#            if self.get_upstream():
-#                savef.write('INLET_CODENAMES=' + ' '.join([k.get_codename() for k in self.get_upstream()]) + '\n')
-#            else:
-#                savef.write('INLET_CODENAMES=NONE' + '\n')
-#            if self.get_downstream_main():
-#                savef.write('MAIN_OUTLET_CODENAME=' + self.get_downstream_main().get_codename() + '\n')
-#            else:
-#                savef.write('MAIN_OUTLET_CODENAME=NONE' + '\n')
-#            if self.get_downstream_side():
-#                savef.write('SIDE_OUTLET_CODENAME=' + self.get_downstream_side().get_codename() + '\n')
-#            else:
-#                savef.write('SIDE_OUTLET_CODENAME=NONE' + '\n')
-#
-#            savef.write('IS_SRT_CONTROLLER=' + str(self.is_SRT_controller()) + '\n')
 
         if self.get_upstream():
             _in_codenames = ' '.join([k.get_codename() for k in self.get_upstream()])
-            print(_in_codenames)
         else:
             _in_codenames = 'None'
 
@@ -820,11 +789,7 @@ class splitter(poopy_lab_obj):
                     }
                  }
 
-        with open(filename, _tag) as savef:
-            savef.write(json.dumps(config, sort_keys=True, indent=4))
-            savef.write('\n')
-
-        return None
+        return config
 
 
     # END OF COMMON INTERFACE DEFINITIONS

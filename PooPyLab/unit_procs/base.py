@@ -294,7 +294,7 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def save(self, filename, seq):
+    def save_info(self):
         """
         Save the configuration of the unit to a file.
         """
