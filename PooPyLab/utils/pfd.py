@@ -325,8 +325,20 @@ def show(wwtp=[]):
     return None
 
 
-def save_wwtp(wwtp=[], filename='myWWTP.json'):
-    plant_def = {'Flowsheet':{unit.get_codename(): unit.get_config() for unit in wwtp}, 'Solids Retention Time': {}}
+def save_wwtp(wwtp=[], global_params={}, filename='myWWTP.json'):
+    """ Save the plant configuratoin to a file in json
+
+        Args:
+            wwtp: [all process units in the wastewater treatment plant]
+            global_params: {global parameters (e.g SRT) for the WWTP}
+            filename: file to save the json dump
+
+        Return:
+            None
+    """
+    plant_def = {'Flowsheet': {unit.get_codename(): unit.get_config() for unit in wwtp},
+                 'Global Params': global_params
+                }
     print(json.dumps(plant_def, sort_keys=False, indent=4))
         
     with open(filename, "w") as savef:
@@ -334,3 +346,15 @@ def save_wwtp(wwtp=[], filename='myWWTP.json'):
 
     return None
 
+def read_wwtp(filename='myWWTP.json'):
+    """ Read in a WWTP's from a file
+
+        Args:
+            filename: the file that stores the WWTP's configs in json format
+
+        Return:
+            {WWTP's configs}
+    """
+    with open(filename, 'r') as readf:
+        plant = json.load(readf)
+    print(plant)

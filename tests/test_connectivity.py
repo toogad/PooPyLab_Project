@@ -3,7 +3,7 @@ from PooPyLab.unit_procs.streams import splitter, influent, effluent, WAS, pipe
 from PooPyLab.unit_procs.physchem import final_clarifier
 from PooPyLab.unit_procs.bio import asm_reactor
 
-from PooPyLab.utils.pfd import show, save_wwtp
+from PooPyLab.utils.pfd import show, save_wwtp, read_wwtp
 
 if __name__ == '__main__':
     splt = splitter()
@@ -62,3 +62,5 @@ if __name__ == '__main__':
     p2.add_upstream(was, 'Main')
     p2.add_upstream(p1, 'Side')
     eff.set_downstream_main(p2)
+
+    read_wwtp('test_connect.json')
