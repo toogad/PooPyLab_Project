@@ -3,7 +3,7 @@ from PooPyLab.unit_procs.streams import splitter, influent, effluent, WAS, pipe
 from PooPyLab.unit_procs.physchem import final_clarifier
 from PooPyLab.unit_procs.bio import asm_reactor
 
-from PooPyLab.utils.pfd import show
+from PooPyLab.utils.pfd import show, save_wwtp
 
 if __name__ == '__main__':
     splt = splitter()
@@ -50,11 +50,12 @@ if __name__ == '__main__':
 
     fc.add_upstream(rxn, 'Main')
 
-    pfd = [inf, p1, p2, rxn, fc, was, splt, eff]
-    show(pfd)
+    mywwtp = [inf, p1, p2, rxn, fc, was, splt, eff]
+    show(mywwtp)
 
-    for i in range(len(pfd)):
-        pfd[i].save('test_connect.pfd', i)
+    #for i in range(len(pfd)):
+    #    pfd[i].save('test_connect.pfd', i)
+    save_wwtp(mywwtp, 'test_connect.json')
 
     # Corner cases: should show an error msg in each attempt
     inf.add_upstream(p1, 'Main')

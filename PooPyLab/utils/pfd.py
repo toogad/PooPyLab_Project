@@ -326,7 +326,11 @@ def show(wwtp=[]):
 
 
 def save_wwtp(wwtp=[], filename='myWWTP.json'):
-    plant_def = {'Flowsheet':{unit.get_config() for unit in wwtp}, 'Solids Retention Time': {}}
+    plant_def = {'Flowsheet':{unit.get_codename(): unit.get_config() for unit in wwtp}, 'Solids Retention Time': {}}
     print(json.dumps(plant_def, sort_keys=False, indent=4))
+        
+    with open(filename, "w") as savef:
+        savef.write(json.dumps(plant_def, sort_keys=False, indent=4))
 
-    with open filename as savef:
+    return None
+

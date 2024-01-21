@@ -775,8 +775,7 @@ class splitter(poopy_lab_obj):
         else:
             _srt_ctrl = 'False'
 
-        config = {self._codename: {
-                    'Name': self.__name__,
+        config = {  'Name': self.__name__,
                     'Type': self._type,
                     'ID': str(self.__id),
                     'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
@@ -786,7 +785,6 @@ class splitter(poopy_lab_obj):
                     'Main_Outlet_Codenames': _mo_codename,
                     'Side_Outlet_Codenames': _so_codename,
                     'Is_SRT_Controller': _srt_ctrl
-                    }
                  }
 
         return config
