@@ -346,15 +346,18 @@ def save_wwtp(wwtp=[], global_params={}, filename='myWWTP.json'):
 
     return None
 
+
 def read_wwtp(filename='myWWTP.json'):
     """ Read in a WWTP's from a file
 
         Args:
-            filename: the file that stores the WWTP's configs in json format
+            filename: the file storing the WWTP's configs in json format
 
         Return:
             {WWTP's configs}
     """
+
     with open(filename, 'r') as readf:
         plant = json.load(readf)
-    print(plant)
+
+    return plant

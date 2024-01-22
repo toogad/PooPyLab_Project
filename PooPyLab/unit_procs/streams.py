@@ -755,37 +755,18 @@ class splitter(poopy_lab_obj):
             a config dict for json
         """
 
-        if self.get_upstream():
-            _in_codenames = ' '.join([k.get_codename() for k in self.get_upstream()])
-        else:
-            _in_codenames = 'None'
-
-        if self._main_outlet:
-            _mo_codename = self._main_outlet.get_codename()
-        else:
-            _mo_codename = 'None'
-
-        if self._side_outlet:
-            _so_codename = self._side_outlet.get_codename()
-        else:
-            _so_codename = 'None'
-
-        if self.is_SRT_controller:
-            _srt_ctrl = 'True'
-        else:
-            _srt_ctrl = 'False'
-
-        config = {  'Name': self.__name__,
-                    'Type': self._type,
-                    'ID': str(self.__id),
-                    'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
-                    'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
-                    'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
-                    'Inlet_Codenames': _in_codenames,
-                    'Main_Outlet_Codenames': _mo_codename,
-                    'Side_Outlet_Codenames': _so_codename,
-                    'Is_SRT_Controller': _srt_ctrl
-                 }
+        config = {
+            'Name': self.__name__,
+            'Type': self._type,
+            'ID': str(self.__id),
+            'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
+            'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
+            'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
+            'Inlet_Codenames': ' '.join([k.get_codename() for k in self._inlet]) if self._inlet else 'None',
+            'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
+            'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
+            'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False'
+        }
 
         return config
 
