@@ -134,50 +134,82 @@ class final_clarifier(splitter):
         return None
 
 
-    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
-        """
-        Pass the total flow and blended components to the downstreams.
+##    #NOTE: 2024-01-22 KZ, commented out since it is not needed in the equation based solving sys.
+##    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
+##        """
+##        Pass the total flow and blended components to the downstreams.
+##
+##        This function is re-implemented for "final_clarifier" because of the need to settle the solids (particulate)
+##        and concentrate them at the sidestream (underflow). The function first calls _branch_flow_helper() to set
+##        the flows for inlet, mainstream outlet, and sidestream outlet, then calls _settle_solids() to fractions the
+##        particulate components according to the branch flows and user set percent solids capture.
+##
+##        Args:
+##            method_name:    integration method as per scipy.integrate.solveivp;
+##            fix_DO:         whether to simulate w/ a fix DO setpoint;
+##            DO_sat_T:       saturated DO conc. under the site conditions (mg/L)
+##            (see note)
+##
+##        Return:
+##            None
+##
+##        Note:
+##            Argument method_name is not used as of now but will be applicable when a settling model is placed here in
+##            the final_clarifier class.
+##
+##            Arguments of fix_DO and DO_sat_T are dummies for now because it is assumed that there is no biochemical
+##            reactions in the clarifier.
+##
+##        See:
+##            _settle_solids();
+##            set_capture_rate();
+##            _branch_flow_helper().
+##        """
+##        # record last round's results before updating/discharging:
+##        self._prev_mo_comps = self._mo_comps[:]
+##        self._prev_so_comps = self._so_comps[:]
+##
+##        self._branch_flow_helper()
+##
+##        # for a clarifier, the main and side outlets have different solids
+##        # concentrations than the inlet's
+##        self._settle_solids()
+##
+##        self._discharge_main_outlet()
+##        self._discharge_side_outlet()
+##
+##        return None
+##
 
-        This function is re-implemented for "final_clarifier" because of the need to settle the solids (particulate)
-        and concentrate them at the sidestream (underflow). The function first calls _branch_flow_helper() to set
-        the flows for inlet, mainstream outlet, and sidestream outlet, then calls _settle_solids() to fractions the
-        particulate components according to the branch flows and user set percent solids capture.
+    def get_config(self):
+        """
+        Generate the config info of the unit to be saved to file.
 
         Args:
-            method_name:    integration method as per scipy.integrate.solveivp;
-            fix_DO:         whether to simulate w/ a fix DO setpoint;
-            DO_sat_T:       saturated DO conc. under the site conditions (mg/L)
-            (see note)
-
-        Return:
             None
 
-        Note:
-            Argument method_name is not used as of now but will be applicable when a settling model is placed here in
-            the final_clarifier class.
-
-            Arguments of fix_DO and DO_sat_T are dummies for now because it is assumed that there is no biochemical
-            reactions in the clarifier.
-
-        See:
-            _settle_solids();
-            set_capture_rate();
-            _branch_flow_helper().
+        Return:
+            a config dict for json
         """
-        # record last round's results before updating/discharging:
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._so_comps[:]
 
-        self._branch_flow_helper()
+        # All Units are METRIC
+        config = {
+            'Name': self.__name__,
+            'Type': self._type,
+            'ID': str(self.__id),
+            'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
+            'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
+            'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
+            'Inlet_Codenames': ' '.join([k.get_codename() for k in self._inlet]) if self._inlet else 'None',
+            'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
+            'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
+            'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False',
+            'Active Volume': str(self._active_vol), #unit: m3
+            'Side Water Depth': str(self._swd),  #unit: m
+            'Model Template': ''
+        }
 
-        # for a clarifier, the main and side outlets have different solids
-        # concentrations than the inlet's
-        self._settle_solids()
-
-        self._discharge_main_outlet()
-        self._discharge_side_outlet()
-
-        return None
+        return config
     #
     # END ADJUSTMENTS TO COMMON INTERFACE
 

@@ -25,13 +25,9 @@
 """Defines basic stream elements for a wastewater treatment plant (WWTP):
 
     1) Splitter
-
     2) Pipe
-
     3) Influent
-
     4) Effluent
-
     5) Waste Activated Sludge (WAS)
 """
 ## @namespace streams
@@ -739,11 +735,6 @@ class splitter(poopy_lab_obj):
         return DO_sat_T
 
 
-    def compose(self, start_neq, model_template_file):
-        #TODO: fill here
-        pass
-
-
     def get_config(self):
         """
         Generate the config info of the unit to be saved to file.
@@ -765,9 +756,9 @@ class splitter(poopy_lab_obj):
             'Inlet_Codenames': ' '.join([k.get_codename() for k in self._inlet]) if self._inlet else 'None',
             'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
             'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
-            'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False'
+            'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False',
+            'Model Template': ''
         }
-
         return config
 
 
@@ -955,15 +946,10 @@ class influent(pipe):
         Special initialization steps for "influent".
 
         Reasons:
-
         1) has no further inlet;
-
         2) has no sidestream outlet;
-
         3) has no further upstream;
-
         4) convergence is irrelevant here;
-
         5) is the only source of flow/load to the WWTP.
         """
 
@@ -971,11 +957,8 @@ class influent(pipe):
 
         self.__class__.__id += 1
         self._id = self.__class__.__id
-
         self._type = 'Influent'
-
         self.__name__ = self._type + '_' + str(self._id)
-
         ## code name is for use in system equation writing:
         self._codename = self.__name__
 
@@ -1214,7 +1197,6 @@ class influent(pipe):
     #
     # (INSERT CODE HERE)
     #
-
 
     def set_constituents(self, asm_ver='ASM1', inf_concs=[]):
         """
@@ -1562,6 +1544,7 @@ class WAS(pipe):
     def set_downstream_main(self, rcvr):
         print('ERROR:', self.__name__, 'has no downstream main outlet.')
         return None
+
 
     def set_downstream_side(self, rcvr):
         print('ERROR:', self.__name__, 'has no downstream side outlet.')

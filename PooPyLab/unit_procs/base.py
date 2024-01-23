@@ -286,14 +286,6 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
-    def compose(self, start_neq, model_template_file):
-        """
-        Generate the declarations and equations for the process unit
-        """
-        pass
-
-
-    @abstractmethod
     def get_config(self):
         """
         Save the configuration of the unit to a file.

@@ -96,22 +96,22 @@ class asm_reactor(pipe):
         self._mo_comps = [0.0] * len(self._sludge._comps)
 
         # results of previous round
-        self._prev_mo_comps = [0.0] * len(self._sludge._comps)
-        self._prev_so_comps = self._prev_mo_comps
+        #self._prev_mo_comps = [0.0] * len(self._sludge._comps)
+        #self._prev_so_comps = self._prev_mo_comps
 
         self._upstream_set_mo_flow = True
 
         # initial guess of step size for model integration, hr
-        self._step = 1.0 / 24.0
+        #self._step = 1.0 / 24.0
 
         # local error for integration
         # used in kz's homebrew integration routine only
-        self._prev_local_err = 1e-3
+        #self._prev_local_err = 1e-3
 
         # absolute tolerance for integration
-        self._atol = 1e-4
+        #self._atol = 1e-4
         # relative tolerance for integration
-        self._rtol = 1e-4
+        #self._rtol = 1e-4
 
         # solution of the integration
         self._solultion = None
@@ -123,99 +123,99 @@ class asm_reactor(pipe):
     #
 
 
-    def is_converged(self, limit=0.01):
-        """
-        Check for asm_reactor's steady state.
-
-        Current default criteria for steady state (convergence):
-            | current_result - prev_result | < atol + rtol * prev_result
-
-        Alternative criteria:
-            L2-norm of dy/dt < limit
-
-        Args:
-            limit: Limit within which the simulation is considered converged
-
-        Return:
-            True/False
-
-        """
-        #L2_norm = (sum([dcdt ** 2 for dcdt in self._del_C_del_t])) ** 0.5
-        #print("L2norm = ", L2_norm)
-        #return L2_norm < limit
-
-        accept = [abs(self._mo_comps[i] - self._prev_mo_comps[i])
-                    < self._atol + self._rtol * self._prev_mo_comps[i]
-                    for i in range(len(self._mo_comps))]
-        return not (False in accept)
-
-
-    def discharge(self, method_name="BDF", fix_DO=True, DO_sat_T=10):
-        """
-        Pass the total flow and blended components to the downstreams.
-
-        This function is re-implemented for "asm_reactor". Because of the biological reactions "happening" in the
-        "asm_reactor", integration of the model (Note 1) is carried out here before sending the results to the down
-        stream.
-
-        Args:
-            method_name: "BDF", "RK45", "Radau", etc.(see Note 2 below)
-
-        Retrun:
-            self._sludge._comps
-
-        Notes:
-
-            1) It is highly recommended the model components are arranged such that all the soluble ones are ahead
-            of the particulate ones in the array. Generally, soluble components requires smaller time steps than
-            particulate ones. This kind of arrangement will enable quick identification of soluble/particulate
-            components that may have very different suitable time step during integration. Using appropriate but
-            different time steps for the soluble and particulate components is required for fast integrations
-            with correct results. This is how the ODE partitioning method suggested in the IWA ASM1 report works.
-            Although PooPyLab doesn't apply this relaxation scheme as of now, arranging the model components in such
-            partitioned way will allow future exploration of optimization approaches.
-
-            2) There are a few integration methods attempted for PooPyLab: Euler, Runge-Kutta 4th order,
-            Runge-Kutta-Felhberg 4/5, RK-Dormand-Prince-4/5, and the ODE system partitioning scheme suggested in the
-            IWA ASM1 report. After much study, it is decided to settle with scipy.integrate.solve_ivp routine for now
-            so that the rest of the PooPyLab development can progress, while KZ continues in his study of BDF methods
-            and attempts for a home brew version. Euler, RK4, RKF45, RKDP45, and Partitioned ODE methods have been
-            coded and tested in the past but no longer in use as of now, except for RKF45. The unused code is moved to
-            bio_py_funcs_not_used.txt for archiving.
-
-        See:
-            _runge_kutta_fehlberg_45()
-        """
-        self._branch_flow_helper()
-        self._prev_mo_comps = self._mo_comps[:]
-        self._prev_so_comps = self._mo_comps[:]
-
-        # if the user fixes the DO of a aerobic reactor or explicitly set the DO to 0 (anoxic or anaerobic), then
-        # force the bulk DO into _mo_comps[0]
-        if fix_DO or self._sludge.get_bulk_DO() == 0:
-            self._mo_comps[0] = self._sludge.get_bulk_DO()
-            self._so_comps[0] = self._mo_comps[0]
-
-        # integration with home brew rkf45, currently NOT USED
-        #self._runge_kutta_fehlberg_45()
-        #return None
-
-        # integration using scipy.integrate.solve_ivp()
-        self._solultion = solve_ivp(self._sludge._dCdt, [0, 1], self._mo_comps,
-                    method=method_name,
-                    args=(self._active_vol, self._total_inflow, self._in_comps,
-                            fix_DO, 10)
-                    )
-        #print(self._solultion.y)
-        self._sludge._comps = [yi[-1] for yi in self._solultion.y]
-
-        self._mo_comps = self._sludge._comps[:]
-        self._so_comps = self._mo_comps[:]
-
-        self._discharge_main_outlet()
-
-        return None
-
+##    def is_converged(self, limit=0.01):
+##        """
+##        Check for asm_reactor's steady state.
+##
+##        Current default criteria for steady state (convergence):
+##            | current_result - prev_result | < atol + rtol * prev_result
+##
+##        Alternative criteria:
+##            L2-norm of dy/dt < limit
+##
+##        Args:
+##            limit: Limit within which the simulation is considered converged
+##
+##        Return:
+##            True/False
+##
+##        """
+##        #L2_norm = (sum([dcdt ** 2 for dcdt in self._del_C_del_t])) ** 0.5
+##        #print("L2norm = ", L2_norm)
+##        #return L2_norm < limit
+##
+##        accept = [abs(self._mo_comps[i] - self._prev_mo_comps[i])
+##                    < self._atol + self._rtol * self._prev_mo_comps[i]
+##                    for i in range(len(self._mo_comps))]
+##        return not (False in accept)
+##
+##
+##    def discharge(self, method_name="BDF", fix_DO=True, DO_sat_T=10):
+##        """
+##        Pass the total flow and blended components to the downstreams.
+##
+##        This function is re-implemented for "asm_reactor". Because of the biological reactions "happening" in the
+##        "asm_reactor", integration of the model (Note 1) is carried out here before sending the results to the down
+##        stream.
+##
+##        Args:
+##            method_name: "BDF", "RK45", "Radau", etc.(see Note 2 below)
+##
+##        Retrun:
+##            self._sludge._comps
+##
+##        Notes:
+##
+##            1) It is highly recommended the model components are arranged such that all the soluble ones are ahead
+##            of the particulate ones in the array. Generally, soluble components requires smaller time steps than
+##            particulate ones. This kind of arrangement will enable quick identification of soluble/particulate
+##            components that may have very different suitable time step during integration. Using appropriate but
+##            different time steps for the soluble and particulate components is required for fast integrations
+##            with correct results. This is how the ODE partitioning method suggested in the IWA ASM1 report works.
+##            Although PooPyLab doesn't apply this relaxation scheme as of now, arranging the model components in such
+##            partitioned way will allow future exploration of optimization approaches.
+##
+##            2) There are a few integration methods attempted for PooPyLab: Euler, Runge-Kutta 4th order,
+##            Runge-Kutta-Felhberg 4/5, RK-Dormand-Prince-4/5, and the ODE system partitioning scheme suggested in the
+##            IWA ASM1 report. After much study, it is decided to settle with scipy.integrate.solve_ivp routine for now
+##            so that the rest of the PooPyLab development can progress, while KZ continues in his study of BDF methods
+##            and attempts for a home brew version. Euler, RK4, RKF45, RKDP45, and Partitioned ODE methods have been
+##            coded and tested in the past but no longer in use as of now, except for RKF45. The unused code is moved to
+##            bio_py_funcs_not_used.txt for archiving.
+##
+##        See:
+##            _runge_kutta_fehlberg_45()
+##        """
+##        self._branch_flow_helper()
+##        self._prev_mo_comps = self._mo_comps[:]
+##        self._prev_so_comps = self._mo_comps[:]
+##
+##        # if the user fixes the DO of a aerobic reactor or explicitly set the DO to 0 (anoxic or anaerobic), then
+##        # force the bulk DO into _mo_comps[0]
+##        if fix_DO or self._sludge.get_bulk_DO() == 0:
+##            self._mo_comps[0] = self._sludge.get_bulk_DO()
+##            self._so_comps[0] = self._mo_comps[0]
+##
+##        # integration with home brew rkf45, currently NOT USED
+##        #self._runge_kutta_fehlberg_45()
+##        #return None
+##
+##        # integration using scipy.integrate.solve_ivp()
+##        self._solultion = solve_ivp(self._sludge._dCdt, [0, 1], self._mo_comps,
+##                    method=method_name,
+##                    args=(self._active_vol, self._total_inflow, self._in_comps,
+##                            fix_DO, 10)
+##                    )
+##        #print(self._solultion.y)
+##        self._sludge._comps = [yi[-1] for yi in self._solultion.y]
+##
+##        self._mo_comps = self._sludge._comps[:]
+##        self._so_comps = self._mo_comps[:]
+##
+##        self._discharge_main_outlet()
+##
+##        return None
+##
     
     def assign_initial_guess(self, initial_guess):
         """
@@ -264,6 +264,37 @@ class asm_reactor(pipe):
             print(self.__name__, ' ERROR IN NEW PROJECT CONDITIONS. NO UPDATES')
 
         return None
+
+
+    def get_config(self):
+        """
+        Generate the config info of the unit to be saved to file.
+
+        Args:
+            None
+
+        Return:
+            a config dict for json
+        """
+
+        # All Units are METRIC
+        config = {
+            'Name': self.__name__,
+            'Type': self._type,
+            'ID': str(self.__id),
+            'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
+            'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
+            'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
+            'Inlet_Codenames': ' '.join([k.get_codename() for k in self._inlet]) if self._inlet else 'None',
+            'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
+            'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
+            'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False',
+            'Active Volume': str(self._active_vol), #unit: m3
+            'Side Water Depth': str(self._swd),  #unit: m
+            'Model Template:': ''
+        }
+
+        return config
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
 
