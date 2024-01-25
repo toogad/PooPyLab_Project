@@ -53,9 +53,15 @@ if __name__ == '__main__':
     mywwtp = [inf, p1, p2, rxn, fc, was, splt, eff]
     show(mywwtp)
 
+    global_params = {
+        'Solids Retention Time': '10.0', #unit: day
+        'Temperature': '15', #unit: degC
+        'Site Elevation': '200' #unit: m above MSL
+    }
+
     #for i in range(len(pfd)):
     #    pfd[i].save('test_connect.pfd', i)
-    save_wwtp(mywwtp, 'test_connect.json')
+    save_wwtp(mywwtp, global_params, 'test_connect.json')
 
     # Corner cases: should show an error msg in each attempt
     inf.add_upstream(p1, 'Main')

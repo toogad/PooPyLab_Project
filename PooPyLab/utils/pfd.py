@@ -359,5 +359,6 @@ def read_wwtp(filename='myWWTP.json'):
 
     with open(filename, 'r') as readf:
         plant = json.load(readf)
+        print(json.dumps(plant, sort_keys=False, indent=4))
 
     return plant
