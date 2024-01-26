@@ -3,7 +3,7 @@ from PooPyLab.unit_procs.streams import splitter, influent, effluent, WAS, pipe
 from PooPyLab.unit_procs.physchem import final_clarifier
 from PooPyLab.unit_procs.bio import asm_reactor
 
-from PooPyLab.utils.pfd import show, save_wwtp, read_wwtp
+from PooPyLab.utils.pfd import show, check, save_wwtp, read_wwtp
 
 if __name__ == '__main__':
     splt = splitter()
@@ -15,27 +15,29 @@ if __name__ == '__main__':
     fc = final_clarifier()
     rxn = asm_reactor()
 
+    print("INDIVIDUAL UNIT CONNECTION TESTING:")
     p1.add_upstream(inf, 'Main')
     print('p1 inlet:', [g.get_name() for g in p1.get_upstream()])
     print('inf main outlet:', inf.get_downstream_main().get_name())
     p1.remove_upstream(inf)
-    print('p1 inlet:', [g.get_name() for g in p1.get_upstream()])
+    print('after removal, p1 inlet:', [g.get_name() for g in p1.get_upstream()])
     print('inf main outlet:', inf.get_downstream_main())
 
     rxn.add_upstream(p1)
     print('rxn inlet:', [g.get_name() for g in rxn.get_upstream()])
     print('p1 main outlet:', p1.get_downstream_main().get_name())
     rxn.remove_upstream(p1)
-    print('rxn inlet:', [g.get_name() for g in rxn.get_upstream()])
+    print('after removal, rxn inlet:', [g.get_name() for g in rxn.get_upstream()])
     print('p1 main outlet:', p1.get_downstream_main())
 
     fc.add_upstream(rxn, 'Main')
     print('fc inlet:', [g.get_name() for g in fc.get_upstream()])
     print('rxn main outlet:', rxn.get_downstream_main().get_name())
     fc.remove_upstream(rxn)
-    print('fc inlet:', [g.get_name() for g in fc.get_upstream()])
+    print('after removal, fc inlet:', [g.get_name() for g in fc.get_upstream()])
     print('rxn main outlet:', rxn.get_downstream_main())
 
+    print("\nWHOLE PLANT CONNECTION TEST:")
     splt.add_upstream(fc, 'Side')
     eff.add_upstream(fc, 'Main')
     rxn.add_upstream(splt, 'Main')
@@ -50,8 +52,10 @@ if __name__ == '__main__':
 
     fc.add_upstream(rxn, 'Main')
 
+    print("FULL PLANT CONNECTION DISPLAY AND CHECK:")
     mywwtp = [inf, p1, p2, rxn, fc, was, splt, eff]
     show(mywwtp)
+    check(mywwtp)
 
     global_params = {
         'Solids Retention Time': '10.0', #unit: day
@@ -59,14 +63,15 @@ if __name__ == '__main__':
         'Site Elevation': '200' #unit: m above MSL
     }
 
-    #for i in range(len(pfd)):
-    #    pfd[i].save('test_connect.pfd', i)
+    print("\nSAVING THE PLANT CONFIGURATION TO A JSON FILE:")
     save_wwtp(mywwtp, global_params, 'test_connect.json')
 
     # Corner cases: should show an error msg in each attempt
+    print("\nCORNER CASES FOR CONNECTION:")
     inf.add_upstream(p1, 'Main')
     p2.add_upstream(was, 'Main')
     p2.add_upstream(p1, 'Side')
     eff.set_downstream_main(p2)
 
+    print("READING PLANT CONFIGURATION FROM A JSON FILE:")
     read_wwtp('test_connect.json')
