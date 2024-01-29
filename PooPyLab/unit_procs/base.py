@@ -291,3 +291,19 @@ class poopy_lab_obj(object):
         Save the configuration of the unit to a file.
         """
         pass
+
+
+    @abstractmethod
+    def set_model_file_path(self, newpath=""):
+        """
+        Set the path of the model template file.
+        """
+        pass
+
+
+    @abstractmethod
+    def get_model_file_path(self):
+        """
+        Get the model template file's path.
+        """
+        pass

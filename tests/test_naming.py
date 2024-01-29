@@ -41,7 +41,3 @@ if __name__ == '__main__':
     print('i default names:', i.get_name(), i.get_codename())
     i.set_name('grimm')  # purposefully
     print('i new names:', i.get_name(), i.get_codename())
-
-
-    a.save('testsave.pfd',0)
-    c.save('testsave.pfd',1)

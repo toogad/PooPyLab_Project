@@ -152,6 +152,8 @@ class splitter(poopy_lab_obj):
         ## sidestream outlet model components
         self._so_comps = []
 
+        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/splitter.pmt"
+
         return None
 
 
@@ -757,10 +759,19 @@ class splitter(poopy_lab_obj):
             'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
             'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
             'Is_SRT_Controller': 'True' if self._SRT_controller else 'False',
-            'Model Template': ''
+            'Model_File_Path': self._model_file_path
         }
         return config
 
+
+    def set_model_file_path(self, newpath=""):
+        #TODO: need to add validity check for the new path given
+        self._model_file_path = newpath
+        return None
+
+
+    def get_model_file_path(self):
+        return self._model_file_path
 
     # END OF COMMON INTERFACE DEFINITIONS
 
@@ -882,6 +893,8 @@ class pipe(splitter):
         # make side outlet components an alias of the inlet components
         self._so_comps = self._in_comps
 
+        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/pipe.pmt"
+
         return None
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF PIPE:
@@ -979,6 +992,8 @@ class influent(pipe):
 
         # an influent is always "converged" within the time frame of interest
         self._converged = True
+
+        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/influent.pmt"
 
         # Influent characteristics from user measurements/inputs
         # Setting default values for municipal wastewater in USA
@@ -1406,6 +1421,8 @@ class effluent(pipe):
 
         self._mo_connected = True  # dummy
 
+        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/effluent.pmt"
+
         return None
 
     # ADJUSTMENTS TO COMMON INTERFACE TO FIT THE NEEDS OF EFFLUENT
@@ -1536,6 +1553,8 @@ class WAS(pipe):
 
         # assume something always receives WAS
         self._mo_connected = True
+
+        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/WAS.pmt"
 
         return None
 

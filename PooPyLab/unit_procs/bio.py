@@ -34,9 +34,9 @@
 
 from ..unit_procs.streams import pipe
 from ..ASMModel.asm_1 import ASM_1
-from ..ASMModel import constants
+#from ..ASMModel import constants
 
-from scipy.integrate import solve_ivp
+#from scipy.integrate import solve_ivp
 
 # ----------------------------------------------------------------------------
 
@@ -101,6 +101,8 @@ class asm_reactor(pipe):
 
         self._upstream_set_mo_flow = True
 
+        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/asmreactor.pmt"
+
         # initial guess of step size for model integration, hr
         #self._step = 1.0 / 24.0
 
@@ -114,7 +116,7 @@ class asm_reactor(pipe):
         #self._rtol = 1e-4
 
         # solution of the integration
-        self._solultion = None
+        #self._solultion = None
 
         return None
 
@@ -289,9 +291,9 @@ class asm_reactor(pipe):
             'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
             'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
             'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False',
-            'Active Volume': str(self._active_vol), #unit: m3
-            'Side Water Depth': str(self._swd),  #unit: m
-            'Model Template:': ''
+            'Active_Volume': str(self._active_vol), #unit: m3
+            'Side_Water_Depth': str(self._swd),  #unit: m
+            'Model_File_Path:': self._model_file_path
         }
 
         return config
@@ -376,153 +378,153 @@ class asm_reactor(pipe):
         return self._sludge.get_stoichs()
     
     
-    def _RKF45_ks(self):
-        """
-        Calculate k1...k6 used in RKF45 method.
-
-        See:
-            _runge_kutta_fehlberg_45();
-            _RKF45_err().
-        """
-
-        # number of model components
-        _nc = len(self._mo_comps)
-
-        # update the step size using the current step size and the scalar from previous round of RK4 vs RK5 comparison 
-        h = self._step
-
-        #f1 should've been calculated in _runge_kutta_fehlberg_45()
-        f1 = self._del_C_del_t  #calculated in _runge_kutta_fehlberg_45()
-
-        
-        k1 = [h * f1[j] for j in range(_nc)]
-
-
-        _w2 = [self._sludge._comps[j] + k1[j] / 4 for j in range(_nc)]
-
-        f2 = self._sludge._dCdt_kz(_w2, self._active_vol, self._total_inflow, self._in_comps)
-
-        k2 = [h * f2[j] for j in range(_nc)]
-
-
-        # 3/32 = 0.09375; 9/32 = 0.28125
-        _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j] for j in range(_nc)]
-
-        f3 = self._sludge._dCdt_kz(_w3, self._active_vol, self._total_inflow, self._in_comps)                          
-
-        k3 = [h * f3[j] for j in range(_nc)]
-
-        
-        _w4 = [self._sludge._comps[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j] + 7296/2197 * k3[j] for j in range(_nc)]
-
-        f4 = self._sludge._dCdt_kz(_w4, self._active_vol, self._total_inflow, self._in_comps)                          
-
-        k4 = [h * f4[j] for j in range(_nc)]
-
-
-        _w5 = [self._sludge._comps[j] + 439/216 * k1[j] - 8 * k2[j] + 3680/513 * k3[j] - 845/4104 * k4[j]
-                for j in range(_nc)]
-
-        f5 = self._sludge._dCdt_kz(_w5, self._active_vol, self._total_inflow, self._in_comps)                          
-
-        k5 = [h * f5[j] for j in range(_nc)]
-
-
-        _w6 = [self._sludge._comps[j] - 8/27 * k1[j] + 2 * k2[j] - 3544/2565 * k3[j] + 1859/4104 * k4[j] - 11/40 * k5[j]
-                for j in range(_nc)]
-
-        f6 = self._sludge._dCdt_kz(_w6, self._active_vol, self._total_inflow, self._in_comps)                          
-
-        k6 = [h * f6[j] for j in range(_nc)]
-
-        return k1, k2, k3, k4, k5, k6
-
-    
-    def _RKF45_err(self, k1, k3, k4, k5, k6):
-        """
-        Calculate the norm of the error vector in RKF45 method.
-        
-        Args:
-            k1, k3, ... ,k6: intermediate step vectors of RKF45
-
-        Return:
-            Norm of the error vector
-
-        See:
-            _runge_kutta_fehlberg_45();
-            _RKF45_ks().
-        """
-
-        _nc = len(self._mo_comps)
-
-        #_rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
-        #            - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
-        #            for j in range(_nc)]
-#
-#        _err = sum(_rk4_sqr_) ** 0.5
-
-        #print('current err:', _err)
-
-        #return _err
-
-        delta = [(1/360.0 * k1[j] - 128/4275.0 * k3[j] - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j])
-                    for j in range(_nc)]
-
-        scale = [ self._atol + self._rtol * self._mo_comps[i]
-                    for i in range(_nc) ]
-
-        LE_sum = sum( [ (delta[i] / scale[i])**2 for i in range(_nc) ] )
-
-        return (LE_sum / _nc)**0.5 
-
-
-
-    def _runge_kutta_fehlberg_45(self, tol=1e-4):
-        """
-        Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
-
-        Args:
-            tol:    user defined tolerance of error
-        
-        Return:
-            step size used
-
-        See:
-            _RKF45_ks();
-            _RKF45_err().
-        """
-
-        self._del_C_del_t = self._sludge._dCdt_kz(
-                            self._mo_comps,
-                            self._active_vol,
-                            self._total_inflow,
-                            self._in_comps)
-
-        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
-
-        while True:
-            k1, k2, k3, k4, k5, k6 = self._RKF45_ks()
-
-            self._prev_local_err = self._RKF45_err(k1, k3, k4, k5, k6)
-
-            # (1/2) ^ (1/4) ~= 0.840896
-            #_s = 0.840896 * (tol * h / _err) ** 0.25 
-            _s = 0.84 * (tol * self._step / self._prev_local_err) ** 0.25 
-            self._step *= _s
-
-            #print('h_old={}, scalar={}'.format(self._step, _s))
-
-            if self._prev_local_err < tol or self._step < 1e-5:
-                #print("RKF45 step=", self._step)
-                self._sludge._comps = [self._sludge._comps[j]
-                            + 25/216 * k1[j] + 1408/2565 * k3[j]
-                            + 2197/4104 * k4[j] - 0.2 * k5[j] 
-                            for j in range(len(self._mo_comps))]
-                break
-
-        self._mo_comps = self._sludge._comps[:]
-
-        return self._step
+##    def _RKF45_ks(self):
+##        """
+##        Calculate k1...k6 used in RKF45 method.
+##
+##        See:
+##            _runge_kutta_fehlberg_45();
+##            _RKF45_err().
+##        """
+##
+##        # number of model components
+##        _nc = len(self._mo_comps)
+##
+##        # update the step size using the current step size and the scalar from previous round of RK4 vs RK5 comparison
+##        h = self._step
+##
+##        #f1 should've been calculated in _runge_kutta_fehlberg_45()
+##        f1 = self._del_C_del_t  #calculated in _runge_kutta_fehlberg_45()
+##
+##
+##        k1 = [h * f1[j] for j in range(_nc)]
+##
+##
+##        _w2 = [self._sludge._comps[j] + k1[j] / 4 for j in range(_nc)]
+##
+##        f2 = self._sludge._dCdt_kz(_w2, self._active_vol, self._total_inflow, self._in_comps)
+##
+##        k2 = [h * f2[j] for j in range(_nc)]
+##
+##
+##        # 3/32 = 0.09375; 9/32 = 0.28125
+##        _w3 = [self._sludge._comps[j] + 0.09375 * k1[j] + 0.28125 * k2[j] for j in range(_nc)]
+##
+##        f3 = self._sludge._dCdt_kz(_w3, self._active_vol, self._total_inflow, self._in_comps)
+##
+##        k3 = [h * f3[j] for j in range(_nc)]
+##
+##
+##        _w4 = [self._sludge._comps[j] + 1932/2197 * k1[j] - 7200/2197 * k2[j] + 7296/2197 * k3[j] for j in range(_nc)]
+##
+##        f4 = self._sludge._dCdt_kz(_w4, self._active_vol, self._total_inflow, self._in_comps)
+##
+##        k4 = [h * f4[j] for j in range(_nc)]
+##
+##
+##        _w5 = [self._sludge._comps[j] + 439/216 * k1[j] - 8 * k2[j] + 3680/513 * k3[j] - 845/4104 * k4[j]
+##                for j in range(_nc)]
+##
+##        f5 = self._sludge._dCdt_kz(_w5, self._active_vol, self._total_inflow, self._in_comps)
+##
+##        k5 = [h * f5[j] for j in range(_nc)]
+##
+##
+##        _w6 = [self._sludge._comps[j] - 8/27 * k1[j] + 2 * k2[j] - 3544/2565 * k3[j] + 1859/4104 * k4[j] - 11/40 * k5[j]
+##                for j in range(_nc)]
+##
+##        f6 = self._sludge._dCdt_kz(_w6, self._active_vol, self._total_inflow, self._in_comps)
+##
+##        k6 = [h * f6[j] for j in range(_nc)]
+##
+##        return k1, k2, k3, k4, k5, k6
+##
+##
+##    def _RKF45_err(self, k1, k3, k4, k5, k6):
+##        """
+##        Calculate the norm of the error vector in RKF45 method.
+##
+##        Args:
+##            k1, k3, ... ,k6: intermediate step vectors of RKF45
+##
+##        Return:
+##            Norm of the error vector
+##
+##        See:
+##            _runge_kutta_fehlberg_45();
+##            _RKF45_ks().
+##        """
+##
+##        _nc = len(self._mo_comps)
+##
+##        #_rk4_sqr_ = [(1/360.0 * k1[j] - 128/4275.0 * k3[j]
+##        #            - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j]) ** 2
+##        #            for j in range(_nc)]
+###
+###        _err = sum(_rk4_sqr_) ** 0.5
+##
+##        #print('current err:', _err)
+##
+##        #return _err
+##
+##        delta = [(1/360.0 * k1[j] - 128/4275.0 * k3[j] - 2197/75240.0 * k4[j] + 0.02 * k5[j] + 2/55 * k6[j])
+##                    for j in range(_nc)]
+##
+##        scale = [ self._atol + self._rtol * self._mo_comps[i]
+##                    for i in range(_nc) ]
+##
+##        LE_sum = sum( [ (delta[i] / scale[i])**2 for i in range(_nc) ] )
+##
+##        return (LE_sum / _nc)**0.5
+##
+##
+##
+##    def _runge_kutta_fehlberg_45(self, tol=1e-4):
+##        """
+##        Integration by using the Runge-Kutta-Fehlberg (RKF45) method.
+##
+##        Args:
+##            tol:    user defined tolerance of error
+##
+##        Return:
+##            step size used
+##
+##        See:
+##            _RKF45_ks();
+##            _RKF45_err().
+##        """
+##
+##        self._del_C_del_t = self._sludge._dCdt_kz(
+##                            self._mo_comps,
+##                            self._active_vol,
+##                            self._total_inflow,
+##                            self._in_comps)
+##
+##        #print('self._del_C_del_t:{}'.format(self._del_C_del_t))
+##
+##        while True:
+##            k1, k2, k3, k4, k5, k6 = self._RKF45_ks()
+##
+##            self._prev_local_err = self._RKF45_err(k1, k3, k4, k5, k6)
+##
+##            # (1/2) ^ (1/4) ~= 0.840896
+##            #_s = 0.840896 * (tol * h / _err) ** 0.25
+##            _s = 0.84 * (tol * self._step / self._prev_local_err) ** 0.25
+##            self._step *= _s
+##
+##            #print('h_old={}, scalar={}'.format(self._step, _s))
+##
+##            if self._prev_local_err < tol or self._step < 1e-5:
+##                #print("RKF45 step=", self._step)
+##                self._sludge._comps = [self._sludge._comps[j]
+##                            + 25/216 * k1[j] + 1408/2565 * k3[j]
+##                            + 2197/4104 * k4[j] - 0.2 * k5[j]
+##                            for j in range(len(self._mo_comps))]
+##                break
+##
+##        self._mo_comps = self._sludge._comps[:]
+##
+##        return self._step
 
     #
     # END OF FUNCTIONS UNIQUE TO THE ASM_REACTOR CLASS
