@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-def create_configs(filename='pipe.ppm'):
+def create_configs(filename='pipe.pmt'):
     """
-    Read the lines in a .ppm file and convert the info into a dict
+    Read the lines in a .pmt file and convert the info into a dict
 
     Args:
-        filename: the name for a .ppm file
+        filename: the name for a .pmt file
 
     Return:
         {}
@@ -17,12 +17,12 @@ def create_configs(filename='pipe.ppm'):
     return items
 
 
-def _create_array_name(template_items={}, branch='Inlet'):
+def _create_array_name(proc_unit={}, branch='Inlet'):
     """
     Create the array name for a particular branch of a process unit
 
     Args:
-        template_items: a configs {}
+        proc_unit: a configs {}
         branch: type of the branch whose array is to be created, 'Inlet'|'Main'|'Side'
 
     Return:
@@ -59,18 +59,17 @@ def define_branch_arrays(items={}):
     return ', '.join(array_defs)
 
 
-def compose_sys(model_files=[]):
+def compose_sys(pfd={}):
     """
     Compose the units' variable/array declarations and mass balance equations
 
     Args:
-        model_files: list of model configuration files
+        pfd: dict storing the process flowsheet
 
     Return:
         declaration of the arrays
-        equations of all the units in the model_files
+        equations of all the units in pfd
     """
-    configs = [create_configs(f) for f in model_files]
     # declare the arrays as SUNDIALS realtype
     declars = ['realtype '+define_branch_arrays(items)+';' for items in configs]
     declars.append('int i;')
@@ -96,7 +95,7 @@ def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
 
 
 if __name__ == '__main__':
-    pfd = ['influent.ppm', 'pipe.ppm']
+    pfd = ['influent.pmt', 'pipe.pmt']
     declars, eqs = compose_sys(pfd)
     write_to_file('syseqs.c', declars, 'w')
     write_to_file('syseqs.c', eqs, 'a')

@@ -7,13 +7,21 @@ from PooPyLab.utils.pfd import show, check, save_wwtp, read_wwtp
 
 if __name__ == '__main__':
     splt = splitter()
+    print('splt id=', splt._id)
     inf = influent()
+    print('inf id=', inf._id)
     p1 = pipe()
+    print('p1 id=', p1._id)
     p2 = pipe()
+    print('p2 id=', p2._id)
     eff = effluent()
+    print('eff id=', eff._id)
     was = WAS()
+    print('was id=', was._id)
     fc = final_clarifier()
+    print('fc id=', fc._id)
     rxn = asm_reactor()
+    print('rxn id=', rxn._id)
 
     print("INDIVIDUAL UNIT CONNECTION TESTING:")
     p1.add_upstream(inf, 'Main')
@@ -74,4 +82,6 @@ if __name__ == '__main__':
     eff.set_downstream_main(p2)
 
     print("READING PLANT CONFIGURATION FROM A JSON FILE:")
-    read_wwtp('test_connect.json')
+    mypfd = read_wwtp('test_connect.json')
+    print(type(mypfd))
+    print(mypfd["Flowsheet"]["Influent_1"])

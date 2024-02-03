@@ -198,7 +198,7 @@ class final_clarifier(splitter):
         config = {
             'Name': self.__name__,
             'Type': self._type,
-            'ID': str(self.__id),
+            'ID': str(self._id),
             'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
             'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
             'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],

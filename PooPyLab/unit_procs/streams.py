@@ -751,7 +751,7 @@ class splitter(poopy_lab_obj):
         config = {
             'Name': self.__name__,
             'Type': self._type,
-            'ID': str(self.__id),
+            'ID': str(self._id),
             'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
             'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
             'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
@@ -1431,8 +1431,10 @@ class effluent(pipe):
         print('ERROR:', self.__name__, 'has no downstream main outlet.')
         return None
 
+
     def set_downstream_side(self, rcvr):
         print('ERROR:', self.__name__, 'has no downstream side outlet.')
+
 
 ##    def _branch_flow_helper(self):
 ##        """
@@ -1567,6 +1569,8 @@ class WAS(pipe):
 
     def set_downstream_side(self, rcvr):
         print('ERROR:', self.__name__, 'has no downstream side outlet.')
+        return None
+
     #
     # END OF ADJUSTMENTS TO COMMON INTERFACE
 
