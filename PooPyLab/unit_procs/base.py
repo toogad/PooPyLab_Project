@@ -54,6 +54,16 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
+    def set_num_comps(self, nc):
+        pass
+
+
+    @abstractmethod
+    def get_num_comps(self):
+        pass
+
+
+    @abstractmethod
     def set_flow_data_src(self, branch, flow_ds):
         """
         Set the flow data source of the selected branch.

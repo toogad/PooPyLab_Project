@@ -196,15 +196,17 @@ class final_clarifier(splitter):
 
         # All Units are METRIC
         config = {
+            'Codename': self._codename,
             'Name': self.__name__,
             'Type': self._type,
             'ID': str(self._id),
+            'Num_Model_Components': str(self._num_comps),
             'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
             'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
             'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
             'Inlet_Codenames': ' '.join([k.get_codename() for k in self._inlet]) if self._inlet else 'None',
-            'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
-            'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
+            'Main_Outlet_Codename': self._main_outlet.get_codename() if self._main_outlet else 'None',
+            'Side_Outlet_Codename': self._side_outlet.get_codename() if self._side_outlet else 'None',
             'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False',
             'Active_Volume': str(self._active_vol), #unit: m3
             'Side_Water_Depth': str(self._swd),  #unit: m

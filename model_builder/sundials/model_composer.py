@@ -29,32 +29,32 @@ def _create_array_name(proc_unit={}, branch='Inlet'):
         str of the array name for the given branch
     """
     array_str = 'comp'
-    _vd = list(template_items.values())
-    array_name = '_'.join(_vd[1:4])
-    # template_items['NUM_MODEL_COMPONENTS'] excludes flow rate
-    # adding 1 to the array length so that array[0] = flow rate
-    # and the model components in the array jive with the human math
-    array_len = int(template_items['NUM_MODEL_COMPONENTS']) + 1
+    # proc_unit['NUM_MODEL_COMPONENTS'] INCLUDES flow rate
+    # array[0] = flow rate
+    array_len = int(proc_unit['NUM_MODEL_COMPONENTS'])
     if branch == 'Inlet':
         prefix = '_in_'
     elif branch == 'Main':
         prefix = '_mo_'
     else:
         prefix = '_so_'
-    array_name += prefix + array_str + '[' + str(array_len) + ']'
+    array_name = proc_unit['Codename'] + prefix + array_str + '[' + str(array_len) + ']'
     return ''.join(array_name)
 
-def define_branch_arrays(items={}):
+def define_branch_arrays(unit={}):
     array_defs = []
+
     # A process unit may not have an inlet, e.g. an Influent
+    if unit['Inlet_Codenames'] != 'None':
+        array_defs.append(_create_array_name(unit, 'Inlet'))
+
     # A process unit may not have a main outlet, e.g. an Effluent or a WAS
+    if unit['Main_Outlet_Codename'] != 'None':
+        array_defs.append(_create_array_name(unit, 'Main'))
+
     # A process unit may not have a side outlet, e.g. a Pipe or a CSTR
-    if items['INLET_NAME']:
-        array_defs.append(_create_array_name(items, 'Inlet'))
-    if items['MAIN_OUTLET_NAME']:
-        array_defs.append(_create_array_name(items, 'Main'))
-    if items['SIDE_OUTLET_NAME']:
-        array_defs.append(_create_array_name(items, 'Side'))
+    if unit['Side_Outlet_Codename'] != 'None':
+        array_defs.append(_create_array_name(unit, 'Side'))
 
     return ', '.join(array_defs)
 
@@ -71,7 +71,7 @@ def compose_sys(pfd={}):
         equations of all the units in pfd
     """
     # declare the arrays as SUNDIALS realtype
-    declars = ['realtype '+define_branch_arrays(items)+';' for items in configs]
+    declars = ['realtype '+define_branch_arrays(unit)+';' for unit in pfd["Flowsheet"]]
     declars.append('int i;')
     all_eqs = []
     num_eqs = 0

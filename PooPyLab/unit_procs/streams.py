@@ -130,20 +130,23 @@ class splitter(poopy_lab_obj):
         self._SRT_controller = False
 
         # inlet/main_outlet/side_oulet model components:
-        #    _comps[0]: S_DO as DO
-        #    _comps[1]: S_I
-        #    _comps[2]: S_S
-        #    _comps[3]: S_NH
-        #    _comps[4]: S_NS
-        #    _comps[5]: S_NO
-        #    _comps[6]: S_ALK
-        #    _comps[7]: X_I
-        #    _comps[8]: X_S
-        #    _comps[9]: X_BH
-        #    _comps[10]: X_BA
-        #    _comps[11]: X_D
-        #    _comps[12]: X_NS
+        #    _comps[0]: flow rate
+        #    _comps[1]: S_DO as DO
+        #    _comps[2]: S_I
+        #    _comps[3]: S_S
+        #    _comps[4]: S_NH
+        #    _comps[5]: S_NS
+        #    _comps[6]: S_NO
+        #    _comps[7]: S_ALK
+        #    _comps[8]: X_I
+        #    _comps[9]: X_S
+        #    _comps[10]: X_BH
+        #    _comps[11]: X_BA
+        #    _comps[12]: X_D
+        #    _comps[13]: X_NS
         #
+        # the number of components DOES include the flow rate of a branch
+        self._num_comps = 14
         ## TODO: With equation based solving system, these can probably simply be empty lists
         ## inlet model components
         self._in_comps = []
@@ -172,6 +175,17 @@ class splitter(poopy_lab_obj):
 
     def get_codename(self):
         return self._codename
+
+
+    def set_num_comps(self, nc=14):
+        if nc>0 and type(nc)=='int':
+            self._num_comps = nc
+        else:
+            print('INVALID NUMBER OF COMPONENTS GIVEN. NO CHANGES MADE.')
+        return None
+
+    def get_num_comps(self):
+        return self._num_comps
 
 
     def set_flow_data_src(self, branch='Main', flow_ds=flow_data_src.TBD):
@@ -749,15 +763,17 @@ class splitter(poopy_lab_obj):
         """
 
         config = {
+            'Codename': self._codename,
             'Name': self.__name__,
             'Type': self._type,
             'ID': str(self._id),
+            'Num_Model_Components': str(self._num_comps),
             'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
             'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
             'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
             'Inlet_Codenames': ' '.join([k.get_codename() for k in self._inlet]) if self._inlet else 'None',
-            'Main_Outlet_Codenames': self._main_outlet.get_codename() if self._main_outlet else 'None',
-            'Side_Outlet_Codenames': self._side_outlet.get_codename() if self._side_outlet else 'None',
+            'Main_Outlet_Codename': self._main_outlet.get_codename() if self._main_outlet else 'None',
+            'Side_Outlet_Codename': self._side_outlet.get_codename() if self._side_outlet else 'None',
             'Is_SRT_Controller': 'True' if self._SRT_controller else 'False',
             'Model_File_Path': self._model_file_path
         }
