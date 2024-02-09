@@ -1,0 +1,35 @@
+0,1,2,3,4,5,6,7,8,9,10,11,12,,,,,,,
+S_O,S_I,S_S,S_NH,S_NS,S_NO,S_ALK,X_I,X_S,X_BH,X_BA,X_D,X_NS,RATE_EQUATIONS,Rate_Equation_Description,Rate_Eq_Term_1,Rate_Eq_Term_2,Rate_Eq_Term_3,Rate_Eq_Term_4,Rate_Eq_Term_5
+Dissolved O2,Inert Soluble COD,Readily Biodegradable COD,Ammonia N,Dissolved Organic N,Nitrite/Nitrate N,Alkalinity,Inert Particulate COD,Slowly Biodegradable COD,Heterotrophic Biomass,Autotrophic Biomass,Biomass Debris due to Decay,Particulate Organic N,Rate_Equation_Id (_j_),Text,Generic_Type,Generic_Type,Monod_Type,Monod_Type,Monod_Type
+mg/L as O2,mg/L as COD,mg/L as COD,mg/L as N,mg/L as N,mg/L as N,mmol/L as CaCO3,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as COD,mg/L as N,NA,NA,1/d,mg/L,NA,NA,NA
+( Y_H – 1 ) / Y_H,0,-1 / Y_H,-i_N_XB,0,0,-i_N_XB / 14,0,0,1,0,0,0,0,Growth of Aerobic Heterotrophs,u_max_H,X_BH,S_S / ( K_S + S_S ),S_O / ( K_OH + S_O ),1
+0,0,-1 / Y_H,-i_N_XB,0,( Y_H – 1 ) / ( 2.86 * Y_H ),( 1 – Y_H ) / ( 14 * 2.86 * Y_H ) - i_N_XB / 14,0,0,1,0,0,0,1,Growth of Anoxic Heterotrophs,u_max_H,cf_g * X_BH,S_S / ( K_S + S_S ),K_OH / ( K_OH + S_O ),S_NO / ( K_NO + S_NO )
+( Y_A – 4.57 ) / Y_A,0,0,-i_N_XB - 1 / Y_A,0,1 / Y_A,-i_N_XB / 14 - 1 / ( 7 * Y_A ),0,0,0,1,0,0,2,Growth of Aerobic Autotrophs,u_max_A,X_BA,S_NH / ( K_NH + S_NH ),S_O / ( K_OA + S_O ),1
+0,0,0,0,0,0,0,0,1 – f_D,-1,0,f_D,i_N_XB – f_D * i_N_XD,3,Decay of Heterotrophs,b_H,X_BH,1,1,1
+0,0,0,0,0,0,0,0,1 – f_D,0,-1,f_D,i_N_XB – f_D * i_N_XD,4,Decay of Autotrophs,b_A,X_BA,1,1,1
+0,0,0,1,-1,0,1 / 14,0,0,0,0,0,0,5,Ammonification of Dissolved Organic N,k_a * S_NS,X_BH,1,1,1
+0,0,1,0,0,0,0,0,-1,0,0,0,0,6,Hydrolysis of Particulate Substrate,k_h,X_BH,( X_S / X_BH ) / ( K_X + X_S / X_BH ),( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ),1
+0,0,0,0,1,0,0,0,0,0,0,0,-1,7,Hydrolysis of Particulate Organic N,k_h,X_BH * X_NS / X_S,( X_S / X_BH ) / ( K_X + X_S / X_BH ),( S_O / ( K_OH + S_O ) + cf_h * K_OH / ( K_OH + S_O )  * S_NO / ( K_NO + S_NO ) ),1
+END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_STOICH,END_EQTNS,END_EQTNS,END_EQTNS,END_EQTNS,END_EQTNS,END_EQTNS,END_EQTNS
+,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,
+PARAMETERS,TYPICAL_VALUE_AT_20C,ARRHENIUS_THETA,PARAMETER_DESCRIPTION,UNIT,PARAMETER_ID,,,,,,,,,,,,,,
+u_max_H,6,1.072,Ideal Specific Growth Rate of Heterotrophs,1/day,0,,,,,,,,,,,,,,
+u_max_A,0.8,1.103,Ideal Specific Growth Rate of Autotrophs,1/day,1,,,,,,,,,,,,,,
+K_S,20,1,Half Saturation Concentration for Organic Substrate,mg/L as COD,2,,,,,,,,,,,,,,
+K_OH,0.2,1,Half Saturation Concentration for O2 for Heterotrophs,mg/L as O2,3,,,,,,,,,,,,,,
+K_NH,1,1,Half Saturation Concentration for TKN,mg/L as N,4,,,,,,,,,,,,,,
+K_OA,0.4,1,Half Saturation Concentration for O2 for Autotrophs (Nitrifiers),mg/L as O2,5,,,,,,,,,,,,,,
+K_NO,0.5,1,Half Saturation Concentration for NOx-N,mg/L as N,6,,,,,,,,,,,,,,
+K_X,0.03,1.116,Half Saturation Concentration for Hydrolysis,mg/L as COD,7,,,,,,,,,,,,,,
+Y_H,0.67,1,True Yield for Heterotrophs,mgCOD / mgCOD,8,,,,,,,,,,,,,,
+Y_A,0.24,1,True Yield for Autotrophs (Nitrifiers),mgCOD / mgN,9,,,,,,,,,,,,,,
+b_H,0.62,1.12,Specific Decay Rate for Heterotrophs,1/day,10,,,,,,,,,,,,,,
+b_A,0.096,1.12,Specific Decay Rate for Autotrophs (Nitrifiers),1/day,11,,,,,,,,,,,,,,
+k_a,0.08,1.072,Specific Ammonification Rate,m3 COD / (g-day),12,,,,,,,,,,,,,,
+k_h,3,1.116,Specific Hydrolysis Rate,gCOD/(gBiomass_COD-day),13,,,,,,,,,,,,,,
+f_D,0.08,1,Fraction of Cell Debris in Decayed Biomass,NA,14,,,,,,,,,,,,,,
+cf_g,0.8,1,Correction Factor for Heterotrophs Capable of Anoxic Growth,NA,15,,,,,,,,,,,,,,
+cf_h,0.4,1,Correction Factor for Hydrolytic Activities,NA,16,,,,,,,,,,,,,,
+i_N_XB,0.086,1,Fraction: N / Biomass_COD ,gN/gBiomass_COD,17,,,,,,,,,,,,,,
+i_N_XD,0.06,1,Fraction: N / Debris_COD,gN/gDebris_COD,18,,,,,,,,,,,,,,

@@ -1,0 +1,117 @@
+{
+    "Flowsheet": {
+        "Influent_1": {
+            "Name": "Influent_1",
+            "Type": "Influent",
+            "ID": "1",
+            "IN_Flow_Data_Source": "UPS",
+            "MO_Flow_Data_Source": "UPS",
+            "SO_Flow_Data_Source": "PRG",
+            "Inlet_Codenames": "None",
+            "Main_Outlet_Codenames": "Pipe_1",
+            "Side_Outlet_Codenames": "None",
+            "Is_SRT_Controller": "False",
+            "Model_File_Path": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/influent.pmt"
+        },
+        "Pipe_1": {
+            "Name": "Pipe_1",
+            "Type": "Pipe",
+            "ID": "1",
+            "IN_Flow_Data_Source": "TBD",
+            "MO_Flow_Data_Source": "TBD",
+            "SO_Flow_Data_Source": "PRG",
+            "Inlet_Codenames": "Influent_1",
+            "Main_Outlet_Codenames": "ASMReactor_1",
+            "Side_Outlet_Codenames": "None",
+            "Is_SRT_Controller": "False",
+            "Model_File_Path": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/pipe.pmt"
+        },
+        "Pipe_2": {
+            "Name": "Pipe_2",
+            "Type": "Pipe",
+            "ID": "2",
+            "IN_Flow_Data_Source": "TBD",
+            "MO_Flow_Data_Source": "TBD",
+            "SO_Flow_Data_Source": "PRG",
+            "Inlet_Codenames": "None",
+            "Main_Outlet_Codenames": "None",
+            "Side_Outlet_Codenames": "None",
+            "Is_SRT_Controller": "False",
+            "Model_File_Path": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/pipe.pmt"
+        },
+        "ASMReactor_1": {
+            "Name": "ASMReactor_1",
+            "Type": "ASMReactor",
+            "ID": "1",
+            "IN_Flow_Data_Source": "TBD",
+            "MO_Flow_Data_Source": "TBD",
+            "SO_Flow_Data_Source": "PRG",
+            "Inlet_Codenames": "Splitter_1 Pipe_1",
+            "Main_Outlet_Codenames": "FinalClarifier_1",
+            "Side_Outlet_Codenames": "None",
+            "Is_SRT_Controller": "True",
+            "Active_Volume": "38000",
+            "Side_Water_Depth": "3.5",
+            "Model_File_Path:": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/asmreactor.pmt"
+        },
+        "FinalClarifier_1": {
+            "Name": "FinalClarifier_1",
+            "Type": "FinalClarifier",
+            "ID": "1",
+            "IN_Flow_Data_Source": "TBD",
+            "MO_Flow_Data_Source": "TBD",
+            "SO_Flow_Data_Source": "TBD",
+            "Inlet_Codenames": "ASMReactor_1",
+            "Main_Outlet_Codenames": "Effluent_1",
+            "Side_Outlet_Codenames": "Splitter_1",
+            "Is_SRT_Controller": "True",
+            "Active_Volume": "9500",
+            "Side_Water_Depth": "3.5",
+            "Model_File_Path": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/finalclarifier.pmt"
+        },
+        "WAS_1": {
+            "Name": "WAS_1",
+            "Type": "WAS",
+            "ID": "1",
+            "IN_Flow_Data_Source": "DNS",
+            "MO_Flow_Data_Source": "PRG",
+            "SO_Flow_Data_Source": "PRG",
+            "Inlet_Codenames": "Splitter_1",
+            "Main_Outlet_Codenames": "None",
+            "Side_Outlet_Codenames": "None",
+            "Is_SRT_Controller": "False",
+            "Model_File_Path": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/WAS.pmt"
+        },
+        "Splitter_1": {
+            "Name": "Splitter_1",
+            "Type": "Splitter",
+            "ID": "1",
+            "IN_Flow_Data_Source": "TBD",
+            "MO_Flow_Data_Source": "TBD",
+            "SO_Flow_Data_Source": "TBD",
+            "Inlet_Codenames": "FinalClarifier_1",
+            "Main_Outlet_Codenames": "ASMReactor_1",
+            "Side_Outlet_Codenames": "WAS_1",
+            "Is_SRT_Controller": "False",
+            "Model_File_Path": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/splitter.pmt"
+        },
+        "Effluent_1": {
+            "Name": "Effluent_1",
+            "Type": "Effluent",
+            "ID": "1",
+            "IN_Flow_Data_Source": "TBD",
+            "MO_Flow_Data_Source": "TBD",
+            "SO_Flow_Data_Source": "PRG",
+            "Inlet_Codenames": "FinalClarifier_1",
+            "Main_Outlet_Codenames": "None",
+            "Side_Outlet_Codenames": "None",
+            "Is_SRT_Controller": "False",
+            "Model_File_Path": "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/effluent.pmt"
+        }
+    },
+    "Global Params": {
+        "Solids Retention Time": "10.0",
+        "Temperature": "15",
+        "Site Elevation": "200"
+    }
+}

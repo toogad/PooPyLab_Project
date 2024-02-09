@@ -1,0 +1,42 @@
+[NAME_ID]
+NAME_ID = Splitter_1
+
+[CONFIGURATION]
+# Whether I am a Waste Activated Sludge controller
+WAS_CONTROLLER = False
+TARGET_SRT = NA
+
+# Process Parameters:
+ACTIVE_VOLUME = 0
+SIDE_WATER_DEPTH = 0
+BULK_DO = NA
+
+# Connections:
+# Format: [ INLET | MAINOUTLET | SIDEOUTLET ] = [ unit_process_name_ID_branch | NONE ]
+INLET = FinalClarifier_1_SO
+MAINOUTLET = ASMReactor_1
+SIDEOUTLET = WAS_1
+
+[FLOW_DATA_SOURCE]
+# Possible Flow Data Source: [ UPS | DNS | PRG ], where
+# UPS = Upstream, DNS = Downstream, PRG = Program (Runtime)
+
+# IN_FLOW = inlet flow
+# MO_FLOW = main outlet flow
+# SO_FLOW = side outlet flow
+
+INF_LOW = UPS
+MO_FLOW = PRG
+SO_FLOW = DNS
+
+[FLOW_BALANCE]
+# The flow balance equation will be set accourding to the branch's flow data source
+IN_FLOW - MO_FLOW - SO_FLOW = 0
+
+[MASS_BALANCE]
+# IN_COMP[i] = the i-th model component of the blended inlet
+# MO_COMP[i] = the i-th model component of the main outlet
+# SO_COMP[i] = the i-th model component of the side outlet
+MO_COMP[i] = IN_COMP[i]
+SO_COMP[i] = IN_COMP[i]
+
