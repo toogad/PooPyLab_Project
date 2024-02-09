@@ -60,7 +60,7 @@ def define_branch_arrays(unit={}):
     return ', '.join(array_defs)
 
 
-def compose_sys(pfd={}):
+def compose_sys(pfd={}, tab=2):
     """
     Compose the units' variable/array declarations and mass balance equations
 
@@ -75,21 +75,25 @@ def compose_sys(pfd={}):
     declars = ['realtype '+define_branch_arrays(unit)+';' for unit in pfd["Flowsheet"].values()]
     declars.append('int i;')
     all_eqs = []
-    num_eqs = 0
+    id_eq = 0
     for c in pfd['Flowsheet'].values():
+        print(c['Codename'])
         if c['Type'] == 'Pipe':
             all_eqs.append('for (i=0; i<' + c['Num_Model_Components'] + '; i++){')
-            all_eqs.append('  LHS[i] = P1_Pipe_1_in_comp[i] - INF1_Influent_2_mo_comp[i];')
-            num_eqs += int(c['Num_Model_Components']) + 1
-            all_eqs.append('  LHS[' + str(num_eqs) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
-            num_eqs += int(c['Num_Model_Components']) + 1
+            all_eqs.append(' '*tab
+                           + 'LHS[' + str(id_eq) + '+i] = '
+                           + c['Codename'] + '_in_comp[i]'
+                           +'- INF1_Influent_2_mo_comp[i];')
+            id_eq += int(c['Num_Model_Components'])
+            all_eqs.append('  LHS[' + str(id_eq) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
+            id_eq += int(c['Num_Model_Components'])
             all_eqs.append('}')
     return declars, all_eqs
 
 
 def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
     with open(filename, write_mode) as eqf:
-        for declaration in lines:
-            eqf.write(declaration)
+        for item in lines:
+            eqf.write(item)
             eqf.write('\n')
     return None

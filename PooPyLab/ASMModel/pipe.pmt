@@ -1,12 +1,20 @@
-Flow Balance:
- 0 = IN - MO
- 0 = IN - Sum(all dischargers' contribution)
+#Mass Balance for a Pipe unit
 
+#Flow data source for the Main Outlet can be UPS, DNS, and PRG (e.g. pipe-->WAS).
+[UPS]
+0 = Inflow - Sum_All_Discharger_Flows
+0 = Inflow - MO_Flow
+0 = InComps - FlowWeightedAvg_All_Dischargers
+0 = MOComps - InComps
 
-Mass Balance:
-Flow data source for the main outlet can be UPS, DNS, and PRG (e.g. pipe-->WAS).
-Assign the main outlet flow as needed.
-Sum up the dischargers contributions.
+[DNS]
+0 = Inflow - Sum_All_Discharger_Flows
+0 = Inflow - MO_Flow
+0 = InComps - FlowWeightedAvg_All_Dischargers
+0 = MOComps - InComps
 
-Concentrations would be assigned from inlet (flow weighted averages)
-to the main and side outlets.
+[PRG]
+0 = Inflow - Sum_All_Discharger_Flows
+0 = Inflow - MO_Flow
+0 = InComps - FlowWeightedAvg_All_Dischargers
+0 = MOComps - InComps
