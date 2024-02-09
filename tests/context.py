@@ -7,3 +7,4 @@ import PooPyLab.unit_procs.streams
 import PooPyLab.unit_procs.physchem
 import PooPyLab.unit_procs.bio
 import PooPyLab.utils
+import PooPyLab.model_builder.sundials.model_composer
