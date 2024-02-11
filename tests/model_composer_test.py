@@ -4,7 +4,7 @@ from PooPyLab.model_builder.sundials.model_composer import compose_sys, write_to
 
 mypfd = read_wwtp("test_connect.json")
 declars, eqs = compose_sys(mypfd)
-print(declars)
-print(eqs)
+#print(declars)
+#print(eqs)
 write_to_file('syseqs.c', declars, 'w')
 write_to_file('syseqs.c', eqs, 'a')
