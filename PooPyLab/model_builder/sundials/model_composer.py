@@ -38,8 +38,10 @@ def _create_array_name(proc_unit={}, branch='Inlet'):
         prefix = '_mo_'
     else:
         prefix = '_so_'
-    array_name = proc_unit['Codename'] + prefix + array_str + '[' + str(array_len) + ']'
-    return ''.join(array_name)
+    array_name = [proc_unit['Codename'] + prefix + array_str + '[' + str(array_len) + ']']
+    if array_name:
+        return ''.join(array_name)
+    return '// unit ' + proc_unit['Codename'] + ' with incomplete connection here'
 
 
 def define_branch_arrays(unit={}):
@@ -72,7 +74,7 @@ def compose_sys(pfd={}, tab=2):
         equations of all the units in pfd
     """
     # declare the arrays as SUNDIALS realtype
-    declars = ['realtype '+define_branch_arrays(unit)+';' for unit in pfd["Flowsheet"].values()]
+    declars = ['sunrealtype '+define_branch_arrays(unit)+';' for unit in pfd["Flowsheet"].values()]
     declars.append('int i;')
     all_eqs = []
     id_eq = 0
