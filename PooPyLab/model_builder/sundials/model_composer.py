@@ -74,7 +74,9 @@ def compose_sys(pfd={}, tab=2):
         equations of all the units in pfd
     """
     # declare the arrays as SUNDIALS realtype
-    declars = ['sunrealtype '+define_branch_arrays(unit)+';' for unit in pfd["Flowsheet"].values()]
+    declars = ['//Error in '+unit['Codename']+' configs...' if define_branch_arrays(unit) == ''
+               else 'sunrealtype '+define_branch_arrays(unit)+';'
+               for unit in pfd["Flowsheet"].values()]
     declars.append('int i;')
     all_eqs = []
     id_eq = 0
