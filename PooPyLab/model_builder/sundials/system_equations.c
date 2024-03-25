@@ -17,12 +17,12 @@
 #include "model_input.h"
 
 
-int funcGrowth(realtype t, N_Vector y, N_Vector yp, N_Vector LHS, void *user_data)
+int funcGrowth(sunrealtype t, N_Vector y, N_Vector yp, N_Vector LHS, void *user_data)
 {
-  realtype P1_mo_X, P1_mo_S, P1_mo_D, P1_mo_F;
-  realtype P2_mo_X, P2_mo_S, P2_mo_D, P2_mo_F;
-  realtype R1_in_X, R1_in_S, R1_in_D, R1_in_F;
-  realtype R1_mo_X, R1_mo_S, R1_mo_D, R1_mo_F;
+  sunrealtype P1_mo_X, P1_mo_S, P1_mo_D, P1_mo_F;
+  sunrealtype P2_mo_X, P2_mo_S, P2_mo_D, P2_mo_F;
+  sunrealtype R1_in_X, R1_in_S, R1_in_D, R1_in_F;
+  sunrealtype R1_mo_X, R1_mo_S, R1_mo_D, R1_mo_F;
 
 
   P1_mo_F = Ith(y,1);  P1_mo_X = Ith(y,2);  P1_mo_S = Ith(y,3);  P1_mo_D = Ith(y,4);

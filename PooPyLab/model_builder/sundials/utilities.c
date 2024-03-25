@@ -1,9 +1,9 @@
 #include "utilities.h"
 
-void PrintOutput(N_Vector y, int neq, realtype vol)
+void PrintOutput(N_Vector y, int neq, sunrealtype vol)
 {
   int i;
-  realtype SolidsInventory;
+  sunrealtype SolidsInventory;
 
   printf("y =");
 #if defined(SUNDIALS_EXTENDED_PRECISION)

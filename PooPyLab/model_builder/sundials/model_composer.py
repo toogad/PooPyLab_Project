@@ -84,10 +84,10 @@ def compose_sys(pfd={}, tab=2):
         print(c['Codename'])
         if c['Type'] == 'Pipe':
             all_eqs.append('for (i=0; i<' + c['Num_Model_Components'] + '; i++){')
-            all_eqs.append(' '*tab
+            all_eqs.append(' ' * tab
                            + 'LHS[' + str(id_eq) + '+i] = '
                            + c['Codename'] + '_in_comp[i]'
-                           +'- INF1_Influent_2_mo_comp[i];')
+                           + '- INF1_Influent_2_mo_comp[i];')
             id_eq += int(c['Num_Model_Components'])
             all_eqs.append('  LHS[' + str(id_eq) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
             id_eq += int(c['Num_Model_Components'])

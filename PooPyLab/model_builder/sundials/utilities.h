@@ -14,7 +14,7 @@
 */
 #define Ith(v,i)    NV_Ith_S(v,i-1)       /* Ith numbers components 1..NEQ */
 
-void PrintOutput(N_Vector u, int neq, realtype vol);
+void PrintOutput(N_Vector u, int neq, sunrealtype vol);
 int check_retval(void *retvalvalue, const char *funcname, int opt);
 
 #endif

@@ -8,6 +8,6 @@
 #define NEQ 16
 
 // system equations
-int funcGrowth(realtype t, N_Vector y, N_Vector yp, N_Vector LHS, void *user_data);
+int funcGrowth(sunrealtype t, N_Vector y, N_Vector yp, N_Vector LHS, void *user_data);
 
 #endif

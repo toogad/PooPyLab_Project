@@ -13,6 +13,7 @@
 0 = InComps - FlowWeightedAvg_All_Dischargers
 0 = MOComps - InComps
 
+#Flow data source for PRG is the same as that for UPS since a Pipe has no flow split to be determined during runtime
 [PRG]
 0 = Inflow - Sum_All_Discharger_Flows
 0 = Inflow - MO_Flow
