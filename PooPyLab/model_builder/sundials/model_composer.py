@@ -62,6 +62,12 @@ def define_branch_arrays(unit={}):
     return ', '.join(array_defs)
 
 
+def assign_solver_array(pfd={}, declarations=[]):
+    assignment = []
+    for unit in pfd["Flowsheet"].values():
+        assignment.append()
+
+
 def compose_sys(pfd={}, tab=2):
     """
     Compose the units' variable/array declarations and mass balance equations
