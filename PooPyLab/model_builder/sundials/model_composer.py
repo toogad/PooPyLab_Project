@@ -62,10 +62,18 @@ def define_branch_arrays(unit={}):
     return ', '.join(array_defs)
 
 
-def assign_solver_array(pfd={}, declarations=[]):
+def assign_solver_array(arraynames=[], num_model_components=14):
     assignment = []
-    for unit in pfd["Flowsheet"].values():
-        assignment.append()
+    counter = 0
+    for group in arraynames:
+        if group[:2] != '//':
+            arrs = group.split(',')
+            for branch_arr in arrs:
+                assignment.append(
+                    'for(i=' + str(counter) +'; i<' + str(counter + num_model_components) + "; i++)\n"
+                    + '  ' + branch_arr.split('[')[0] + "[i] = Ith(y, i+1);\n")
+                counter += num_model_components
+    return assignment
 
 
 def compose_sys(pfd={}, tab=2):
@@ -80,10 +88,15 @@ def compose_sys(pfd={}, tab=2):
         equations of all the units in pfd
     """
     # declare the arrays as SUNDIALS realtype
-    declars = ['//Error in '+unit['Codename']+' configs...' if define_branch_arrays(unit) == ''
-               else 'sunrealtype '+define_branch_arrays(unit)+';'
-               for unit in pfd["Flowsheet"].values()]
+    array_names = ['//Error in ' + unit['Codename'] + ' configs...' if define_branch_arrays(unit) == ''
+                   else define_branch_arrays(unit) + ';'
+                   for unit in pfd["Flowsheet"].values()]
+    declars = ['sunrealtype ' + aname if aname[:2] != '//'
+               else aname
+               for aname in array_names]
     declars.append('int i;')
+    nc = list(pfd['Flowsheet'].values())[0]['Num_Model_Components']
+    array_assign = assign_solver_array(array_names, int(nc))
     all_eqs = []
     id_eq = 0
     for c in pfd['Flowsheet'].values():
@@ -98,7 +111,7 @@ def compose_sys(pfd={}, tab=2):
             all_eqs.append('  LHS[' + str(id_eq) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
             id_eq += int(c['Num_Model_Components'])
             all_eqs.append('}')
-    return declars, all_eqs
+    return declars, array_assign, all_eqs
 
 
 def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
