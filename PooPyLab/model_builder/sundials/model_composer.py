@@ -70,8 +70,8 @@ def assign_solver_array(arraynames=[], num_model_components=14):
             arrs = group.split(',')
             for branch_arr in arrs:
                 assignment.append(
-                    'for(i=' + str(counter) +'; i<' + str(counter + num_model_components) + "; i++)\n"
-                    + '  ' + branch_arr.split('[')[0] + "[i] = Ith(y, i+1);\n")
+                    'for(i=0; i<' + str(num_model_components) + "; i++)\n"
+                    + '  ' + branch_arr.split('[')[0] + '[i] = Ith(y, ' + str(counter) + "+i+1);\n")
                 counter += num_model_components
     return assignment
 
@@ -102,8 +102,10 @@ def compose_sys(pfd={}, tab=2):
                else aname
                for aname in array_names]
     declars.append('int i;')
-    nc = list(pfd['Flowsheet'].values())[0]['Num_Model_Components']
-    array_assign = assign_solver_array(array_names, int(nc))
+
+    nc = int(list(pfd['Flowsheet'].values())[0]['Num_Model_Components'])  # No. of model Components
+    array_assign = assign_solver_array(array_names, nc)
+
     all_eqs = []
     id_eq = 0
     for c in pfd['Flowsheet'].values():
@@ -118,6 +120,7 @@ def compose_sys(pfd={}, tab=2):
             all_eqs.append('  LHS[' + str(id_eq) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
             id_eq += int(c['Num_Model_Components'])
             all_eqs.append('}')
+
     return declars, array_assign, all_eqs
 
 
