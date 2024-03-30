@@ -76,6 +76,13 @@ def assign_solver_array(arraynames=[], num_model_components=14):
     return assignment
 
 
+def substitue_model(unit):
+    filename = unit['Model_File_Path']
+    with open(filename) as tf:
+
+
+
+
 def compose_sys(pfd={}, tab=2):
     """
     Compose the units' variable/array declarations and mass balance equations
