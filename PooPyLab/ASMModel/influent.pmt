@@ -1,13 +1,13 @@
-Influent is essentially a Pipe.
-
-It provides the definitions of flows and concentrations.
-
-The inlet is NOT to be defined, only the main outlet will be used to supply
-information to the receiving unit.
-
-straightly define the main outlet flows and concentrations as known.
-build in fractionations for cod, n, p, s, etc.
-
-For a steady state simulation, define the influent condition in this file.
-For a dynamic simulation, the influent condition will be save in a separate
-.csv file, whose filename is stored in this model file.
+#Influent is essentially a Pipe.
+#
+#It provides the definitions of flows and concentrations.
+#
+#The inlet is NOT to be defined, only the main outlet will be used to supply
+#information to the receiving unit.
+#
+#straightly define the main outlet flows and concentrations as known.
+#build in fractionations for cod, n, p, s, etc.
+#
+#For a steady state simulation, define the influent condition in this file.
+#For a dynamic simulation, the influent condition will be save in a separate
+#.csv file, whose filename is stored in this model file.

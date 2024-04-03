@@ -8,14 +8,14 @@
 0 = {MO_Comps} - {IN_Comps}
 
 [DNS]
-0 = IN_Flow - Sum_All_Discharger_Flows
-0 = IN_Flow - MO_Flow
-0 = IN_Comps - FlowWeightedAvg_All_Dischargers
-0 = MO_Comps - IN_Comps
+0 = {IN_Flow} - {Sum_All_Discharger_Flows}
+0 = {IN_Flow} - {MO_Flow}
+0 = {IN_Comps} - {FlowWeightedAvg_All_Dischargers}
+0 = {MO_Comps} - {IN_Comps}
 
 #Flow data source for PRG is the same as that for UPS since a Pipe has no flow split to be determined during runtime
 [PRG]
-0 = IN_Flow - Sum_All_Discharger_Flows
-0 = IN_Flow - MO_Flow
-0 = IN_Comps - FlowWeightedAvg_All_Dischargers
-0 = MO_Comps - IN_Comps
+0 = {IN_Flow} - {Sum_All_Discharger_Flows}
+0 = {IN_Flow} - {MO_Flow}
+0 = {IN_Comps} - {FlowWeightedAvg_All_Dischargers}
+0 = {MO_Comps} - {IN_Comps}
