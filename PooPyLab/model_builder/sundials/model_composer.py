@@ -76,9 +76,17 @@ def assign_solver_array(arraynames=[], num_model_components=14):
     return assignment
 
 
-def substitue_model(unit):
+def substitue_pipe_model(unit):
     filename = unit['Model_File_Path']
+    selected_model = []
     with open(filename) as tf:
+        accept = False
+        for line in tf:
+            if unit['MO_Flow_Data_Source'] in line or accept == True:
+                accept = True
+            if accept == True and line[0] != '#' and line[0] != '[':
+                selected_model.append(line)
+
 
 
 
