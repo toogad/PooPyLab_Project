@@ -155,7 +155,7 @@ class splitter(poopy_lab_obj):
         ## sidestream outlet model components
         self._so_comps = []
 
-        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/splitter.pmt"
+        self._model_file_path = "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/splitter.pmt"
 
         return None
 
@@ -909,7 +909,7 @@ class pipe(splitter):
         # make side outlet components an alias of the inlet components
         self._so_comps = self._in_comps
 
-        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/pipe.pmt"
+        self._model_file_path = "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/pipe.pmt"
 
         return None
 
@@ -1009,7 +1009,7 @@ class influent(pipe):
         # an influent is always "converged" within the time frame of interest
         self._converged = True
 
-        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/influent.pmt"
+        self._model_file_path = "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/influent.pmt"
 
         # Influent characteristics from user measurements/inputs
         # Setting default values for municipal wastewater in USA
@@ -1437,7 +1437,7 @@ class effluent(pipe):
 
         self._mo_connected = True  # dummy
 
-        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/effluent.pmt"
+        self._model_file_path = "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/effluent.pmt"
 
         return None
 
@@ -1572,7 +1572,7 @@ class WAS(pipe):
         # assume something always receives WAS
         self._mo_connected = True
 
-        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/WAS.pmt"
+        self._model_file_path = "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/WAS.pmt"
 
         return None
 
