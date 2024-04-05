@@ -80,9 +80,8 @@ def substitue_pipe_model(unit):
     filename = unit['Model_File_Path']
     selected_model = []
     with open(filename, 'rt') as tf:
-        all_lines = tf.readlines()
         accept = False
-        for line in all_lines:
+        for line in tf:
             print(line)
             if unit['MO_Flow_Data_Source'] in line or accept == True:
                 accept = True
