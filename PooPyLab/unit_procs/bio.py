@@ -101,7 +101,7 @@ class asm_reactor(pipe):
 
         self._upstream_set_mo_flow = True
 
-        self._model_file_path = "/home/kai/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/asmreactor.pmt"
+        self._model_file_path = self.set_model_file_path()
 
         # initial guess of step size for model integration, hr
         #self._step = 1.0 / 24.0
@@ -295,7 +295,7 @@ class asm_reactor(pipe):
             'Is_SRT_Controller': 'True' if self.is_SRT_controller else 'False',
             'Active_Volume': str(self._active_vol), #unit: m3
             'Side_Water_Depth': str(self._swd),  #unit: m
-            'Model_File_Path:': self._model_file_path
+            'Model_File_Path:': self.get_model_file_path()
         }
 
         return config

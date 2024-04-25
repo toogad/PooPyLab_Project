@@ -153,7 +153,7 @@ class splitter(poopy_lab_obj):
         self._so_comps = []
 
         # use the current dir as the starting path for the actual model template file
-        self._model_file_path = PurePath(__file__)
+        self._model_file_path = self.set_model_file_path()
 
         return None
 
@@ -773,19 +773,25 @@ class splitter(poopy_lab_obj):
             'Main_Outlet_Codename': self._main_outlet.get_codename() if self._main_outlet else 'None',
             'Side_Outlet_Codename': self._side_outlet.get_codename() if self._side_outlet else 'None',
             'Is_SRT_Controller': 'True' if self._SRT_controller else 'False',
-            'Model_File_Path': str(self._model_file_path)
+            'Model_File_Path': self.get_model_file_path()
         }
         return config
 
 
-    def set_model_file_path(self, newpath=""):
+    def set_model_file_path(self, newpath=None):
         #TODO: need to add validity check for the new path given
-        self._model_file_path = newpath
-        return None
+        _model_file_path = PurePath(__file__)
+        if newpath != None:
+            self._model_file_path = newpath
+        else:
+            dir = _model_file_path.parents[1]
+            default_model_filename = self._type.lower() + '.pmt'
+            _model_file_path = dir / 'ASMModel' / default_model_filename
+        return _model_file_path
 
 
     def get_model_file_path(self):
-        return self._model_file_path
+        return str(self._model_file_path)
 
     # END OF COMMON INTERFACE DEFINITIONS
 
@@ -907,7 +913,7 @@ class pipe(splitter):
         # make side outlet components an alias of the inlet components
         self._so_comps = self._in_comps
 
-        self._model_file_path = PurePath(__file__)
+        self._model_file_path = self.set_model_file_path()
 
         return None
 
@@ -1007,7 +1013,7 @@ class influent(pipe):
         # an influent is always "converged" within the time frame of interest
         self._converged = True
 
-        self._model_file_path = PurePath(__file__)
+        self._model_file_path = self.set_model_file_path()
 
         # Influent characteristics from user measurements/inputs
         # Setting default values for municipal wastewater in USA
@@ -1435,7 +1441,7 @@ class effluent(pipe):
 
         self._mo_connected = True  # dummy
 
-        self._model_file_path = PurePath(__file__)
+        self._model_file_path = self.set_model_file_path()
 
         return None
 
@@ -1570,7 +1576,7 @@ class WAS(pipe):
         # assume something always receives WAS
         self._mo_connected = True
 
-        self._model_file_path = PurePath(__file__)
+        self._model_file_path = self.set_model_file_path()
 
         return None
 
