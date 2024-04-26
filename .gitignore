@@ -86,3 +86,4 @@ debug/
 
 #generated files:
 *.pfd
+test*.json
