@@ -85,7 +85,7 @@ def substitue_pipe_model(unit):
                 accept = True
             if accept == True and line[0] != '#' and ('[' not in line) and (']' not in line):
                 selected_model.append(line)
-            elif (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
+            elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
                 break
     return selected_model
 
