@@ -57,7 +57,7 @@
             "Inlet_Codenames": "Splitter_1 Pipe_1",
             "Main_Outlet_Codename": "FinalClarifier_1",
             "Side_Outlet_Codename": "None",
-            "Is_SRT_Controller": "True",
+            "Is_SRT_Controller": "False",
             "Active_Volume": "38000",
             "Side_Water_Depth": "3.5",
             "Model_File_Path:": "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/asmreactor.pmt"
@@ -74,7 +74,7 @@
             "Inlet_Codenames": "ASMReactor_1",
             "Main_Outlet_Codename": "Effluent_1",
             "Side_Outlet_Codename": "Splitter_1",
-            "Is_SRT_Controller": "True",
+            "Is_SRT_Controller": "False",
             "Active_Volume": "9500",
             "Side_Water_Depth": "3.5",
             "Model_File_Path": "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/finalclarifier.pmt"
@@ -106,7 +106,7 @@
             "Inlet_Codenames": "FinalClarifier_1",
             "Main_Outlet_Codename": "ASMReactor_1",
             "Side_Outlet_Codename": "WAS_1",
-            "Is_SRT_Controller": "False",
+            "Is_SRT_Controller": "True",
             "Model_File_Path": "/Users/kaiz/PythonPrograms/PooPyLab_Project/PooPyLab/ASMModel/splitter.pmt"
         },
         "Effluent_1": {

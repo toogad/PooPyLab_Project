@@ -906,6 +906,8 @@ class pipe(splitter):
         # a pipe's sidestream flow IS DEFINED as ZERO
         self._so_flow_defined = True
 
+        self._SRT_controller = False
+
         # inlet and main outlet components are identical for a pipe
         # make main outlet components an alias of the inlet components
         self._mo_comps = self._in_comps
