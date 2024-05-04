@@ -90,7 +90,15 @@ def substitue_pipe_model(unit):
     return selected_model
 
 
+def _get_flow_weighted_avg_inlet_concs(pfd, unit):
+    inlet_streams = []
+    myinlet = unit['Inlet_Codenames'].split()
+    for codename in myinlet:
+        discharger = pfd['Flowsheet'][codename]
+        if discharger['Main_Outlet_Codename'] == unit['Codename']:
+            inlet_streams.append() #TODO: continue here
 
+    return
 
 
 def compose_sys(pfd={}, tab=2):
