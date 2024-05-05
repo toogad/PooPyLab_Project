@@ -1,20 +1,20 @@
 #!/usr/bin/python3
 
-def create_configs(filename='pipe.pmt'):
-    """
-    Read the lines in a .pmt file and convert the info into a dict
-
-    Args:
-        filename: the name for a .pmt file
-
-    Return:
-        {}
-    """
-    lines, items = [], {}
-    with open(filename, 'r') as def_file:
-        lines = def_file.readlines()
-        items = {it.split('=')[0]: it.split('=')[1][:-1] for it in lines}
-    return items
+#def create_configs(filename='pipe.pmt'):
+#    """
+#    Read the lines in a .pmt file and convert the info into a dict
+#
+#    Args:
+#        filename: the name for a .pmt file
+#
+#    Return:
+#        {}
+#    """
+#    lines, items = [], {}
+#    with open(filename, 'r') as def_file:
+#        lines = def_file.readlines()
+#        items = {it.split('=')[0]: it.split('=')[1][:-1] for it in lines}
+#    return items
 
 
 def _create_array_name(proc_unit={}, branch='Inlet'):
@@ -22,7 +22,7 @@ def _create_array_name(proc_unit={}, branch='Inlet'):
     Create the array name for a particular branch of a process unit
 
     Args:
-        proc_unit: a configs {}
+        proc_unit: a process unit's config {}
         branch: type of the branch whose array is to be created, 'Inlet'|'Main'|'Side'
 
     Return:
@@ -32,16 +32,9 @@ def _create_array_name(proc_unit={}, branch='Inlet'):
     # proc_unit['NUM_MODEL_COMPONENTS'] INCLUDES flow rate
     # array[0] = flow rate
     #
-    if branch == 'Inlet':
-        prefix = '_in_'
-    elif branch == 'Main':
-        prefix = '_mo_'
-    else:
-        prefix = '_so_'
-    array_name = [proc_unit['Codename'] + prefix + 'comp[' + proc_unit['Num_Model_Components'] + ']']
-    if array_name:
-        return ''.join(array_name)
-    return '// unit ' + proc_unit['Codename'] + ' with incomplete connection here'
+    array_name = [ proc_unit[branch + '_Arrayname'] + '[' + proc_unit['Num_Model_Components'] + ']' ]
+
+    return ''.join(array_name)
 
 
 def define_branch_arrays(unit={}):
@@ -53,13 +46,16 @@ def define_branch_arrays(unit={}):
 
     # A process unit may not have a main outlet, e.g. an Effluent or a WAS
     if unit['Main_Outlet_Codename'] != 'None':
-        array_defs.append(_create_array_name(unit, 'Main'))
+        array_defs.append(_create_array_name(unit, 'Main_Outlet'))
 
     # A process unit may not have a side outlet, e.g. a Pipe or a CSTR
     if unit['Side_Outlet_Codename'] != 'None':
-        array_defs.append(_create_array_name(unit, 'Side'))
+        array_defs.append(_create_array_name(unit, 'Side_Outlet'))
 
-    return ', '.join(array_defs)
+    if array_defs:
+        return ', '.join(array_defs)
+
+    return '// unit ' + unit['Codename'] + ' with incomplete connection here'
 
 
 def assign_solver_array(arraynames=[], num_model_components=14):

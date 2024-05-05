@@ -1,6 +1,6 @@
 sunrealtype Influent_1_mo_comp[14];
 sunrealtype Pipe_1_in_comp[14], Pipe_1_mo_comp[14];
-//Error in Pipe_2 configs...
+// unit Pipe_2 with incomplete connection here;
 sunrealtype ASMReactor_1_in_comp[14], ASMReactor_1_mo_comp[14];
 sunrealtype FinalClarifier_1_in_comp[14], FinalClarifier_1_mo_comp[14], FinalClarifier_1_so_comp[14];
 sunrealtype WAS_1_in_comp[14];
