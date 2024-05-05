@@ -28,17 +28,17 @@ def _create_array_name(proc_unit={}, branch='Inlet'):
     Return:
         str of the array name for the given branch
     """
-    array_str = 'comp'
+    #
     # proc_unit['NUM_MODEL_COMPONENTS'] INCLUDES flow rate
     # array[0] = flow rate
-    array_len = int(proc_unit['Num_Model_Components'])
+    #
     if branch == 'Inlet':
         prefix = '_in_'
     elif branch == 'Main':
         prefix = '_mo_'
     else:
         prefix = '_so_'
-    array_name = [proc_unit['Codename'] + prefix + array_str + '[' + str(array_len) + ']']
+    array_name = [proc_unit['Codename'] + prefix + 'comp[' + proc_unit['Num_Model_Components'] + ']']
     if array_name:
         return ''.join(array_name)
     return '// unit ' + proc_unit['Codename'] + ' with incomplete connection here'
