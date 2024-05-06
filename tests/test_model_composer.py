@@ -1,7 +1,7 @@
 import context
 from PooPyLab.utils.pfd import read_wwtp
 from PooPyLab.model_builder.sundials.model_composer import compose_sys, write_to_file
-from PooPyLab.model_builder.sundials.model_composer import substitue_pipe_model
+from PooPyLab.model_builder.sundials.model_composer import substitue_pipe_model, _collect_inlet_arrays
 
 mypfd = read_wwtp("test_connect.json")
 declars, assigns, eqs = compose_sys(mypfd)
@@ -17,3 +17,4 @@ for u in mypfd['Flowsheet'].values():
     if u['Type'] == 'Pipe':
         pipe_model_template = substitue_pipe_model(u)
         print(pipe_model_template)
+        print(_collect_inlet_arrays(mypfd, u))

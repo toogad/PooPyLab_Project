@@ -88,7 +88,12 @@ def substitue_pipe_model(unit):
 
 def _collect_inlet_arrays(pfd, unit):
     inlet_streams = []
-    myinlet = unit['Inlet_Codenames'].split()
+    myinlet = unit['Inlet_Codenames'].split(' ')
+
+    #TODO: add ERROR Handling here for
+    if myinlet == ['None']:
+        return
+
     for codename in myinlet:
         discharger = pfd['Flowsheet'][codename]
         if discharger['Main_Outlet_Codename'] == unit['Codename']:
@@ -96,7 +101,7 @@ def _collect_inlet_arrays(pfd, unit):
         else:
             inlet_streams.append(discharger['Side_Outlet_Arrayname'])
 
-    return
+    return inlet_streams
 
 
 def compose_sys(pfd={}, tab=2):
