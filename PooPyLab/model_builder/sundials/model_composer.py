@@ -1,21 +1,5 @@
 #!/usr/bin/python3
 
-#def create_configs(filename='pipe.pmt'):
-#    """
-#    Read the lines in a .pmt file and convert the info into a dict
-#
-#    Args:
-#        filename: the name for a .pmt file
-#
-#    Return:
-#        {}
-#    """
-#    lines, items = [], {}
-#    with open(filename, 'r') as def_file:
-#        lines = def_file.readlines()
-#        items = {it.split('=')[0]: it.split('=')[1][:-1] for it in lines}
-#    return items
-
 
 def _create_array_name(proc_unit={}, branch='Inlet'):
     """

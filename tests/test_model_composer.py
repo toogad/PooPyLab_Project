@@ -5,9 +5,7 @@ from PooPyLab.model_builder.sundials.model_composer import substitue_pipe_model,
 
 mypfd = read_wwtp("test_connect.json")
 declars, assigns, eqs = compose_sys(mypfd)
-#print(declars)
-#print(assigns)
-#print(eqs)
+
 write_to_file('syseqs.c', declars, 'w')
 write_to_file('syseqs.c', assigns, 'a')
 write_to_file('syseqs.c', eqs, 'a')
