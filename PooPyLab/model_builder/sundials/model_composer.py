@@ -71,12 +71,22 @@ def substitue_pipe_model(unit):
 
 
 def _collect_inlet_arrays(pfd, unit):
+    """
+    Generate the flow totalization loop in the equation system (.c file)
+
+    Args:
+        pfd: dict storing the process flowsheet
+        unit: the process unit whose inlet streams are to be identified
+
+    Return:
+        the identified inlet streams as an str
+    """
     inlet_streams = []
     myinlet = unit['Inlet_Codenames'].split(' ')
 
     #TODO: add ERROR Handling here for
     if myinlet == ['None']:
-        return
+        return inlet_streams
 
     for codename in myinlet:
         discharger = pfd['Flowsheet'][codename]
@@ -88,13 +98,29 @@ def _collect_inlet_arrays(pfd, unit):
     return inlet_streams
 
 
+def _generate_flow_totalizer(unit, inlet_streams):
+    """
+    Generate the totalizing ops in the equation system (.c file)
+
+    Args:
+        unit: the process unit whose inlet total flow is to be totalized
+        inlet_streams: the identified inlet streams for "unit"
+
+    Return:
+        a str of the ops that sum up the total flow for the unit
+    """
+    totalizer_str = []
+
+    return
+
+
 def compose_sys(pfd={}, tab=2):
     """
     Compose the units' variable/array declarations and mass balance equations
 
     Args:
         pfd: dict storing the process flowsheet
-
+        tab: size of a "tab"
     Return:
         declaration of the arrays
         equations of all the units in pfd
