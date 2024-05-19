@@ -84,7 +84,7 @@ def _collect_inlet_arrays(pfd, unit):
     inlet_streams = []
     myinlet = unit['Inlet_Codenames'].split(' ')
 
-    #TODO: add ERROR Handling here for
+    #TODO: add ERROR Handling here
     if myinlet == ['None']:
         return inlet_streams
 
@@ -145,18 +145,19 @@ def compose_sys(pfd={}, tab=2):
     for c in pfd['Flowsheet'].values():
         print(c['Codename'])
         if c['Type'] == 'Pipe':
-            all_eqs.append('for (i=0; i<' + c['Num_Model_Components'] + '; i++){')
+            inlet_streams = _collect_inlet_arrays(pfd, c)
+            inlet_flow_totalizer = _generate_flow_totalizer(c, inlet_streams)
+            all_eqs.append(inlet_flow_totalizer)
+            #TODO: double check the 'i=1' below: [0] is flow and handled by inlet_flow_totalizer
+            all_eqs.append('for (i=1; i<' + c['Num_Model_Components'] + '; i++){')
             all_eqs.append(' ' * tab
-                           + 'LHS[' + str(id_eq) + '+i] = '
-                           + c['Codename'] + '_in_comp[i]'
-                           + '- INF1_Influent_2_mo_comp[i];')
+                            + 'LHS[' + str(id_eq) + '+i] = '
+                            + c['Codename'] + '_in_comp[i]'
+                            + ' - INF1_Influent_2_mo_comp[i];')
             id_eq += int(c['Num_Model_Components'])
             all_eqs.append('  LHS[' + str(id_eq) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
             id_eq += int(c['Num_Model_Components'])
-            all_eqs.append('}')
-        inlet_streams = _collect_inlet_arrays(pfd, c)
-        inlet_flow_totalizer = _generate_flow_totalizer(c, inlet_streams)
-        print(inlet_flow_totalizer)
+            all_eqs.append('}\n')
 
     return declars, array_assign, all_eqs
 
