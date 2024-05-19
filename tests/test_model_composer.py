@@ -15,4 +15,4 @@ for u in mypfd['Flowsheet'].values():
     if u['Type'] == 'Pipe':
         pipe_model_template = substitue_pipe_model(u)
         print(pipe_model_template)
-        print(_collect_inlet_arrays(mypfd, u))
+        #print(_collect_inlet_arrays(mypfd, u))

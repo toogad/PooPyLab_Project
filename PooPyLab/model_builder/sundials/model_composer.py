@@ -109,9 +109,12 @@ def _generate_flow_totalizer(unit, inlet_streams):
     Return:
         a str of the ops that sum up the total flow for the unit
     """
+    my_inlet_flow_str = unit['Inlet_Arrayname'] + '[0] = '
     totalizer_str = []
 
-    return
+    for discharger in inlet_streams:
+        totalizer_str.append(discharger + '[0]')
+    return my_inlet_flow_str + ' + '.join(totalizer_str)
 
 
 def compose_sys(pfd={}, tab=2):
@@ -151,6 +154,9 @@ def compose_sys(pfd={}, tab=2):
             all_eqs.append('  LHS[' + str(id_eq) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
             id_eq += int(c['Num_Model_Components'])
             all_eqs.append('}')
+        inlet_streams = _collect_inlet_arrays(pfd, c)
+        inlet_flow_totalizer = _generate_flow_totalizer(c, inlet_streams)
+        print(inlet_flow_totalizer)
 
     return declars, array_assign, all_eqs
 
