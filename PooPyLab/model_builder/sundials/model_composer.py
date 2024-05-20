@@ -117,6 +117,23 @@ def _generate_flow_totalizer(unit, inlet_streams):
     return my_inlet_flow_str + ' + '.join(totalizer_str)
 
 
+def _generate_flow_weighted_avg(unit, inlet_streams):
+    """
+    Generate the flow weighted average inlet concentrations
+
+    Args:
+        unit: the process unit whose inlet concs are being determined
+        inlet_streams: the inlet arrays for the 'unit'
+
+    Return:
+        a str of C code to generate the flow weighted avg (model components)
+    """
+    fwavg = []
+
+
+    return
+
+
 def compose_sys(pfd={}, tab=2):
     """
     Compose the units' variable/array declarations and mass balance equations
