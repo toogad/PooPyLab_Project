@@ -126,12 +126,27 @@ def _generate_flow_weighted_avg(unit, inlet_streams):
         inlet_streams: the inlet arrays for the 'unit'
 
     Return:
-        a str of C code to generate the flow weighted avg (model components)
+        a str of C code to generate the flow weighted avg (model components), e.g.:
+
+        'for(j=1; j<14; j++)
+                unit.in_comps[j] = (inlet_A[j] * inlet_A[0] + inlet_B[j] * inlet_B[0]) / unit.in_comps[0];'
     """
-    fwavg = []
+    n = len(inlet_streams)
+    if n == 0:
+        return '// ERROR in ' + unit['Codename'] + "'s inlet connection."
 
+    fwavg = [ 'for(i=1; j<' + unit['Num_Model_Components'] + '; i++)\n' ]
 
-    return
+    calcs = '  ' + unit['Inlet_Arrayname'] + '[i] = '
+    if n > 1:
+        calcs += '(' + ''.join([dschg + '[i] * ' + dschg + '[0]' for dschg in inlet_streams]) + ')'
+        calcs += ' / ' + unit['Inlet_Arrayname'] + '[0];\n'
+    else: # n==1
+        calcs += ''.join([dschg + '[i];\n' for dschg in inlet_streams])
+
+    fwavg.append(calcs)
+
+    return ''.join(fwavg)
 
 
 def compose_sys(pfd={}, tab=2):
@@ -165,6 +180,7 @@ def compose_sys(pfd={}, tab=2):
             inlet_streams = _collect_inlet_arrays(pfd, c)
             inlet_flow_totalizer = _generate_flow_totalizer(c, inlet_streams)
             all_eqs.append(inlet_flow_totalizer)
+            all_eqs.append(_generate_flow_weighted_avg(c, inlet_streams))
             #TODO: double check the 'i=1' below: [0] is flow and handled by inlet_flow_totalizer
             all_eqs.append('for (i=1; i<' + c['Num_Model_Components'] + '; i++){')
             all_eqs.append(' ' * tab

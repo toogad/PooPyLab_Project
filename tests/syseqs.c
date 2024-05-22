@@ -47,12 +47,16 @@ for(i=0; i<14; i++)
   Effluent_1_in_comp[i] = Ith(y, 168+i+1);
 
 Pipe_1_in_comp[0] = Influent_1_mo_comp[0]
+for(i=1; j<14; i++)
+  Pipe_1_in_comp[i] = Influent_1_mo_comp[i];
+
 for (i=1; i<14; i++){
   LHS[0+i] = Pipe_1_in_comp[i] - INF1_Influent_2_mo_comp[i];
   LHS[14+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];
 }
 
 Pipe_2_in_comp[0] = 
+// ERROR in Pipe_2's inlet connection.
 for (i=1; i<14; i++){
   LHS[28+i] = Pipe_2_in_comp[i] - INF1_Influent_2_mo_comp[i];
   LHS[42+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];
