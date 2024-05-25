@@ -98,46 +98,50 @@ def _collect_inlet_arrays(pfd, unit):
     return inlet_streams
 
 
-def _generate_flow_totalizer(unit, inlet_streams):
+def _generate_flow_totalizer(unit, inlet_streams, start_eq_id):
     """
     Generate the totalizing ops in the equation system (.c file)
 
     Args:
         unit: the process unit whose inlet total flow is to be totalized
-        inlet_streams: the identified inlet streams for "unit"
+        inlet_streams: the identified inlet streams for "unit", []
+        start_eq_id: starting equation id for the LHS, int
 
     Return:
         a str of the ops that sum up the total flow for the unit
     """
-    my_inlet_flow_str = unit['Inlet_Arrayname'] + '[0] = '
+    my_inlet_flow_str = unit['Inlet_Arrayname'] + '[0] - '
     totalizer_str = []
 
     for discharger in inlet_streams:
         totalizer_str.append(discharger + '[0]')
-    return my_inlet_flow_str + ' + '.join(totalizer_str)
+    return 'LHS(' + str(start_eq_id) + ') = ' + my_inlet_flow_str + ' - '.join(totalizer_str) + '\n'
 
 
-def _generate_flow_weighted_avg(unit, inlet_streams):
+def _generate_flow_weighted_avg(unit, inlet_streams, start_eq_id):
     """
     Generate the flow weighted average inlet concentrations
 
     Args:
         unit: the process unit whose inlet concs are being determined
         inlet_streams: the inlet arrays for the 'unit'
+        start_eq_id: starting equation id for the LHS, int
 
     Return:
-        a str of C code to generate the flow weighted avg (model components), e.g.:
+        a str of C code to generate the flow weighted avg (model components)
 
+        Example:
         'for(j=1; j<14; j++)
-                unit.in_comps[j] = (inlet_A[j] * inlet_A[0] + inlet_B[j] * inlet_B[0]) / unit.in_comps[0];'
+                LHS(start_eq_id+j) = unit.in_comps[j]
+                                   - (inlet_A[j]*inlet_A[0] + inlet_B[j]*inlet_B[0]) / unit.in_comps[0];'
     """
     n = len(inlet_streams)
     if n == 0:
         return '// ERROR in ' + unit['Codename'] + "'s inlet connection."
 
-    fwavg = [ 'for(i=1; j<' + unit['Num_Model_Components'] + '; i++)\n' ]
+    fwavg = [ 'for(i=1; i<' + unit['Num_Model_Components'] + '; i++)\n' ]
 
-    calcs = '  ' + unit['Inlet_Arrayname'] + '[i] = '
+    calcs = '  ' + 'LHS(' + str(start_eq_id) + '+i) = ' + unit['Inlet_Arrayname'] + '[i] - '
     if n > 1:
         calcs += '(' + ''.join([dschg + '[i] * ' + dschg + '[0]' for dschg in inlet_streams]) + ')'
         calcs += ' / ' + unit['Inlet_Arrayname'] + '[0];\n'
@@ -178,9 +182,11 @@ def compose_sys(pfd={}, tab=2):
         print(c['Codename'])
         if c['Type'] == 'Pipe':
             inlet_streams = _collect_inlet_arrays(pfd, c)
-            inlet_flow_totalizer = _generate_flow_totalizer(c, inlet_streams)
+            inlet_flow_totalizer = _generate_flow_totalizer(c, inlet_streams, id_eq)
+            id_eq += 1
             all_eqs.append(inlet_flow_totalizer)
-            all_eqs.append(_generate_flow_weighted_avg(c, inlet_streams))
+            all_eqs.append(_generate_flow_weighted_avg(c, inlet_streams, id_eq))
+            id_eq += int(c['Num_Model_Components']) - 1
             #TODO: double check the 'i=1' below: [0] is flow and handled by inlet_flow_totalizer
             all_eqs.append('for (i=1; i<' + c['Num_Model_Components'] + '; i++){')
             all_eqs.append(' ' * tab
