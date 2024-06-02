@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include <sundials/sundials_context.h>
 #include <ida/ida.h>
 #include <nvector/nvector_serial.h>
 #include <sundials/sundials_nvector.h>
@@ -20,9 +19,9 @@ int main()
  
   SUNContext ctx;
   void *ida_mem;
-  realtype t, t0, tf, tout, dt, tret;
+  sunrealtype t, t0, tf, tout, dt, tret;
   N_Vector yy, yp, yid, yy0_mod, yp0_mod;
-  realtype rtol, atol;
+  sunrealtype rtol, atol;
   SUNMatrix A;
   SUNLinearSolver LS;
   SUNNonlinearSolver NLS;
@@ -42,7 +41,7 @@ int main()
   rtol = 1.0e-14;  //move to macro
   atol = 1.0e-5;   //move to macro
 
-  retval = SUNContext_Create(NULL, &ctx);
+  retval = SUNContext_Create(SUN_COMM_NULL, &ctx);
 
   yy = N_VNew_Serial(NEQ, ctx);
   /* Initial guess */
@@ -96,11 +95,11 @@ int main()
   retval = IDAPrintAllStats(ida_mem, stdout, SUN_OUTPUTFORMAT_TABLE);
 
 
-  N_VDestroy(yy);
-  N_VDestroy(yp);
-  N_VDestroy(yid);
-  N_VDestroy(yy0_mod);
-  N_VDestroy(yp0_mod);
+  N_VDestroy_Serial(yy);
+  N_VDestroy_Serial(yp);
+  N_VDestroy_Serial(yid);
+  N_VDestroy_Serial(yy0_mod);
+  N_VDestroy_Serial(yp0_mod);
   IDAFree(&ida_mem);
   SUNLinSolFree_Dense(LS);
   SUNMatDestroy_Dense(A);

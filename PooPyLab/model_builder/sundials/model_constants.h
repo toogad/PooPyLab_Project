@@ -8,11 +8,11 @@
 
 #include <sundials/sundials_types.h>
 
-#define ZERO  RCONST(0.0)
-#define MU_MAX RCONST(6.0)
-#define DECAY RCONST(0.62)
-#define KD    RCONST(0.08)
-#define YH    RCONST(0.67)
-#define KS    RCONST(10.0)
+#define ZERO  SUN_RCONST(0.0)
+#define MU_MAX SUN_RCONST(6.0)
+#define DECAY SUN_RCONST(0.62)
+#define KD    SUN_RCONST(0.08)
+#define YH    SUN_RCONST(0.67)
+#define KS    SUN_RCONST(10.0)
 
 #endif
