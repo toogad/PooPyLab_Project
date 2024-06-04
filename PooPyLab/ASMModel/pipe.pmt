@@ -1,4 +1,5 @@
 #Mass Balance for a Pipe unit
+# FWA = Flow Weighted Averages
 
 #Flow data source for the Main Outlet can be UPS, DNS, and PRG (e.g. pipe-->WAS).
 [UPS]
@@ -8,10 +9,10 @@
 0 = {MO_Comps} - {IN_Comps}
 
 [TBD]
-0 = {IN_Flow} - {Sum_All_Discharger_Flows}
-0 = {IN_Flow} - {MO_Flow}
-0 = {IN_Comps} - {FlowWeightedAvg_All_Dischargers}
-0 = {MO_Comps} - {IN_Comps}
+Flow: 0 = {IN} - {Dischargers_Sum}
+Flow: 0 = {IN} - {MO}
+Conc: 0 = {IN} - {Dischargers_FWA}
+Conc: 0 = {IN} - {MO}
 
 #Flow data source for PRG is the same as that for UPS since a Pipe has no flow split to be determined during runtime
 [PRG]

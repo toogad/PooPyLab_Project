@@ -6,7 +6,7 @@ sunrealtype FinalClarifier_1_in_comp[14], FinalClarifier_1_mo_comp[14], FinalCla
 sunrealtype WAS_1_in_comp[14];
 sunrealtype Splitter_1_in_comp[14], Splitter_1_mo_comp[14], Splitter_1_so_comp[14];
 sunrealtype Effluent_1_in_comp[14];
-int i;
+sunindextype i;
 for(i=0; i<14; i++)
   Influent_1_mo_comp[i] = Ith(y, 0+i+1);
 
