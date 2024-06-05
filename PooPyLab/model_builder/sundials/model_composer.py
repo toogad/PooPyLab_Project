@@ -20,12 +20,35 @@
 #
 #
 
-from .model_builder_common import define_branch_arrays, assign_solver_array
-from .model_builder_common import collect_inlet_arrays
+from .model_builder_common import define_branch_arrays, assign_solver_array, collect_inlet_arrays
 from .model_builder_common import generate_flow_totalizer, generate_flow_weighted_avg
 
 
-def substitue_pipe_model(unit):
+#def substitue_pipe_model(unit):
+#    selected_model = []
+#    accept = False
+#    with open(unit['Model_File_Path'], 'rt') as tf:
+#        for line in tf:
+#            if unit['MO_Flow_Data_Source'] in line or accept == True:
+#                accept = True
+#            if accept == True and line[0] != '#' and ('[' not in line) and (']' not in line):
+#                selected_model.append(line)
+#            elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
+#                break
+#    return selected_model
+
+
+def substitue_pipe_model(unit, eq_id):
+    """ Construct a pipe model based on the selected template
+
+    Args:
+        unit: the pipe unit undeer construction
+        eq_id: starting equation id
+    Return:
+        model equations for a pipe (str)
+        updated eq_id (int)
+
+    """
     selected_model = []
     accept = False
     with open(unit['Model_File_Path'], 'rt') as tf:
@@ -36,12 +59,17 @@ def substitue_pipe_model(unit):
                 selected_model.append(line)
             elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
                 break
+    for line in selected_model:
+        splt = line.split(':')
+        if splt[0] == 'FLOW':
+
+
+
     return selected_model
 
 
 def compose_sys(pfd={}, tab=2):
-    """
-    Compose the units' variable/array declarations and mass balance equations
+    """ Compose the units' variable/array declarations and mass balance equations
 
     Args:
         pfd: dict storing the process flowsheet
