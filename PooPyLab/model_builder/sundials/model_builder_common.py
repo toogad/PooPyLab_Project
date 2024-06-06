@@ -103,7 +103,7 @@ def collect_inlet_arrays(pfd, unit):
     return inlet_streams
 
 
-def generate_flow_totalizer(unit, inlet_streams, start_eq_id):
+def generate_inlet_flow(unit, inlet_streams, start_eq_id):
     """
     Generate the totalizing ops in the equation system (.c file)
 
@@ -114,16 +114,17 @@ def generate_flow_totalizer(unit, inlet_streams, start_eq_id):
 
     Return:
         a str of the ops that sum up the total flow for the unit
+        an updated start_eq_id
     """
     my_inlet_flow_str = unit['Inlet_Arrayname'] + '[0] - '
     totalizer_str = []
 
     for discharger in inlet_streams:
         totalizer_str.append(discharger + '[0]')
-    return 'LHS[' + str(start_eq_id) + '] = ' + my_inlet_flow_str + ' - '.join(totalizer_str) + '\n'
+    return 'LHS[' + str(start_eq_id) + '] = ' + my_inlet_flow_str + ' - '.join(totalizer_str) + '\n', start_eq_id+1
 
 
-def generate_flow_weighted_avg(unit, inlet_streams, start_eq_id):
+def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
     """
     Generate the flow weighted average inlet concentrations
 

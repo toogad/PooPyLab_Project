@@ -21,7 +21,7 @@
 #
 
 from .model_builder_common import define_branch_arrays, assign_solver_array, collect_inlet_arrays
-from .model_builder_common import generate_flow_totalizer, generate_flow_weighted_avg
+from .model_builder_common import generate_inlet_flow, generate_inlet_flow_weighted_avg
 
 
 #def substitue_pipe_model(unit):
@@ -38,17 +38,19 @@ from .model_builder_common import generate_flow_totalizer, generate_flow_weighte
 #    return selected_model
 
 
-def substitue_pipe_model(unit, eq_id):
+def substitue_pipe_model(unit, inlet_streams, start_eq_id):
     """ Construct a pipe model based on the selected template
 
     Args:
-        unit: the pipe unit undeer construction
-        eq_id: starting equation id
+        unit: the pipe unit under construction, {}
+        inlet_streams: list of inlet streams arrayname to "unit", ['']
+        start_eq_id: starting equation id, int
     Return:
         model equations for a pipe (str)
         updated eq_id (int)
 
     """
+    eq_id = start_eq_id
     selected_model = []
     accept = False
     with open(unit['Model_File_Path'], 'rt') as tf:
@@ -62,6 +64,10 @@ def substitue_pipe_model(unit, eq_id):
     for line in selected_model:
         splt = line.split(':')
         if splt[0] == 'FLOW':
+            my_in, eq_id = generate_inlet_flow(unit, inlet_streams, eq_id)
+
+
+
 
 
 

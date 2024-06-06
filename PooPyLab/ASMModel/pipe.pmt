@@ -9,10 +9,10 @@
 0 = {MO_Comps} - {IN_Comps}
 
 [TBD]
-FLOW: 0 = {MY_IN} - {DISCHARGERS_SUM}
-FLOW: 0 = {MY_IN} - {MY_MO}
-CONC: 0 = {MY_IN} - {DISCHARGERS_FWA}
-CONC: 0 = {MY_IN} - {MY_MO}
+0 = MY_IN_FLOW - DISCHARGERS_SUM
+0 = MY_IN_FLOW - MY_MO_FLOW
+0 = MY_IN_CONC - DISCHARGERS_FWA
+0 = MY_IN_CONC - MY_MO_CONC
 
 #Flow data source for PRG is the same as that for UPS since a Pipe has no flow split to be determined during runtime
 [PRG]
