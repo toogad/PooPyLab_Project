@@ -150,7 +150,6 @@ def substr_for_flow(unit, flowstr, inlet_streams):
     Return:
         str of C array element to replace the flow term in the model template
     """
-
     branch = ''
 
     if flowstr == 'MY_IN_FLOW':
@@ -167,14 +166,12 @@ def substr_for_flow(unit, flowstr, inlet_streams):
     if flowstr == 'DISCHARGERS_SUM':
         for discharger in inlet_streams:
             totalizer_str.append(discharger + '[0]')
-        return '(' + ' + '.joint(totalizer_str) + ')\n'
+        return '(' + ' + '.join(totalizer_str) + ')\n'
 
-
-
-
-
-
-
+    if flowstr.isupper() or flowstr.islower() or flowstr.isnumeric():
+        return 'ERROR'
+    else:
+        return ''
 
 
 
