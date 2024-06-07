@@ -21,8 +21,7 @@
 
 
 def _create_array_name(proc_unit={}, branch='Inlet'):
-    """
-    Create the array name for a particular branch of a process unit
+    """ Create the array name for a particular branch of a process unit
 
     Args:
         proc_unit: a process unit's config {}
@@ -41,6 +40,15 @@ def _create_array_name(proc_unit={}, branch='Inlet'):
 
 
 def define_branch_arrays(unit={}):
+    """ Define the array names for each available branch of a unit
+
+    Args:
+        unit: a PooPyLab process unit, {}
+
+    Return:
+        str of arraynames for the branches
+    """
+
     array_defs = []
 
     # A process unit may not have an inlet, e.g. an Influent
@@ -62,6 +70,15 @@ def define_branch_arrays(unit={}):
 
 
 def assign_solver_array(arraynames=[], num_model_components=14):
+    """ Construct C code for assigning the variable array into the obj function
+
+    Args:
+        arraynames: list of array names
+        num_model_components: number of model components, int.
+    Return:
+        assignment C code, str.
+    """
+
     assignment = []
     counter = 0
     for group in arraynames:
@@ -76,8 +93,7 @@ def assign_solver_array(arraynames=[], num_model_components=14):
 
 
 def collect_inlet_arrays(pfd, unit):
-    """
-    Generate the array names that are discharging to the current unit
+    """ Generate the array names that are discharging to the current unit
 
     Args:
         pfd: dict storing the process flowsheet
@@ -104,8 +120,7 @@ def collect_inlet_arrays(pfd, unit):
 
 
 def generate_inlet_flow(unit, inlet_streams, start_eq_id):
-    """
-    Generate the totalizing ops in the equation system (.c file)
+    """ Generate the totalizing ops in the equation system (.c file)
 
     Args:
         unit: the process unit whose inlet total flow is to be totalized
@@ -124,9 +139,47 @@ def generate_inlet_flow(unit, inlet_streams, start_eq_id):
     return 'LHS[' + str(start_eq_id) + '] = ' + my_inlet_flow_str + ' - '.join(totalizer_str) + '\n', start_eq_id+1
 
 
-def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
+def substr_for_flow(unit, flowstr, inlet_streams):
+    """ Generate the substitution str for the flow in a model template
+
+    Args:
+        unit: the PooPyLab unit being worked on, {}
+        flowstr: the flow term used in the model template, def __str__(self):
+        inlet_streams: the identified inlet streams for "unit", []
+
+    Return:
+        str of C array element to replace the flow term in the model template
     """
-    Generate the flow weighted average inlet concentrations
+
+    branch = ''
+
+    if flowstr == 'MY_IN_FLOW':
+        branch = 'Inlet'
+    elif flowstr == 'MY_MO_FLOW':
+        branch = 'MO'
+    elif flowstr == 'MY_SO_FLOW':
+        branch = 'SO'
+
+    if branch != '':
+        return unit[branch + '_Arrayname'] + '[0]'
+
+    totalizer_str = []
+    if flowstr == 'DISCHARGERS_SUM':
+        for discharger in inlet_streams:
+            totalizer_str.append(discharger + '[0]')
+        return '(' + ' + '.joint(totalizer_str) + ')\n'
+
+
+
+
+
+
+
+
+
+
+def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
+    """ Generate the flow weighted average inlet concentrations
 
     Args:
         unit: the process unit whose inlet concs are being determined
