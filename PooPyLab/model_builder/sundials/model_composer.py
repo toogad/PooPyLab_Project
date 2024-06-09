@@ -21,7 +21,7 @@
 #
 
 from .model_builder_common import define_branch_arrays, assign_solver_array, collect_inlet_arrays
-from .model_builder_common import generate_inlet_flow, generate_inlet_flow_weighted_avg
+from .model_builder_common import substr_for_flow, generate_inlet_flow_weighted_avg
 
 
 #def substitue_pipe_model(unit):
@@ -50,7 +50,6 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
         updated eq_id (int)
 
     """
-    eq_id = start_eq_id
     selected_model = []
     accept = False
     with open(unit['Model_File_Path'], 'rt') as tf:
@@ -61,14 +60,19 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
                 selected_model.append(line)
             elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
                 break
-    for line in selected_model:
-        splt = line.split(':')
-        if splt[0] == 'FLOW':
-            my_in, eq_id = generate_inlet_flow(unit, inlet_streams, eq_id)
 
-
-
-
+    eq_id = start_eq_id
+    for line in selected_model:         # e.g. line = 'FLOW : 0 = MY_IN_FLOW - MY_MO_FLOW'
+        splt = line.split(':')          #      splt = ['FLOW ', '0 = MY_IN_FLOW - MY_MO_FLOW']
+        line = splt[1]                  #      line = '0 = MY_IN_FLOW - MY_MO_FLOW'
+        rhs = line.split('=')[1]        #      rhs = 'MY_IN_FLOW - MY_MO_FLOW'
+        if splt[0].strip() == 'FLOW':
+            flow_terms = rhs.split('-') #      flow_terms = ['MY_IN_FLOW ', ' MY_MO_FLOW']
+            for ft in flow_terms:
+                fts = ft.strip()
+                line.replace(fts, substr_for_flow(unit, fts, inlet_streams))
+                line.replace('0','LHS[' + str(eq_id) + ']')
+                eq_id += 1
 
 
     return selected_model

@@ -144,7 +144,7 @@ def substr_for_flow(unit, flowstr, inlet_streams):
 
     Args:
         unit: the PooPyLab unit being worked on, {}
-        flowstr: the flow term used in the model template, def __str__(self):
+        flowstr: the flow term used in the model template, '':
         inlet_streams: the identified inlet streams for "unit", []
 
     Return:
