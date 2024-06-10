@@ -73,8 +73,8 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
                 line.replace(fts, substr_for_flow(unit, fts, inlet_streams))
                 line.replace('0','LHS[' + str(eq_id) + ']')
                 eq_id += 1
-
-
+        elif splt[0].strip() == 'CONC':
+            #TODO: CONTINUE HERE
     return selected_model
 
 

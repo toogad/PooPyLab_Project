@@ -188,8 +188,8 @@ def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
 
         Example:
         'for(j=1; j<14; j++)
-                LHS(start_eq_id+j) = unit.in_comps[j]
-                                   - (inlet_A[j]*inlet_A[0] + inlet_B[j]*inlet_B[0]) / unit.in_comps[0];'
+           LHS[start_eq_id-1+j] = unit.in_comps[j]
+                                  - (inlet_A[j]*inlet_A[0] + inlet_B[j]*inlet_B[0]) / unit.in_comps[0];'
     """
     n = len(inlet_streams)
     if n == 0:
