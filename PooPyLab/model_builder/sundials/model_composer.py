@@ -56,13 +56,14 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
         for line in tf:
             if unit['MO_Flow_Data_Source'] in line or accept == True:
                 accept = True
-            if accept == True and line[0] != '#' and ('[' not in line) and (']' not in line):
+            if accept == True and line[0]!='#' and line!="\n" and ('[' not in line) and (']' not in line):
                 selected_model.append(line)
             elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
                 break
 
     eq_id = start_eq_id
     for line in selected_model:         # e.g. line = 'FLOW : 0 = MY_IN_FLOW - MY_MO_FLOW'
+        print('Current LINE=', line)
         splt = line.split(':')          #      splt = ['FLOW ', '0 = MY_IN_FLOW - MY_MO_FLOW']
         line = splt[1]                  #      line = '0 = MY_IN_FLOW - MY_MO_FLOW'
         rhs = line.split('=')[1]        #      rhs = 'MY_IN_FLOW - MY_MO_FLOW'
@@ -74,8 +75,8 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
                 line.replace('0','LHS[' + str(eq_id) + ']')
                 eq_id += 1
         elif splt[0].strip() == 'CONC':
-            #TODO: CONTINUE HERE
-    return selected_model
+            line, eq_id = generate_inlet_flow_weighted_avg(unit, inlet_streams, eq_id)
+    return selected_model, eq_id
 
 
 def compose_sys(pfd={}, tab=2):
@@ -103,24 +104,11 @@ def compose_sys(pfd={}, tab=2):
     all_eqs = []
     id_eq = 0
     for c in pfd['Flowsheet'].values():
+        inlet_streams = collect_inlet_arrays(pfd, c)
         print(c['Codename'])
         if c['Type'] == 'Pipe':
-            inlet_streams = collect_inlet_arrays(pfd, c)
-            inlet_flow_totalizer = generate_flow_totalizer(c, inlet_streams, id_eq)
-            id_eq += 1
-            all_eqs.append(inlet_flow_totalizer)
-            all_eqs.append(generate_flow_weighted_avg(c, inlet_streams, id_eq))
-            id_eq += int(c['Num_Model_Components']) - 1
-            #TODO: double check the 'i=1' below: [0] is flow and handled by inlet_flow_totalizer
-#            all_eqs.append('for (i=1; i<' + c['Num_Model_Components'] + '; i++){')
-#            all_eqs.append(' ' * tab
-#                            + 'LHS[' + str(id_eq) + '+i] = '
-#                            + c['Codename'] + '_in_comp[i]'
-#                            + ' - INF1_Influent_2_mo_comp[i];')
-#            id_eq += int(c['Num_Model_Components'])
-#            all_eqs.append('  LHS[' + str(id_eq) + '+i] = P1_Pipe_1_in_comp[i] - P1_Pipe_1_mo_comp[i];')
-#            id_eq += int(c['Num_Model_Components'])
-#            all_eqs.append('}\n')
+            eqs, id_eq = substitue_pipe_model(c, inlet_streams, id_eq)
+            all_eqs.append(eqs)
 
     return declars, array_assign, all_eqs
 

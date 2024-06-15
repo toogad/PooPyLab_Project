@@ -155,9 +155,9 @@ def substr_for_flow(unit, flowstr, inlet_streams):
     if flowstr == 'MY_IN_FLOW':
         branch = 'Inlet'
     elif flowstr == 'MY_MO_FLOW':
-        branch = 'MO'
+        branch = 'Main_Outlet'
     elif flowstr == 'MY_SO_FLOW':
-        branch = 'SO'
+        branch = 'Side_Outlet'
 
     if branch != '':
         return unit[branch + '_Arrayname'] + '[0]'
@@ -184,7 +184,8 @@ def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
         start_eq_id: starting equation id for the LHS, int
 
     Return:
-        a str of C code to generate the flow weighted avg (model components)
+        a str of C code to generate the flow weighted avg (model components),
+        an updated eq_id
 
         Example:
         'for(j=1; j<14; j++)
@@ -206,4 +207,4 @@ def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
 
     fwavg.append(calcs)
 
-    return ''.join(fwavg)
+    return ''.join(fwavg), start_eq_id+int(unit['Num_Model_Components'])-1
