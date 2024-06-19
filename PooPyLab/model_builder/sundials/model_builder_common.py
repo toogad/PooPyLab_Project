@@ -168,10 +168,11 @@ def substr_for_flow(unit, flowstr, inlet_streams):
             totalizer_str.append(discharger + '[0]')
         return '(' + ' + '.join(totalizer_str) + ')\n'
 
-    if flowstr.isupper() or flowstr.islower() or flowstr.isnumeric():
-        return 'ERROR'
-    else:
-        return ''
+#    if flowstr.isupper() or flowstr.islower() or flowstr.isnumeric():
+#        return 'ERROR'
+#    else:
+#        return ''
+    return 'ERROR in ' + unit['Codename'] + "\n"
 
 
 
@@ -194,7 +195,7 @@ def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
     """
     n = len(inlet_streams)
     if n == 0:
-        return '// ERROR in ' + unit['Codename'] + "'s inlet connection."
+        return '// ERROR in ' + unit['Codename'] + "'s inlet connection.", start_eq_id
 
     fwavg = [ 'for(i=1; i<' + unit['Num_Model_Components'] + '; i++)\n' ]
 

@@ -76,6 +76,7 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
                 eq_id += 1
         elif splt[0].strip() == 'CONC':
             line, eq_id = generate_inlet_flow_weighted_avg(unit, inlet_streams, eq_id)
+        print("UPDATED LINE:", line)
     return selected_model, eq_id
 
 
@@ -116,6 +117,7 @@ def compose_sys(pfd={}, tab=2):
 def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
     with open(filename, write_mode) as eqf:
         for item in lines:
+            print('ITEM: ', item)
             eqf.write(item)
             eqf.write('\n')
     return None
