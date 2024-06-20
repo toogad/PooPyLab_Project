@@ -71,9 +71,9 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
             flow_terms = rhs.split('-') #      flow_terms = ['MY_IN_FLOW ', ' MY_MO_FLOW']
             for ft in flow_terms:
                 fts = ft.strip()
-                line.replace(fts, substr_for_flow(unit, fts, inlet_streams))
-                line.replace('0','LHS[' + str(eq_id) + ']')
-                eq_id += 1
+                line = line.replace(fts, substr_for_flow(unit, fts, inlet_streams))
+                line = line.replace('ZERO','LHS[' + str(eq_id) + ']')
+            eq_id += 1
         elif splt[0].strip() == 'CONC':
             line, eq_id = generate_inlet_flow_weighted_avg(unit, inlet_streams, eq_id)
         print("UPDATED LINE:", line)

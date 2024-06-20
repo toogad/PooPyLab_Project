@@ -168,10 +168,6 @@ def substr_for_flow(unit, flowstr, inlet_streams):
             totalizer_str.append(discharger + '[0]')
         return '(' + ' + '.join(totalizer_str) + ')\n'
 
-#    if flowstr.isupper() or flowstr.islower() or flowstr.isnumeric():
-#        return 'ERROR'
-#    else:
-#        return ''
     return 'ERROR in ' + unit['Codename'] + "\n"
 
 
