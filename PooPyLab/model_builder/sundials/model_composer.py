@@ -21,7 +21,7 @@
 #
 
 from .model_builder_common import define_branch_arrays, assign_solver_array, collect_inlet_arrays
-from .model_builder_common import substr_for_flow, generate_inlet_flow_weighted_avg
+from .model_builder_common import substr_for_flow, substr_for_concs, generate_inlet_flow_weighted_avg
 
 
 #def substitue_pipe_model(unit):
@@ -67,15 +67,18 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
         splt = line.split(':')          #      splt = ['FLOW ', '0 = MY_IN_FLOW - MY_MO_FLOW']
         line = splt[1]                  #      line = '0 = MY_IN_FLOW - MY_MO_FLOW'
         rhs = line.split('=')[1]        #      rhs = 'MY_IN_FLOW - MY_MO_FLOW'
+        model_terms = rhs.split('-')     #      flow_terms = ['MY_IN_FLOW ', ' MY_MO_FLOW']
         if splt[0].strip() == 'FLOW':
-            flow_terms = rhs.split('-') #      flow_terms = ['MY_IN_FLOW ', ' MY_MO_FLOW']
-            for ft in flow_terms:
+            for ft in model_terms:
                 fts = ft.strip()
                 line = line.replace(fts, substr_for_flow(unit, fts, inlet_streams))
                 line = line.replace('ZERO','LHS[' + str(eq_id) + ']')
             eq_id += 1
         elif splt[0].strip() == 'CONC':
-            line, eq_id = generate_inlet_flow_weighted_avg(unit, inlet_streams, eq_id)
+            if 'FWA' in line:
+                line, eq_id = generate_inlet_flow_weighted_avg(unit, inlet_streams, eq_id)
+            else:
+                line, eq_id = substr_for_concs(unit, model_terms, eq_id)
         print("UPDATED LINE:", line)
     return selected_model, eq_id
 

@@ -119,26 +119,6 @@ def collect_inlet_arrays(pfd, unit):
     return inlet_streams
 
 
-def generate_inlet_flow(unit, inlet_streams, start_eq_id):
-    """ Generate the totalizing ops in the equation system (.c file)
-
-    Args:
-        unit: the process unit whose inlet total flow is to be totalized
-        inlet_streams: the identified inlet streams for "unit", []
-        start_eq_id: starting equation id for the LHS, int
-
-    Return:
-        a str of the ops that sum up the total flow for the unit
-        an updated start_eq_id
-    """
-    my_inlet_flow_str = unit['Inlet_Arrayname'] + '[0] - '
-    totalizer_str = []
-
-    for discharger in inlet_streams:
-        totalizer_str.append(discharger + '[0]')
-    return 'LHS[' + str(start_eq_id) + '] = ' + my_inlet_flow_str + ' - '.join(totalizer_str) + '\n', start_eq_id+1
-
-
 def substr_for_flow(unit, flowstr, inlet_streams):
     """ Generate the substitution str for the flow in a model template
 
@@ -170,6 +150,40 @@ def substr_for_flow(unit, flowstr, inlet_streams):
 
     return 'ERROR in ' + unit['Codename'] + "\n"
 
+
+def substr_for_concs(unit, conc_terms, eq_id):
+    """ Generate the substitution str for the concentration terms in a model template
+
+    Args:
+        unit: the PooPyLab unit being worked on, {}
+        conc_terms: the concentration terms used in the model template, ['']:
+
+    Return:
+        str of C statements to replace the concentration term in the model template,
+        updated equation id
+    """
+    branches = []
+
+    for x in conc_terms:
+        x = x.strip()
+        if x == 'MY_IN_CONC':
+            branches.append('Inlet')
+        elif x == 'MY_MO_CONC':
+            branches.append('Main_Outlet')
+        elif x == 'MY_SO_CONC':
+            branches.append('Side_Outlet')
+        else:
+            branches.append('ERROR')
+
+    start_eq = eq_id
+    conc_assignment = 'for (i=1; i<' + unit['Num_Model_Components'] + '; i++)\n'
+    conc_assignment += '  LHS[' + str(start_eq-1) + '+i] = '
+    ct = [unit[br+'_Arrayname']+'[i]' for br in branches]
+    conc_assignment += ' - '.join(ct) + '\n'
+
+    start_eq = start_eq + int(unit['Num_Model_Components']) - 1
+
+    return conc_assignment, start_eq
 
 
 def generate_inlet_flow_weighted_avg(unit, inlet_streams, start_eq_id):
