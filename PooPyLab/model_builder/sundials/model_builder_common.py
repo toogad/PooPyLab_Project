@@ -142,11 +142,12 @@ def substr_for_flow(unit, flowstr, inlet_streams):
     if branch != '':
         return unit[branch + '_Arrayname'] + '[0]'
 
+    nis = len(inlet_streams)
     totalizer_str = []
     if flowstr == 'DISCHARGERS_SUM':
         for discharger in inlet_streams:
             totalizer_str.append(discharger + '[0]')
-        return '(' + ' + '.join(totalizer_str) + ')\n'
+        return '('*(nis>1) + ' + '.join(totalizer_str) + ')'*(nis>1) + 'ERROR!'*(nis==0) + '\n'
 
     return 'ERROR in ' + unit['Codename'] + "\n"
 

@@ -24,16 +24,13 @@ from .model_builder_common import define_branch_arrays, assign_solver_array, col
 from .model_builder_common import substr_for_flow, substr_for_concs, generate_inlet_flow_weighted_avg
 
 
-def substitue_pipe_model(unit, inlet_streams, start_eq_id):
-    """ Construct a pipe model based on the selected template
+def select_model_template(unit):
+    """ Select the model template for the unit
 
     Args:
         unit: the pipe unit under construction, {}
-        inlet_streams: list of inlet streams arrayname to "unit", ['']
-        start_eq_id: starting equation id, int
     Return:
-        C code statements as model equations for a pipe (str)
-        updated eq_id (int)
+        model template ['']
     """
     selected_model = []
     accept = False
@@ -45,6 +42,21 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
                 selected_model.append(line)
             elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
                 break
+    return selected_model
+
+
+def substitue_pipe_model(unit, selected_model, inlet_streams, start_eq_id):
+    """ Construct a pipe model based on the selected template
+
+    Args:
+        unit: the pipe unit under construction, {}
+        selected_model: ['']
+        inlet_streams: list of inlet streams arrayname to "unit", ['']
+        start_eq_id: starting equation id, int
+    Return:
+        C code statements as model equations for a pipe (str)
+        updated eq_id (int)
+    """
 
     pipe_model = ''
     eq_id = start_eq_id
@@ -95,8 +107,9 @@ def compose_sys(pfd={}, tab=2):
     id_eq = 0
     for c in pfd['Flowsheet'].values():
         inlet_streams = collect_inlet_arrays(pfd, c)
-        if c['Type'] == 'Pipe':
-            eqs, id_eq = substitue_pipe_model(c, inlet_streams, id_eq)
+        if c['Type'] == 'Pipe' or c['Type'] == 'Splitter':
+            selected_model = select_model_template(c)
+            eqs, id_eq = substitue_pipe_model(c, selected_model, inlet_streams, id_eq)
             all_eqs.append(eqs)
 
     return declars, array_assign, all_eqs

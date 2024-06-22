@@ -23,3 +23,11 @@
 # to the main and side outlets.
 #
 #How to set up steady state vs dynamic conditions?
+
+[TBD]
+FLOW: ZERO = MY_IN_FLOW - DISCHARGERS_SUM
+FLOW: ZERO = MY_IN_FLOW - MY_MO_FLOW - MY_SO_FLOW
+FLOW: ZERO = MY_SO_FLOW - USER_DEFINED{VALUE | FILEPATH}
+CONC: ZERO = MY_IN_CONC - DISCHARGERS_FWA
+CONC: ZERO = MY_IN_CONC - MY_MO_CONC
+CONC: ZERO = MY_IN_CONC - MY_SO_CONC

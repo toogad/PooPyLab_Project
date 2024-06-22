@@ -3,10 +3,10 @@
 
 #Flow data source for the Main Outlet can be UPS, DNS, and PRG (e.g. pipe-->WAS).
 [UPS]
-ZERO = {IN_Flow} - {Sum_All_Discharger_Flows}
-ZERO = {IN_Flow} - {MO_Flow}
-ZERO = {IN_Comps} - {FlowWeightedAvg_All_Dischargers}
-ZERO = {MO_Comps} - {IN_Comps}
+FLOW: ZERO = MY_IN_FLOW - DISCHARGERS_SUM
+FLOW: ZERO = MY_IN_FLOW - MY_MO_FLOW
+CONC: ZERO = MY_IN_CONC - DISCHARGERS_FWA
+CONC: ZERO = MY_IN_CONC - MY_MO_CONC
 
 [TBD]
 FLOW: ZERO = MY_IN_FLOW - DISCHARGERS_SUM
@@ -16,7 +16,7 @@ CONC: ZERO = MY_IN_CONC - MY_MO_CONC
 
 #Flow data source for PRG is the same as that for UPS since a Pipe has no flow split to be determined during runtime
 [PRG]
-ZERO = {IN_Flow} - {Sum_All_Discharger_Flows}
-ZERO = {IN_Flow} - {MO_Flow}
-ZERO = {IN_Comps} - {FlowWeightedAvg_All_Dischargers}
-ZERO = {MO_Comps} - {IN_Comps}
+FLOW: ZERO = MY_IN_FLOW - DISCHARGERS_SUM
+FLOW: ZERO = MY_IN_FLOW - MY_MO_FLOW
+CONC: ZERO = MY_IN_CONC - DISCHARGERS_FWA
+CONC: ZERO = MY_IN_CONC - MY_MO_CONC
