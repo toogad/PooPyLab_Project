@@ -24,20 +24,6 @@ from .model_builder_common import define_branch_arrays, assign_solver_array, col
 from .model_builder_common import substr_for_flow, substr_for_concs, generate_inlet_flow_weighted_avg
 
 
-#def substitue_pipe_model(unit):
-#    selected_model = []
-#    accept = False
-#    with open(unit['Model_File_Path'], 'rt') as tf:
-#        for line in tf:
-#            if unit['MO_Flow_Data_Source'] in line or accept == True:
-#                accept = True
-#            if accept == True and line[0] != '#' and ('[' not in line) and (']' not in line):
-#                selected_model.append(line)
-#            elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
-#                break
-#    return selected_model
-
-
 def substitue_pipe_model(unit, inlet_streams, start_eq_id):
     """ Construct a pipe model based on the selected template
 
@@ -46,9 +32,8 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
         inlet_streams: list of inlet streams arrayname to "unit", ['']
         start_eq_id: starting equation id, int
     Return:
-        model equations for a pipe (str)
+        C code statements as model equations for a pipe (str)
         updated eq_id (int)
-
     """
     selected_model = []
     accept = False
@@ -61,9 +46,9 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
             elif selected_model and (unit['MO_Flow_Data_Source'] not in line) and ('[' in line and ']' in line):
                 break
 
+    pipe_model = ''
     eq_id = start_eq_id
     for line in selected_model:         # e.g. line = 'FLOW : 0 = MY_IN_FLOW - MY_MO_FLOW'
-        print('Current LINE=', line)
         splt = line.split(':')          #      splt = ['FLOW ', '0 = MY_IN_FLOW - MY_MO_FLOW']
         line = splt[1]                  #      line = '0 = MY_IN_FLOW - MY_MO_FLOW'
         rhs = line.split('=')[1]        #      rhs = 'MY_IN_FLOW - MY_MO_FLOW'
@@ -72,15 +57,16 @@ def substitue_pipe_model(unit, inlet_streams, start_eq_id):
             for ft in model_terms:
                 fts = ft.strip()
                 line = line.replace(fts, substr_for_flow(unit, fts, inlet_streams))
-                line = line.replace('ZERO','LHS[' + str(eq_id) + ']')
+            line = line.replace('ZERO','LHS[' + str(eq_id) + ']')
+            pipe_model += line + '\n'
             eq_id += 1
         elif splt[0].strip() == 'CONC':
             if 'FWA' in line:
                 line, eq_id = generate_inlet_flow_weighted_avg(unit, inlet_streams, eq_id)
             else:
                 line, eq_id = substr_for_concs(unit, model_terms, eq_id)
-        print("UPDATED LINE:", line)
-    return selected_model, eq_id
+            pipe_model += line + '\n'
+    return pipe_model, eq_id
 
 
 def compose_sys(pfd={}, tab=2):
@@ -100,7 +86,7 @@ def compose_sys(pfd={}, tab=2):
     declars = ['sunrealtype ' + aname if aname[:2] != '//'
                else aname
                for aname in array_names]
-    declars.append('sunindextype i;')
+    declars.append('sunindextype i;\n')
 
     nc = int(list(pfd['Flowsheet'].values())[0]['Num_Model_Components'])  # No. of model Components
     array_assign = assign_solver_array(array_names, nc)
@@ -109,7 +95,6 @@ def compose_sys(pfd={}, tab=2):
     id_eq = 0
     for c in pfd['Flowsheet'].values():
         inlet_streams = collect_inlet_arrays(pfd, c)
-        print(c['Codename'])
         if c['Type'] == 'Pipe':
             eqs, id_eq = substitue_pipe_model(c, inlet_streams, id_eq)
             all_eqs.append(eqs)
@@ -120,7 +105,6 @@ def compose_sys(pfd={}, tab=2):
 def write_to_file(filename='syseqs.c', lines=[], write_mode='w'):
     with open(filename, write_mode) as eqf:
         for item in lines:
-            print('ITEM: ', item)
             eqf.write(item)
             eqf.write('\n')
     return None
