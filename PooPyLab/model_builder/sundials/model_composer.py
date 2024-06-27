@@ -54,7 +54,7 @@ def substitue_pipe_model(unit, selected_model, inlet_streams, start_eq_id):
         inlet_streams: list of inlet streams arrayname to "unit", ['']
         start_eq_id: starting equation id, int
     Return:
-        C code statements as model equations for a pipe (str)
+        C code as model equations for a pipe (str)
         updated eq_id (int)
     """
 
