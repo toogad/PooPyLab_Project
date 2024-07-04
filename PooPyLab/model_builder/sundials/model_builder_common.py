@@ -138,6 +138,8 @@ def substr_for_flow(unit, flowstr, inlet_streams):
         branch = 'Main_Outlet'
     elif flowstr == 'MY_SO_FLOW':
         branch = 'Side_Outlet'
+    elif flowstr == 'USER_DEFINED_SO_FLOW':
+
 
     if branch != '':
         return unit[branch + '_Arrayname'] + '[0]'
