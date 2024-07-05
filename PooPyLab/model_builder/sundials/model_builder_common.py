@@ -131,25 +131,31 @@ def substr_for_flow(unit, flowstr, inlet_streams):
         str of C array element to replace the flow term in the model template
     """
     branch = ''
-
     if flowstr == 'MY_IN_FLOW':
         branch = 'Inlet'
     elif flowstr == 'MY_MO_FLOW':
         branch = 'Main_Outlet'
     elif flowstr == 'MY_SO_FLOW':
         branch = 'Side_Outlet'
-    elif flowstr == 'USER_DEFINED_SO_FLOW':
-
 
     if branch != '':
         return unit[branch + '_Arrayname'] + '[0]'
 
-    nis = len(inlet_streams)
-    totalizer_str = []
     if flowstr == 'DISCHARGERS_SUM':
+        totalizer_str = []
+        nis = len(inlet_streams)
         for discharger in inlet_streams:
             totalizer_str.append(discharger + '[0]')
         return '('*(nis>1) + ' + '.join(totalizer_str) + ')'*(nis>1) + 'ERROR!'*(nis==0) + '\n'
+
+    if flowstr == 'USER_DEFINED_SO_FLOW':
+        user_defined_so_flow = unit['USER_DEFINED_SO_FLOW']
+        if user_defined_so_flow.replace('.', '').isnumeric():
+            if float(user_defined_so_flow) >= 0:
+                return user_defined_so_flow
+        elif user_defined_so_flow.split('.')[1].rstrip().lower() == 'csv':
+            #TODO: how to manage dynamic input from a .csv file
+            return 'get data from a .csv file\n'
 
     return 'ERROR in ' + unit['Codename'] + "\n"
 
