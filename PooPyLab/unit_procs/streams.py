@@ -108,9 +108,10 @@ class splitter(poopy_lab_obj):
         ## flow data source tag for sidestream outlet
         self._so_flow_ds = flow_data_src.TBD
 
+        # sidestream flow definition, a str of number or file path is allowed
+        self._so_flow = ''
 
-        ## TODO: This flag can probably be removed when a specification file is used
-        ## flag to confirm it has received _so_flow > 0 m3/d
+        ## flag to confirm it has received _so_flow definition
         self._so_flow_defined = False
 
         # TODO: not sure why saturated DO estimate is here.
@@ -566,6 +567,26 @@ class splitter(poopy_lab_obj):
             poopy_lab_obj
         """
         return self._side_outlet
+
+
+    def set_side_outlet_flow(self, soflow, info_type):
+        """
+        Set the side outlet flow with a number string or file path
+        """
+        self._so_flow_defined = True  #initial assumption
+
+        if info_type == 'VALUE':
+            try:
+                float(soflow)
+                self._so_flow = soflow
+            except ValueError:
+                self._so_flow_defined = False
+                print(self._codename, ': Error in side outlet flow value. Side outlet flow undefined.')
+        elif info_type == 'FILE':
+            #TODO: insert code to handle file input (e.g. for dynamic simulation)
+            pass
+
+        return None
 
 
     def sidestream_flow_defined(self):

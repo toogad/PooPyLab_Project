@@ -183,6 +183,14 @@ class poopy_lab_obj(object):
 
 
     @abstractmethod
+    def set_side_outlet_flow(self, soflow, info_type):
+        """
+        Set the side outlet flow
+        """
+        pass
+
+
+    @abstractmethod
     def sidestream_flow_defined(self):
         """
         Return whether the sidestream flow rate has been defined.
