@@ -11,3 +11,4 @@ declars, assigns, eqs = compose_sys(mypfd)
 write_to_file('syseqs.c', declars, 'w')
 write_to_file('syseqs.c', assigns, 'a')
 write_to_file('syseqs.c', eqs, 'a')
+

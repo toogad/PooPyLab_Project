@@ -207,6 +207,7 @@ class final_clarifier(splitter):
             'IN_Flow_Data_Source': str(self._in_flow_ds)[-3:],
             'MO_Flow_Data_Source': str(self._mo_flow_ds)[-3:],
             'SO_Flow_Data_Source': str(self._so_flow_ds)[-3:],
+            'User_Defined_SO_Flow': self._so_flow,
             'Inlet_Codenames': ' '.join([k.get_codename() for k in self._inlet]) if self._inlet else 'None',
             'Main_Outlet_Codename': self._main_outlet.get_codename() if self._main_outlet else 'None',
             'Side_Outlet_Codename': self._side_outlet.get_codename() if self._side_outlet else 'None',

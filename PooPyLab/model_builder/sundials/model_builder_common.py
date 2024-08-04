@@ -149,7 +149,7 @@ def substr_for_flow(unit, flowstr, inlet_streams):
         return '('*(nis>1) + ' + '.join(totalizer_str) + ')'*(nis>1) + 'ERROR!'*(nis==0) + '\n'
 
     if flowstr == 'USER_DEFINED_SO_FLOW':
-        user_defined_so_flow = unit['USER_DEFINED_SO_FLOW']
+        user_defined_so_flow = unit['User_Defined_SO_Flow']
         if user_defined_so_flow.replace('.', '').isnumeric():
             if float(user_defined_so_flow) >= 0:
                 return user_defined_so_flow
