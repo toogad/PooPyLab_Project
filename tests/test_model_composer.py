@@ -1,7 +1,6 @@
 import context
 from PooPyLab.utils.pfd import read_wwtp
 from PooPyLab.model_builder.sundials.model_composer import compose_sys, write_to_file
-#from PooPyLab.model_builder.sundials.model_composer import substitue_pipe_model
 #import pdb
 
 mypfd = read_wwtp("test_connect.json")

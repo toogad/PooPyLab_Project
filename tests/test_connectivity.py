@@ -54,6 +54,7 @@ if __name__ == '__main__':
 
     splt.set_downstream_side(was)
     splt.set_as_SRT_controller(True)
+    splt.set_side_outlet_flow('500.213', 'NUM')
 
     p1.add_upstream(inf, 'Main')
     rxn.add_upstream(p1, 'Main')

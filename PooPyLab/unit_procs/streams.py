@@ -571,25 +571,25 @@ class splitter(poopy_lab_obj):
 
     def set_side_outlet_flow(self, soflow, info_type):
         """
-        Set the side outlet flow with a number string or file path
+        Set the side outlet flow with a NUMber string or CSV file path
 
         Args:
-            soflow: a str of float or file path
-            info_type: 'VALUE' or 'FILE'
+            soflow: a str of float or path to a .csv file
+            info_type: 'NUM' or 'CSV'
 
         Return:
             None
         """
         self._so_flow_defined = True  #initial assumption
 
-        if info_type == 'VALUE':
+        if info_type == 'NUM':
             try:
                 float(soflow)
                 self._so_flow = soflow
             except ValueError:
                 self._so_flow_defined = False
                 print(self._codename, ': Error in side outlet flow value. Side outlet flow undefined.')
-        elif info_type == 'FILE':
+        elif info_type == 'CSV':
             #TODO: insert code to handle file input (e.g. for dynamic simulation)
             pass
 
