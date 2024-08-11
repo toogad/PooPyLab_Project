@@ -74,7 +74,7 @@ for (i=1; i<14; i++)
 
  LHS[44] = Splitter_1_in_comp[0] - Splitter_1_mo_comp[0] - Splitter_1_so_comp[0]
 
- LHS[45] = Splitter_1_so_comp[0] - 500.213
+ LHS[45] = Splitter_1_so_comp[0] - 400.1
 
 for(i=1; i<14; i++)
   LHS[45+i] = Splitter_1_in_comp[i] - FinalClarifier_1_so_comp[i];

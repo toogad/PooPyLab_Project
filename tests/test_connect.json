@@ -130,7 +130,7 @@
             "IN_Flow_Data_Source": "TBD",
             "MO_Flow_Data_Source": "TBD",
             "SO_Flow_Data_Source": "TBD",
-            "User_Defined_SO_Flow": "500.213",
+            "User_Defined_SO_Flow": "400.1",
             "Inlet_Codenames": "FinalClarifier_1",
             "Main_Outlet_Codename": "ASMReactor_1",
             "Side_Outlet_Codename": "WAS_1",

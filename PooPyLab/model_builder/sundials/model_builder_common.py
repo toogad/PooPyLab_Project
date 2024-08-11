@@ -150,12 +150,14 @@ def substr_for_flow(unit, flowstr, inlet_streams):
 
     if flowstr == 'USER_DEFINED_SO_FLOW':
         user_defined_so_flow = unit['User_Defined_SO_Flow']
-        if user_defined_so_flow.replace('.', '').isnumeric():
+        try:
             if float(user_defined_so_flow) >= 0:
                 return user_defined_so_flow
-        elif user_defined_so_flow.split('.')[1].rstrip().lower() == 'csv':
-            #TODO: how to manage dynamic input from a .csv file
-            return 'get data from a .csv file\n'
+            else:
+                return 'ERROR: Sidestream flow < 0!\n'
+        except ValueError:
+            #TODO: add try..except for .csv file handling
+            return 'ERROR!\n'
 
     return 'ERROR in ' + unit['Codename'] + "\n"
 
