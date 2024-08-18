@@ -1068,19 +1068,33 @@ class influent(pipe):
         # a dedicated Bio-Augmentation unit should be used with only model
         # components related to the biomass.
         self._model_fracs = {
-                            'ASM1': 
-                                {
-                                    'COD:BOD5': 2.04,
-                                    'SCOD:COD': 0.50,  #SCOD+PCOD = COD
-                                    'RBCOD:SCOD': 0.80,  #RBCOD + UBSCOD = SCOD
-                                    'SBCOD:PCOD': 0.70,  #SBCOD + UBPCOD = PCOD
-                                    'SON:SCOD': 0.01,  #Sol.Org.N as a frac of SCOD
-                                    'RBON:SON': 0.8,  #RBON + UBSON = SON
-                                    'SBON:PON': 0.75  #SBON + UBPON = PON
-                                },
-                            'ASM2d':{},  #TODO: define for ASM-2d
-                            'ASM3': {}   #TODO: define for ASM3
-                            }
+            'ASM1':
+                {
+                    'COD:BOD5': 2.04,
+                    'SCOD:COD': 0.50,  #SCOD+PCOD = COD
+                    'RBCOD:SCOD': 0.80,  #RBCOD + UBSCOD = SCOD
+                    'SBCOD:PCOD': 0.70,  #SBCOD + UBPCOD = PCOD
+                    'SON:SCOD': 0.01,  #Sol.Org.N as a frac of SCOD
+                    'RBON:SON': 0.8,  #RBON + UBSON = SON
+                    'SBON:PON': 0.75  #SBON + UBPON = PON
+                },
+            'ASM2d':
+                {
+                    # rbsCOD + cbsCOD + nbsCOD + pCOD = COD
+                    'RBSCOD:COD': 0.10,
+                    'CBSCOD:COD': 0.30,  # sCOD = rbsCOD + cbsCOD + nbsCOD
+                    'NBSCOD:COD': 0.10,  # pCOD = COD - sCOD
+                    'NBPCOD:PCOD': 0.20, # nbpCOD = fraction * pCOD
+                    # TKN = NH3N + OrgN
+                    'NH3N:TKN': 0.75,  # OrgN = TKN - NH3N
+                    'BORGN:ORGN': 0.50, # bOrgN = fraction * OrgN; nbOrgN = OrgN - bOrgN
+                    'ORGN:COD': 0.10, # use the COD to divide the orgN
+                    # TP = orthoP + orgP
+                    'PO4P:TP': 0.65,
+                    'ORGP:COD': 0.03  # use the COD to divide the orgP
+                },
+            'ASM3': {}   #TODO: define for ASM3
+        }
 
         # Plant influent flow in M3/DAY
         # TODO: will be user-input from GUI. FROM THE GUI, USER
@@ -1408,31 +1422,31 @@ class influent(pipe):
                             self._Alk,
                             _NBPCOD, _SBCOD, 0.0, 0.0, 0.0, _SBON]
 
-            # check if any negative values from the fractionation
-            for tc in _temp_comps:
-                if tc < 0:
-                    print('ERROR in fractions resulting in negative model',
-                            ' components. Influent components NOT UPDATED')
-                    return self._in_comps[:]  # nothing changed
+        # check if any negative values from the fractionation
+        for tc in _temp_comps:
+            if tc < 0:
+                print('ERROR in fractions resulting in negative model',
+                        ' components. Influent components NOT UPDATED')
+                return self._in_comps[:]  # nothing changed
 
 
-            if asm_ver == 'ASM1' and verbose:
-                print("Model = ASM1, Influent Fractions Summary::")
-                print("Total COD = {}  Soluble COD = {}".format(_TCOD, _SCOD),
-                        " Particulate COD =", _PCOD)
-                print("Readily Biodegradable (biodeg. sol.) COD =", _RBCOD,
-                        " Non-Biodegradable Sol. COD =", _NBSCOD)
-                print("Slowly Biodegradable (biodeg. part.) COD =", _SBCOD,
-                        " Non-Biodegradable Part. COD =", _NBPCOD)
-                print("Total TKN = {}  NH3-N = {}  Total Org.N = {}".format(self._TKN, self._NH3N, _TON))
-                print("Soluble Org. N = {}  Part. Org. N = {}".format(_SON, _PON))
-                print("Readily Biodegradable (biodeg. sol.) Org. N =", _RBON,
-                        " Non-Biodegradable Sol. Org. N =", _UBSON)
-                print("Slowly Biodegradable (biodeg. part.) Org.N =", _SBON,
-                        " Non-Biodegradable part.Org. N =", _UBPON)
+        if asm_ver == 'ASM1' and verbose:
+            print("Model = ASM1, Influent Fractions Summary::")
+            print("Total COD = {}  Soluble COD = {}".format(_TCOD, _SCOD),
+                    " Particulate COD =", _PCOD)
+            print("Readily Biodegradable (biodeg. sol.) COD =", _RBCOD,
+                    " Non-Biodegradable Sol. COD =", _NBSCOD)
+            print("Slowly Biodegradable (biodeg. part.) COD =", _SBCOD,
+                    " Non-Biodegradable Part. COD =", _NBPCOD)
+            print("Total TKN = {}  NH3-N = {}  Total Org.N = {}".format(self._TKN, self._NH3N, _TON))
+            print("Soluble Org. N = {}  Part. Org. N = {}".format(_SON, _PON))
+            print("Readily Biodegradable (biodeg. sol.) Org. N =", _RBON,
+                    " Non-Biodegradable Sol. Org. N =", _UBSON)
+            print("Slowly Biodegradable (biodeg. part.) Org.N =", _SBON,
+                    " Non-Biodegradable part.Org. N =", _UBPON)
 
-            #TODO: Add accounting for nonbiod sol. orgN and nonbiod part orgN
-            return _temp_comps[:]
+        #TODO: Add accounting for nonbiod sol. orgN and nonbiod part orgN
+        return _temp_comps[:]
 
 
     #
