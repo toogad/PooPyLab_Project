@@ -860,7 +860,8 @@ class splitter(poopy_lab_obj):
 
     def is_SRT_controller(self):
         """
-        Return whether a splitter is an SRT controller.
+        Re
+turn whether a splitter is an SRT controller.
         """
         return self._SRT_controller
 
@@ -1106,18 +1107,6 @@ class influent(pipe):
     # ADJUSTMENTS TO THE COMMON INTERFACE TO FIT THE NEEDS OF INFLUENT
     #
 
-##    def _branch_flow_helper(self):
-##        """
-##        Calculate 1 of the 3 branches' flow based on the other 2.
-##
-##        For an "influent" unit, the mainstream outflow always equals to its design flow.
-##        """
-##
-##        self._mo_flow = self._design_flow
-##        self._so_flow = 0.0
-##        return None
-
-
     def assign_initial_guess(self, init_guess_lst):
         """
         Assign the intial guess to the unit before simulation.
@@ -1126,16 +1115,6 @@ class influent(pipe):
         for "influent".
         """
         pass
-
-
-##    def is_converged(self, limit=1E-6):
-##        """
-##        Return the convergence status of the unit.
-##
-##        The "influent" unit gets flows and loads from the user. Convergence is irrelevant here. This function
-##        is by-passed for "influent" by setting the _converged to True.
-##        """
-##        return self._converged  # which is always True
 
 
     def add_upstream(self, discharger, branch):
@@ -1148,41 +1127,6 @@ class influent(pipe):
         print("ERROR:", self.__name__, "has NO upstream.")
         return None
 
-
-##    def totalize_inflow(self):
-##        """
-##        Combine the individual flows specified in the self._inlet into one.
-##
-##        For an "influent" unit, there is no further upstream. The total inflow is the design flow.
-##
-##        See:
-##            _branch_flow_helper()
-##        """
-##        self._branch_flow_helper()
-##        return self._design_flow
-##
-##
-##    def blend_inlet_comps(self):
-##        """
-##        Calculate the flow weighted average model component concentrations.
-##
-##        This function is re-implemented for the "influent" who doesn't have further upstream units
-##        discharging into it. Rather, this function becomes a wrapper for the _convert_to_model_comps() which
-##        fractions the wastewater constituents measured in BOD, TSS, VSS, TKN, NH3-N, etc. into the model
-##        components such as substrate COD, slowly biodegradable COD, inert suspended solids, etc.
-##
-##        Args:
-##            None
-##
-##        Return:
-##            Copy of the blended influent components.
-##
-##        See:
-##            _convert_to_model_comps().
-##        """
-##        self._in_comps = self._convert_to_model_comps(asm_ver='ASM1', verbose=False)
-##        return self._in_comps[:]
-##
 
     def remove_upstream(self, discharger):
         """
@@ -1225,53 +1169,6 @@ class influent(pipe):
         """
         pass
 
-
-##    def get_main_outflow(self):
-##        """
-##        Return the mainstream outlet flow.
-##
-##        For an "influent", this function will return the design flow.
-##
-##        Return:
-##            self._design_flow
-##        """
-##        return self._design_flow
-##
-##
-##    def set_flow(self, discharger, flow):
-##        """
-##        Specify the flow from the discharger.
-##
-##        This function is bypassed for the "influent".
-##        """
-##        pass
-##
-##
-##    def discharge(self, method_name='BDF', fix_DO=True, DO_sat_T=10):
-##        """
-##        Pass the total flow and blended components to the downstreams.
-##
-##        This function is re-implemented for the "influent". An "influent" does not care the changes from the
-##        previous round to the current since it is the source for the entire WWTP. Therefore, _prev_mo_comps,
-##        _prev_so_comps, _mo_comps, and _so_comps all equal to _in_comps.
-##
-##        Args:
-##            (see the note in the discharge() in the splitter class)
-##
-##        Return:
-##            None
-##        """
-##
-##        # influent concentrations don't change for steady state simulation
-##        self._prev_mo_comps = self._prev_so_comps = self._in_comps[:]
-##        self._mo_comps = self._so_comps = self._in_comps[:]
-##
-##        if self._main_outlet is not None:
-##            self._discharge_main_outlet()
-##        else:
-##            print("ERROR:", self.__name__, "main outlet incomplete")
-##
-##        return None
     #
     # END OF ADJUSTMENT TO COMMON INTERFACE
 
@@ -1339,10 +1236,20 @@ class influent(pipe):
             if (frac_name == 'COD:BOD5' and frac_val > 1.0)\
                     or (frac_name != 'COD:BOD5' and 0 <= frac_val <= 1.0):
                 self._model_fracs[asm_ver][frac_name] = frac_val
-                return self._model_fracs.copy()
             else:
                 print('ERROR in new fraction value: FRACTIONS NOT UPDATED,'
                         'DEFAULT FRACTIONS USED.')
+
+        with open(self._model_file_path, 'w') as fp:
+            lines = fp.readlines()
+            newline = []
+            for oldline in lines:
+                newline.append(oldline)
+                if 'FRACTIONS' in oldline:
+                    fracs = self._model_fracs[asm_ver]
+                    fracs = {key:str(fracs[key]) for key in fracs}
+                    newline.append(fracs)
+                    break
 
         return self._model_fracs.copy()
 
@@ -1421,6 +1328,8 @@ class influent(pipe):
                             _NBSCOD, _RBCOD, self._NH3N, _RBON, self._NOxN,
                             self._Alk,
                             _NBPCOD, _SBCOD, 0.0, 0.0, 0.0, _SBON]
+        elif asm_ver == 'ASM2d':
+
 
         # check if any negative values from the fractionation
         for tc in _temp_comps:
@@ -1428,6 +1337,7 @@ class influent(pipe):
                 print('ERROR in fractions resulting in negative model',
                         ' components. Influent components NOT UPDATED')
                 return self._in_comps[:]  # nothing changed
+
 
 
         if asm_ver == 'ASM1' and verbose:
