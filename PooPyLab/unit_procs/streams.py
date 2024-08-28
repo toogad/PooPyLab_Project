@@ -1242,14 +1242,15 @@ class influent(pipe):
 
         with open(self._model_file_path, 'w') as fp:
             lines = fp.readlines()
-            newline = []
+            newlines = []
             for oldline in lines:
-                newline.append(oldline)
+                newlines.append(oldline)
                 if 'FRACTIONS' in oldline:
                     fracs = self._model_fracs[asm_ver]
-                    fracs = {key:str(fracs[key]) for key in fracs}
-                    newline.append(fracs)
-                    break
+                    for key in fracs:
+                        newlines.append(str(fracs[key]))
+            fp.writelines(newlines)
+            #TODO: test the above
 
         return self._model_fracs.copy()
 
@@ -1329,6 +1330,8 @@ class influent(pipe):
                             self._Alk,
                             _NBPCOD, _SBCOD, 0.0, 0.0, 0.0, _SBON]
         elif asm_ver == 'ASM2d':
+            #TODO: add ASM2d Fractions here
+            pass
 
 
         # check if any negative values from the fractionation
@@ -1355,7 +1358,6 @@ class influent(pipe):
             print("Slowly Biodegradable (biodeg. part.) Org.N =", _SBON,
                     " Non-Biodegradable part.Org. N =", _UBPON)
 
-        #TODO: Add accounting for nonbiod sol. orgN and nonbiod part orgN
         return _temp_comps[:]
 
 
