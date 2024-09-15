@@ -611,8 +611,6 @@ class splitter(poopy_lab_obj):
 
     def get_side_outlet_concs(self):
         """
-
-
         Return a copy of the sidestream outlet concentrations.
 
         Args:
@@ -860,8 +858,7 @@ class splitter(poopy_lab_obj):
 
     def is_SRT_controller(self):
         """
-        Re
-turn whether a splitter is an SRT controller.
+        Return whether a splitter is an SRT controller.
         """
         return self._SRT_controller
 
@@ -1283,57 +1280,86 @@ class influent(pipe):
         if asm_ver == 'ASM1':
             # total COD
             _TCOD = self._model_fracs['ASM1']['COD:BOD5'] * self._BOD5
-
             # soluble COD
             _SCOD = self._model_fracs['ASM1']['SCOD:COD'] * _TCOD
-
             # particulate COD
             _PCOD = _TCOD - _SCOD
-
             # readily biodegradable COD (biodeg. soluble COD)
             _RBCOD = self._model_fracs['ASM1']['RBCOD:SCOD'] * _SCOD
-
             # nonbiodegradable soluble COD
             _NBSCOD = _SCOD - _RBCOD
-
             # slowly biodegradable COD (biodeg. particulate COD)
             _SBCOD = self._model_fracs['ASM1']['SBCOD:PCOD'] * _PCOD
-
             # nonbiodegradable particulate COD
             _NBPCOD = _PCOD - _SBCOD
-
             # total organic N
             _TON = self._TKN - self._NH3N
-
             # soluble organic N
             _SON = self._model_fracs['ASM1']['SON:SCOD'] * _SCOD
-
             # particulate organic N
             _PON = _TON - _SON
-
             # readily biodegradable organic N (biodeg.sol.org N)
             # assuming RBON:SON = RBCOD:SCOD
             _RBON = self._model_fracs['ASM1']['RBCOD:SCOD'] * _SON
-
             # nonbiodeg. sol. org. N
             _UBSON = _SON - _RBON
-
             # slowly biodegradable organic N (biodeg.part.org. N)
             # assuming SBON:PON = SBCOD:PCOD
             _SBON = self._model_fracs['ASM1']['SBCOD:PCOD'] * _PON
-
             # nonbiodeg. part. org. N
             _UBPON = _PON - _SBON
+
+            if verbose:
+                print("Model = ASM1, Influent Fractions Summary::")
+                print("Total COD = {}  Soluble COD = {}".format(_TCOD, _SCOD),
+                        " Particulate COD =", _PCOD)
+                print("Readily Biodegradable (biodeg. sol.) COD =", _RBCOD,
+                        " Non-Biodegradable Sol. COD =", _NBSCOD)
+                print("Slowly Biodegradable (biodeg. part.) COD =", _SBCOD,
+                        " Non-Biodegradable Part. COD =", _NBPCOD)
+                print("Total TKN = {}  NH3-N = {}  Total Org.N = {}".format(self._TKN, self._NH3N, _TON))
+                print("Soluble Org. N = {}  Part. Org. N = {}".format(_SON, _PON))
+                print("Readily Biodegradable (biodeg. sol.) Org. N =", _RBON,
+                        " Non-Biodegradable Sol. Org. N =", _UBSON)
+                print("Slowly Biodegradable (biodeg. part.) Org.N =", _SBON,
+                        " Non-Biodegradable part.Org. N =", _UBPON)
 
             _temp_comps = [self._DO,
                             _NBSCOD, _RBCOD, self._NH3N, _RBON, self._NOxN,
                             self._Alk,
                             _NBPCOD, _SBCOD, 0.0, 0.0, 0.0, _SBON]
+
         elif asm_ver == 'ASM2d':
-            #TODO: add ASM2d Fractions here
-            pass
+            _TCOD = self._BOD5 * self._model_fracs['ASM2d']['COD:BOD5']
+            _RBSCOD = self._model_fracs['ASM2d']['RBSCOD:COD'] * _TCOD
+            _CBSCOD = self._model_fracs['ASM2d']['CBSCOD:COD'] * _TCOD
+            _NBSCOD = self._model_fracs['ASM2d']['NBSCOD:COD'] * _TCOD
+            _PCOD = _TCOD - _RBSCOD - _CBSCOD - _NBSCOD
+            _NBPCOD = self._model_fracs['ASM2d']['NBPCOD:PCOD'] * _PCOD
+            _NH3N = self._model_fracs['ASM2d']['NH2N:TKN'] * self._TKN
+            _ORGN = self._TKN - _NH3N
+            _BORGN = self._model_fracs['ASM2d']['BORGN:ORGN'] * _ORGN
+            # TODO: CONTINUE HERE
 
 
+                 
+                
+            'ASM2d':
+                {
+                    # rbsCOD + cbsCOD + nbsCOD + pCOD = COD
+                    'RBSCOD:COD': 0.10,
+                    'CBSCOD:COD': 0.30,  # sCOD = rbsCOD + cbsCOD + nbsCOD
+                    'NBSCOD:COD': 0.10,  # pCOD = COD - sCOD
+                    'NBPCOD:PCOD': 0.20, # nbpCOD = fraction * pCOD
+                    # TKN = NH3N + OrgN
+                    'NH3N:TKN': 0.75,  # OrgN = TKN - NH3N
+                    'BORGN:ORGN': 0.50, # bOrgN = fraction * OrgN; nbOrgN = OrgN - bOrgN
+                    'ORGN:COD': 0.10, # use the COD to divide the orgN
+                    # TP = orthoP + orgP
+                    'PO4P:TP': 0.65,
+                    'ORGP:COD': 0.03  # use the COD to divide the orgP
+             #TODO: add ASM2d Fractions here
+        
         # check if any negative values from the fractionation
         for tc in _temp_comps:
             if tc < 0:
@@ -1343,20 +1369,6 @@ class influent(pipe):
 
 
 
-        if asm_ver == 'ASM1' and verbose:
-            print("Model = ASM1, Influent Fractions Summary::")
-            print("Total COD = {}  Soluble COD = {}".format(_TCOD, _SCOD),
-                    " Particulate COD =", _PCOD)
-            print("Readily Biodegradable (biodeg. sol.) COD =", _RBCOD,
-                    " Non-Biodegradable Sol. COD =", _NBSCOD)
-            print("Slowly Biodegradable (biodeg. part.) COD =", _SBCOD,
-                    " Non-Biodegradable Part. COD =", _NBPCOD)
-            print("Total TKN = {}  NH3-N = {}  Total Org.N = {}".format(self._TKN, self._NH3N, _TON))
-            print("Soluble Org. N = {}  Part. Org. N = {}".format(_SON, _PON))
-            print("Readily Biodegradable (biodeg. sol.) Org. N =", _RBON,
-                    " Non-Biodegradable Sol. Org. N =", _UBSON)
-            print("Slowly Biodegradable (biodeg. part.) Org.N =", _SBON,
-                    " Non-Biodegradable part.Org. N =", _UBPON)
 
         return _temp_comps[:]
 
