@@ -13,4 +13,7 @@
 #including the total of all influents, WAS unit, the all other
 #effluent units whose flows are defined.
 
-[UPS]
+[PRG]
+FLOW: ZERO = PLANT_IN_FLOW - PLANT_WAS_FLOW - MY_MO_FLOW
+FLOW: ZERO = MY_IN_FLOW - MY_MO_FLOW
+CONC: ZERO = MY_IN_CONC - MY_MO_CONC
