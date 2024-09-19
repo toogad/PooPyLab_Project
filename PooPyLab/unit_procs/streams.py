@@ -1085,11 +1085,12 @@ class influent(pipe):
                     'NBPCOD:PCOD': 0.20, # nbpCOD = fraction * pCOD
                     # TKN = NH3N + OrgN
                     'NH3N:TKN': 0.75,  # OrgN = TKN - NH3N
-                    'BORGN:ORGN': 0.50, # bOrgN = fraction * OrgN; nbOrgN = OrgN - bOrgN
-                    'ORGN:COD': 0.10, # use the COD to divide the orgN
+                    'SORGN:ORGN': 0.60,  # OrgN = sOrgN + pOrgN
+                    'SBORGN:SBCOD': 0.1, # TODO: check mass balance
+                    'PBORGN:PBCOD': 0.1, # TODO: check mass balance
                     # TP = orthoP + orgP
                     'PO4P:TP': 0.65,
-                    'ORGP:COD': 0.03  # use the COD to divide the orgP
+                    # 'ORGP:COD': to be calculated; then the biodeg. fraction of orgP would align with that of the COD
                 },
             'ASM3': {}   #TODO: define for ASM3
         }
