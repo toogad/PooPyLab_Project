@@ -1089,8 +1089,9 @@ class influent(pipe):
                     'SBORGN:SBCOD': 0.1, # TODO: check mass balance
                     'PBORGN:PBCOD': 0.1, # TODO: check mass balance
                     # TP = orthoP + orgP
-                    'PO4P:TP': 0.65,
-                    # 'ORGP:COD': to be calculated; then the biodeg. fraction of orgP would align with that of the COD
+                    'PO4P:TP': 0.65, # orgP = TP - orthoP
+                    'SBORGP:SBCOD': 0.02, # TODO: check mass balance
+                    'PBORGP:PBCOD': 0.02  # TODO: check mass balance
                 },
             'ASM3': {}   #TODO: define for ASM3
         }

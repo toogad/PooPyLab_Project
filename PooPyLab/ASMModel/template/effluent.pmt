@@ -1,0 +1,19 @@
+#An Effluent unit only deals with its own inlet since its main outlet
+#feeds to nothing within the process boundaries.
+#
+#Its inlet flow data source can only be set to UPS or PRG.
+#
+#The inlet flwo data source is UPS when there is no WAS units in the PFD. For instance, a CSTR.
+#
+#If the inlet flow data source is PRG, it would be either defined by
+#the user or calculations. If calculated, the current effluent unit
+#shall be the only effluent type (except for WAS) for such estimate.
+#
+#The flow balance would be a global one across the entire plant,
+#including the total of all influents, WAS unit, the all other
+#effluent units whose flows are defined.
+
+[PRG]
+FLOW: ZERO = PLANT_IN_FLOW - PLANT_WAS_FLOW - MY_MO_FLOW
+FLOW: ZERO = MY_IN_FLOW - MY_MO_FLOW
+CONC: ZERO = MY_IN_CONC - MY_MO_CONC
