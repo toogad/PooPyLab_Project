@@ -34,6 +34,7 @@
 ## @file streams.py
 
 import math
+import numpy as np
 from pathlib import PurePath
 
 from ..unit_procs.base import poopy_lab_obj
@@ -1060,6 +1061,15 @@ class influent(pipe):
         self._Alk = 6.0  # in mmol/L as CaCO3
         self._DO = 0.0
 
+        #user define conversion factors: e.g. user_i_N_SF is for converted the ASM2d component SF (in COD) to organic N 
+        self._i_N_SF, self._i_P_SF = 0.01, 0.002
+        self._i_N_SI, self._i_P_SI = 0.01, 0.002
+        self._i_N_XI, self._i_P_XI, self._i_TSS_XI = 0.01, 0.002, 0.90
+        self._i_N_XS, self._i_P_XS, self._i_TSS_XS = 0.01, 0.002, 0.90
+        self._i_N_BM, self._i_P_BM, self._i_TSS_BM = 0.08, 0.016, 1.42 # same for all types of biomass, XH, XAUT, XPAO
+        # these are conversion factors that are not allowed to be altered by the user:
+        self.__i_COD_SO2 = -1.0
+        
         # Fractionations of the influent. The fractions stored are for the raw
         # influent wastewater without any active biomass.
         # If influent with active biomass (X_BH, X_BA, etc.) is needed,
@@ -1076,22 +1086,52 @@ class influent(pipe):
                     'RBON:SON': 0.8,  #RBON + UBSON = SON
                     'SBON:PON': 0.75  #SBON + UBPON = PON
                 },
-            'ASM2d':
+            'ASM2d': # TODO: as a starting point, let's just follow the IWA model for fractions
                 {
-                    # rbsCOD + cbsCOD + nbsCOD + pCOD = COD
-                    'RBSCOD:COD': 0.10,
-                    'CBSCOD:COD': 0.30,  # sCOD = rbsCOD + cbsCOD + nbsCOD
-                    'NBSCOD:COD': 0.10,  # pCOD = COD - sCOD
-                    'NBPCOD:PCOD': 0.20, # nbpCOD = fraction * pCOD
-                    # TKN = NH3N + OrgN
-                    'NH3N:TKN': 0.75,  # OrgN = TKN - NH3N
-                    'SORGN:ORGN': 0.60,  # OrgN = sOrgN + pOrgN
-                    'SBORGN:SBCOD': 0.1, # TODO: check mass balance
-                    'PBORGN:PBCOD': 0.1, # TODO: check mass balance
-                    # TP = orthoP + orgP
-                    'PO4P:TP': 0.65, # orgP = TP - orthoP
-                    'SBORGP:SBCOD': 0.02, # TODO: check mass balance
-                    'PBORGP:PBCOD': 0.02  # TODO: check mass balance
+                    'SA:COD': 0.05, # Acetate as COD
+                    'SF:COD': 0.20, # Fermentable COD, Acetate excluded
+                    'SC:COD': 0.15, # Biodegradable Complex Soluble COD
+                    'SI:COD': 0.05, # Nonbiodegradable Soluble
+                    'XS:COD': 0.30, # Biodegradable Particulate
+                    'XI:COD': 0.05, # NonBiodegradable Particulate
+                    'XOHO:COD': 0.001, # Ordinary Heterotrophs
+                    'XAUT:COD': 0.001, # Autotrophs (nitrifiers)
+                    'XPAO:COD': 0.001, # PAOs
+                    'XOHO:VSS': 1.42, # COD:VSS ratio for OHO 
+                    'XAUT:VSS': 1.42, # COD:VSS ratio for AUT 
+                    'XPAO:VSS': 1.42, # COD:VSS ratio for PAO 
+                    'XI:VSS': 1.20, # COD:VSS ratio for XI 
+                    'XS:VSS': 1.20, # COD:VSS ratio for XS 
+                    'i_N_SF': 0.01,
+                    'i_P_SF': 0.002,
+                    'i_N_SI': 0.01,
+                    'i_P_SI': 0.002,
+                    'i_N_XI': 0.01,
+                    'i_P_XI': 0.002,
+                    'i_TSS_XI': 0.90,
+                    'i_N_XS': 0.05,
+                    'i_P_XS': 0.01,
+                    'i_TSS_XS': 1.20,
+                    'i_N_BM': 0.08,
+                    'i_P_BM': 0.016,
+                    'i_TSS_BM': 1.42
+
+                        
+                    
+##                    # rbsCOD + cbsCOD + nbsCOD + pCOD = COD
+##                    'RBSCOD:COD': 0.10,
+##                    'CBSCOD:COD': 0.30,  # sCOD = rbsCOD + cbsCOD + nbsCOD
+##                    'NBSCOD:COD': 0.10,  # pCOD = COD - sCOD
+##                    'NBPCOD:PCOD': 0.20, # nbpCOD = fraction * pCOD
+##                    # TKN = NH3N + OrgN
+##                    'NH3N:TKN': 0.75,  # OrgN = TKN - NH3N
+##                    'SORGN:ORGN': 0.60,  # OrgN = sOrgN + pOrgN
+##                    'SBORGN:SBCOD': 0.1, # TODO: check mass balance
+##                    'PBORGN:PBCOD': 0.1, # TODO: check mass balance
+##                    # TP = orthoP + orgP
+##                    'PO4P:TP': 0.65, # orgP = TP - orthoP
+##                    'SBORGP:SBCOD': 0.02, # TODO: check mass balance
+##                    'PBORGP:PBCOD': 0.02  # TODO: check mass balance
                 },
             'ASM3': {}   #TODO: define for ASM3
         }
@@ -1338,7 +1378,7 @@ class influent(pipe):
             _NBSCOD = self._model_fracs['ASM2d']['NBSCOD:COD'] * _TCOD
             _PCOD = _TCOD - _RBSCOD - _CBSCOD - _NBSCOD
             _NBPCOD = self._model_fracs['ASM2d']['NBPCOD:PCOD'] * _PCOD
-            _NH3N = self._model_fracs['ASM2d']['NH2N:TKN'] * self._TKN
+            _NH3N = self._model_fracs['ASM2d']['NH3N:TKN'] * self._TKN
             _ORGN = self._TKN - _NH3N
             _BORGN = self._model_fracs['ASM2d']['BORGN:ORGN'] * _ORGN
             # TODO: CONTINUE HERE
