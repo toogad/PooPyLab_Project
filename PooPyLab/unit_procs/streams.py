@@ -1061,15 +1061,7 @@ class influent(pipe):
         self._Alk = 6.0  # in mmol/L as CaCO3
         self._DO = 0.0
 
-        #user define conversion factors: e.g. user_i_N_SF is for converted the ASM2d component SF (in COD) to organic N 
-        self._i_N_SF, self._i_P_SF = 0.01, 0.002
-        self._i_N_SI, self._i_P_SI = 0.01, 0.002
-        self._i_N_XI, self._i_P_XI, self._i_TSS_XI = 0.01, 0.002, 0.90
-        self._i_N_XS, self._i_P_XS, self._i_TSS_XS = 0.01, 0.002, 0.90
-        self._i_N_BM, self._i_P_BM, self._i_TSS_BM = 0.08, 0.016, 1.42 # same for all types of biomass, XH, XAUT, XPAO
-        # these are conversion factors that are not allowed to be altered by the user:
-        self.__i_COD_SO2 = -1.0
-        
+     
         # Fractionations of the influent. The fractions stored are for the raw
         # influent wastewater without any active biomass.
         # If influent with active biomass (X_BH, X_BA, etc.) is needed,
@@ -1101,40 +1093,64 @@ class influent(pipe):
                     'XAUT:VSS': 1.42, # COD:VSS ratio for AUT 
                     'XPAO:VSS': 1.42, # COD:VSS ratio for PAO 
                     'XI:VSS': 1.20, # COD:VSS ratio for XI 
-                    'XS:VSS': 1.20, # COD:VSS ratio for XS 
-                    'i_N_SF': 0.01,
+                    'XS:VSS': 1.20 # COD:VSS ratio for XS 
+                },
+            'ASM3': {}   # TODO: define for ASM3
+        }
+
+        #ASM2d Conversion Factors -- BEGIN
+        #user defined conversion factors: e.g. user_i_N_SF is for converted the ASM2d component SF (in COD) to organic N 
+        self._model_conv = {
+            'ASM2d': 
+                {
+                    'i_N_SF': 0.01, 
                     'i_P_SF': 0.002,
                     'i_N_SI': 0.01,
                     'i_P_SI': 0.002,
                     'i_N_XI': 0.01,
                     'i_P_XI': 0.002,
                     'i_TSS_XI': 0.90,
-                    'i_N_XS': 0.05,
-                    'i_P_XS': 0.01,
-                    'i_TSS_XS': 1.20,
+                    'i_N_XS': 0.01, 
+                    'i_P_XS': 0.002,
+                    'i_TSS_XS': 0.90,
                     'i_N_BM': 0.08,
                     'i_P_BM': 0.016,
-                    'i_TSS_BM': 1.42
+                    'i_TSS_BM': 1.42 # same for all types of biomass, XH, XAUT, XPAO
+            },
+            'ASM3': {} # TODO: define here
+    }
+        # Here are conversion factors that are not allowed to be altered by the user:
+        # COD: mg/L
+        self.__i_COD_SO2 = -1.0
+        self.__i_COD_SF = self.__i_COD_SA = self.__i_COD_SI = 1.0
+        self.__i_COD_SNO3 = -64.0/14.0 #O2 to fully nitrify
+        self.__i_COD_SN2 = -24.0/14.0 #O2 to oxidize NH3-N to N2-N, not the 2.86 mgO2/mgNO3-N in denite.
+        self.__i_COD_XI = self.__i_COD_XS = self.__i_COD_XH = 1.0
+        self.__i_COD_XPAO = self.__i_COD_PHA = self.__i_COD_XAUT = 1.0
+        # Nitrogen and Phosphorus: mg/L as N or P
+        self.__i_N_SNH4 = self.__i_N_SNO3 = self.__i_N_SN2 = 1.0
+        self.__i_P_SPO4 = self.__i_P_XPP = 1.0
+        self.__i_P_XMEP = 0.205
+        # Charges in unit: mole
+        self.__i_CHG_SA = -1.0/64.0
+        self.__i_CHG_SNH4 = 1.0/14.0
+        self.__i_CHG_SNO3 = -1.0/14.0
+        self.__i_CHG_SPO4 = -1.5/31.0
+        self.__i_CHG_SALK = -1.0
+        self.__i_CHG_XPP = -1.0/31.0
+        # TSS: mg/L
+        self.__i_TSS_XPP = 3.23
+        self.__i_TSS_XPHA = 0.6
+        self.__i_TSS_TSS = -1.0 # yes, this is correct
+        self.__i_TSS_XMEOH = self.__i_TSS_XMEP = 1.0
+        #ASM2d Conversion Factors --- END
 
-                        
-                    
-##                    # rbsCOD + cbsCOD + nbsCOD + pCOD = COD
-##                    'RBSCOD:COD': 0.10,
-##                    'CBSCOD:COD': 0.30,  # sCOD = rbsCOD + cbsCOD + nbsCOD
-##                    'NBSCOD:COD': 0.10,  # pCOD = COD - sCOD
-##                    'NBPCOD:PCOD': 0.20, # nbpCOD = fraction * pCOD
-##                    # TKN = NH3N + OrgN
-##                    'NH3N:TKN': 0.75,  # OrgN = TKN - NH3N
-##                    'SORGN:ORGN': 0.60,  # OrgN = sOrgN + pOrgN
-##                    'SBORGN:SBCOD': 0.1, # TODO: check mass balance
-##                    'PBORGN:PBCOD': 0.1, # TODO: check mass balance
-##                    # TP = orthoP + orgP
-##                    'PO4P:TP': 0.65, # orgP = TP - orthoP
-##                    'SBORGP:SBCOD': 0.02, # TODO: check mass balance
-##                    'PBORGP:PBCOD': 0.02  # TODO: check mass balance
-                },
-            'ASM3': {}   #TODO: define for ASM3
-        }
+        self.__asm2d_conv_factors = [[self.__i_COD_O2, 0, 0, 0, 0],
+                                     [self.__i_COD_SF, self._model_conv['ASM2d']['i_N_SF'], self._model_conv['ASM2d']['i_P_SF'], 0, 0],
+                                     # TODO:continue here
+                                     ]
+     
+
 
         # Plant influent flow in M3/DAY
         # TODO: will be user-input from GUI. FROM THE GUI, USER
