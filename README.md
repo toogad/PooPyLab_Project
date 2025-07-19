@@ -9,8 +9,6 @@ To install the PooPyLab package: pip3 install poopylab
 Please see the examples/ folder for examples about how to use the available classes/methods to construct your own
 treatment plant process flow diagrams and get steady state results.
 
-Follow the project on Twitter: @poopylab .
-
 More detailed documentation:
 [toogad.github.io/brownbook](https://toogad.github.io/brownbook/index.html)
 
