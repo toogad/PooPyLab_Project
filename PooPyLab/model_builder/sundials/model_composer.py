@@ -60,11 +60,11 @@ def substitue_pipe_model(unit, selected_model, inlet_streams, start_eq_id):
 
     pipe_model = ''
     eq_id = start_eq_id
-    for line in selected_model:         # e.g. line = 'FLOW : 0 = MY_IN_FLOW - MY_MO_FLOW'
-        splt = line.split(':')          #      splt = ['FLOW ', '0 = MY_IN_FLOW - MY_MO_FLOW']
-        line = splt[1]                  #      line = '0 = MY_IN_FLOW - MY_MO_FLOW'
+    for line in selected_model:         # e.g. line = 'FLOW : ZERO = MY_IN_FLOW - MY_MO_FLOW'
+        splt = line.split(':')          #      splt = ['FLOW ', 'ZERO = MY_IN_FLOW - MY_MO_FLOW']
+        line = splt[1]                  #      line = 'ZERO = MY_IN_FLOW - MY_MO_FLOW'
         rhs = line.split('=')[1]        #      rhs = 'MY_IN_FLOW - MY_MO_FLOW'
-        model_terms = rhs.split('-')     #      flow_terms = ['MY_IN_FLOW ', ' MY_MO_FLOW']
+        model_terms = rhs.split('-')    #      model_terms = ['MY_IN_FLOW ', ' MY_MO_FLOW']
         if splt[0].strip() == 'FLOW':
             for ft in model_terms:
                 fts = ft.strip()
